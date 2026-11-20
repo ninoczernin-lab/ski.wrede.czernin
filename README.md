@@ -27,11 +27,21 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 4. Add `NSLocationWhenInUseUsageDescription` to Info.plist.
 5. Add the 4 Swift files and use `ResortBrowserView()` as the root view.
 
+## 3D
+
+- **Mapbox Standard style**: 3D buildings, trees and landmarks, with dynamic lighting (dawn, day, dusk, night menu).
+- **Real terrain**: Mapbox DEM at 1.5× exaggeration, camera tilted to 65° (up to 85° by hand).
+- **Relief shading**: slope steepness stays readable, even in 2D.
+- **3D lift infrastructure**: OSM lift pylons and stations extruded as blocks standing on the terrain (`structures.geojson`).
+- **2D/3D button** on the right edge. Two fingers tilt, twist to rotate.
+
+Runs and lift lines are draped on the terrain surface. Lift cables are not raised above the ground.
+
 ## How offline works
 
 | Piece | Where it lives | Offline? |
 |---|---|---|
-| Pistes, lifts, stations (OSM GeoJSON) | app bundle | always |
+| Pistes, lifts, stations, 3D pylons (OSM GeoJSON) | app bundle | always |
 | Style, fonts, icons | Mapbox style pack (`OfflineManager`) | after download |
 | Base map + terrain DEM tiles z10–16 | Mapbox tile region per resort (`TileStore`) | after download |
 

@@ -6,7 +6,7 @@ const LIFT_SKIP = new Set(['pylon', 'station', 'goods']);
 const PROPS = [
   'name', 'ref', 'piste:type', 'piste:difficulty', 'piste:grooming', 'piste:name', 'piste:ref',
   'aerialway', 'aerialway:occupancy', 'aerialway:duration', 'aerialway:capacity', 'aerialway:heating',
-  'aerialway:bubble', 'landuse', 'website',
+  'aerialway:bubble', 'landuse', 'website', 'height',
 ];
 
 function slim(f) {
@@ -18,13 +18,31 @@ function slim(f) {
   return { type: 'Feature', id: props.osm_id, geometry: f.geometry, properties: props };
 }
 
+// Square footprint (metres) around a point, for 3D extrusion of pylons and stations.
+function square([lon, lat], sizeM) {
+  const dLat = sizeM / 2 / 111320, dLon = dLat / Math.cos((lat * Math.PI) / 180);
+  return { type: 'Polygon', coordinates: [[
+    [lon - dLon, lat - dLat], [lon + dLon, lat - dLat], [lon + dLon, lat + dLat],
+    [lon - dLon, lat + dLat], [lon - dLon, lat - dLat],
+  ]] };
+}
+
+export function structuresFrom(pylons, stations) {
+  const out = [];
+  for (const f of pylons) out.push({ type: 'Feature', id: `pylon-${f.id}`, geometry: square(f.geometry.coordinates, 3),
+    properties: { kind: 'pylon', height: Number.parseFloat(f.properties.height) || 14 } });
+  for (const f of stations) out.push({ type: 'Feature', id: `station-${f.id}`, geometry: square(f.geometry.coordinates, 16),
+    properties: { kind: 'station', name: f.properties.name, height: 9 } });
+  return out;
+}
+
 const fc = (features) => ({ type: 'FeatureCollection', features });
 const isLine = (g) => g.type === 'LineString' || g.type === 'MultiLineString';
 const isArea = (g) => g.type === 'Polygon' || g.type === 'MultiPolygon';
 
 export function convert(overpassJson) {
   const gj = osmtogeojson(overpassJson, { flatProperties: true });
-  const pistes = [], pisteAreas = [], lifts = [], stations = [], boundary = [];
+  const pistes = [], pisteAreas = [], lifts = [], stations = [], pylons = [], boundary = [];
   const seen = new Set();
 
   for (const raw of gj.features) {
@@ -39,11 +57,13 @@ export function convert(overpassJson) {
       if (isLine(g)) pistes.push(f);
       else if (isArea(g)) pisteAreas.push(f);
     } else if (p.aerialway === 'station' && g.type === 'Point') stations.push(f);
+    else if (p.aerialway === 'pylon' && g.type === 'Point') pylons.push(f);
     else if (p.aerialway && !LIFT_SKIP.has(p.aerialway) && isLine(g)) lifts.push(f);
   }
   return {
     pistes: fc(pistes), piste_areas: fc(pisteAreas), lifts: fc(lifts),
     stations: fc(stations), boundary: fc(boundary),
+    structures: fc(structuresFrom(pylons, stations)),
   };
 }
 

@@ -25,4 +25,8 @@ assert.equal(out.lifts.features[0].properties.aerialway, 'gondola');
 assert.equal(out.stations.features.length, 1);
 assert.equal(out.boundary.features.length, 1);
 assert.deepEqual(summarize(out).downhill_by_difficulty, { intermediate: 1 });
+assert.equal(out.structures.features.length, 2, 'one pylon + one station extruded');
+const pylon = out.structures.features.find((f) => f.properties.kind === 'pylon');
+assert.equal(pylon.geometry.type, 'Polygon');
+assert.equal(pylon.properties.height, 14);
 console.log('convert.test: all assertions passed');

@@ -9,10 +9,13 @@ struct ResortBrowserView: View {
     @State private var query = ""
     @State private var showPicker = false
     @State private var selected: [String: Any]?
+    @State private var is3D = true
+    @State private var lightPreset = "day"
 
     var body: some View {
         ZStack(alignment: .top) {
-            ResortMapView(resort: resort, selectedFeature: $selected).ignoresSafeArea()
+            ResortMapView(resort: resort, is3D: is3D, lightPreset: lightPreset, selectedFeature: $selected)
+                .ignoresSafeArea()
 
             Button { showPicker = true } label: {
                 HStack {
@@ -26,6 +29,7 @@ struct ResortBrowserView: View {
             }
             .buttonStyle(.plain).padding(.horizontal, 16).padding(.top, 8)
         }
+        .overlay(alignment: .trailing) { mapControls }
         .overlay(alignment: .bottom) { if let f = selected { featureCard(f) } }
         .sheet(isPresented: $showPicker) { picker.presentationDetents([.medium, .large]) }
         .onReceive(locator.$coordinate.compactMap { $0 }) { c in
@@ -36,6 +40,31 @@ struct ResortBrowserView: View {
             try? await Task.sleep(for: .seconds(3))
             if resort == nil { showPicker = true }  // no fix / not near a resort: ask
         }
+    }
+
+    /// Right-edge buttons, thumb-reachable on iPhone.
+    private var mapControls: some View {
+        VStack(spacing: 0) {
+            Button { withAnimation { is3D.toggle() } } label: {
+                Text(is3D ? "2D" : "3D").font(.headline).frame(width: 48, height: 48)
+            }
+            .accessibilityLabel(is3D ? "Switch to flat 2D map" : "Switch to 3D map")
+            Divider().frame(width: 32)
+            Menu {
+                Picker("Light", selection: $lightPreset) {
+                    Label("Dawn", systemImage: "sunrise").tag("dawn")
+                    Label("Day", systemImage: "sun.max").tag("day")
+                    Label("Dusk", systemImage: "sunset").tag("dusk")
+                    Label("Night", systemImage: "moon.stars").tag("night")
+                }
+            } label: {
+                Image(systemName: "sun.max").font(.title3).frame(width: 48, height: 48)
+            }
+            .accessibilityLabel("Map lighting")
+        }
+        .buttonStyle(.plain)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .padding(.trailing, 12)
     }
 
     private var picker: some View {

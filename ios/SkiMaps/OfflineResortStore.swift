@@ -8,7 +8,7 @@ import MapboxMaps
 final class OfflineResortStore: ObservableObject {
     enum State: Equatable { case notDownloaded, downloading(Double), ready, failed(String) }
 
-    static let styleURI = StyleURI.outdoors
+    static let styleURI = StyleURI.standard  // 3D buildings, trees, dynamic lighting
     static let demTileset = "mapbox://mapbox.mapbox-terrain-dem-v1"
     /// z10–16 covers overview to individual runs. Raise the max only if your tile budget allows.
     static let zoomRange: ClosedRange<UInt8> = 10...16
