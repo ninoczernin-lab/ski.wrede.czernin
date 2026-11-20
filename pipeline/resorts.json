@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ski-arlberg",
+    "name": "Ski Arlberg",
+    "country": "AT",
+    "villages": ["St. Anton", "St. Christoph", "Stuben", "Lech", "Zürs", "Oberlech", "Warth", "Schröcken"],
+    "bbox": { "south": 47.08, "west": 10.03, "north": 47.30, "east": 10.33 },
+    "camera": { "lat": 47.17, "lon": 10.19, "zoom": 11.6, "bearing": 200, "pitch": 62 }
+  },
+  {
+    "id": "kitzski",
+    "name": "KitzSki",
+    "country": "AT",
+    "villages": ["Kitzbühel", "Kirchberg", "Jochberg", "Pass Thurn", "Mittersill", "Hollersbach"],
+    "bbox": { "south": 47.22, "west": 12.22, "north": 47.48, "east": 12.52 },
+    "camera": { "lat": 47.36, "lon": 12.37, "zoom": 11.3, "bearing": 170, "pitch": 62 }
+  },
+  {
+    "id": "les-3-vallees",
+    "name": "Les 3 Vallées",
+    "country": "FR",
+    "villages": ["Courchevel", "La Tania", "Méribel", "Brides-les-Bains", "Les Menuires", "Saint-Martin-de-Belleville", "Val Thorens", "Orelle"],
+    "bbox": { "south": 45.19, "west": 6.45, "north": 45.48, "east": 6.70 },
+    "camera": { "lat": 45.34, "lon": 6.58, "zoom": 11.2, "bearing": 20, "pitch": 62 }
+  }
+]

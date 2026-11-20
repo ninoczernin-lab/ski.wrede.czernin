@@ -1,0 +1,107 @@
+import SwiftUI
+import CoreLocation
+
+/// Single map screen. Opens on the resort you're in (or nearest within 40 km); search swaps resort.
+struct ResortBrowserView: View {
+    @StateObject private var offline = OfflineResortStore()
+    @StateObject private var locator = Locator()
+    @State private var resort: Resort?
+    @State private var query = ""
+    @State private var showPicker = false
+    @State private var selected: [String: Any]?
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            ResortMapView(resort: resort, selectedFeature: $selected).ignoresSafeArea()
+
+            Button { showPicker = true } label: {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                    Text(resort?.name ?? "Search ski resorts").lineLimit(1)
+                    Spacer()
+                    if let r = resort { offlineBadge(r) }
+                }
+                .padding(.horizontal, 16).frame(height: 48)
+                .background(.regularMaterial, in: Capsule())
+            }
+            .buttonStyle(.plain).padding(.horizontal, 16).padding(.top, 8)
+        }
+        .overlay(alignment: .bottom) { if let f = selected { featureCard(f) } }
+        .sheet(isPresented: $showPicker) { picker.presentationDetents([.medium, .large]) }
+        .onReceive(locator.$coordinate.compactMap { $0 }) { c in
+            if resort == nil { resort = ResortCatalog.nearest(to: c) ?? ResortCatalog.all.first }
+        }
+        .task {
+            locator.start()
+            try? await Task.sleep(for: .seconds(3))
+            if resort == nil { showPicker = true }  // no fix / not near a resort: ask
+        }
+    }
+
+    private var picker: some View {
+        NavigationStack {
+            List(ResortCatalog.all.filter { $0.matches(query) }) { r in
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text(r.name).font(.headline)
+                        Text(r.villages.joined(separator: " · ")).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    }
+                    Spacer()
+                    offlineButton(r)
+                }
+                .contentShape(Rectangle())
+                .onTapGesture { resort = r; selected = nil; showPicker = false }
+            }
+            .searchable(text: $query, prompt: "Resort or village")
+            .navigationTitle("Ski resorts")
+        }
+    }
+
+    @ViewBuilder private func offlineBadge(_ r: Resort) -> some View {
+        if offline.state(for: r) == .ready { Image(systemName: "checkmark.icloud").foregroundStyle(.green) }
+    }
+
+    @ViewBuilder private func offlineButton(_ r: Resort) -> some View {
+        switch offline.state(for: r) {
+        case .notDownloaded, .failed:
+            Button { offline.download(r) } label: { Image(systemName: "arrow.down.circle").font(.title2) }
+                .buttonStyle(.borderless).accessibilityLabel("Download \(r.name) for offline use")
+        case let .downloading(p):
+            Button { offline.cancel(r) } label: { ProgressView(value: p).progressViewStyle(.circular) }
+                .buttonStyle(.borderless)
+        case .ready:
+            Menu {
+                Button("Remove offline map", role: .destructive) { offline.delete(r) }
+            } label: { Image(systemName: "checkmark.circle.fill").font(.title2).foregroundStyle(.green) }
+        }
+    }
+
+    private func featureCard(_ p: [String: Any]) -> some View {
+        let name = (p["name"] as? String) ?? (p["ref"] as? String) ?? "Unnamed"
+        let detail = (p["piste:difficulty"] as? String) ?? (p["aerialway"] as? String) ?? ""
+        return HStack {
+            VStack(alignment: .leading) {
+                Text(name).font(.headline)
+                Text(detail.capitalized).font(.subheadline).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button { selected = nil } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain)
+        }
+        .padding().background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16)).padding()
+    }
+}
+
+final class Locator: NSObject, ObservableObject, CLLocationManagerDelegate {
+    @Published var coordinate: CLLocationCoordinate2D?
+    private let manager = CLLocationManager()
+    func start() {
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        manager.requestWhenInUseAuthorization()
+        manager.startUpdatingLocation()
+    }
+    func locationManager(_ m: CLLocationManager, didUpdateLocations locs: [CLLocation]) {
+        coordinate = locs.last?.coordinate
+        m.stopUpdatingLocation()
+    }
+}
