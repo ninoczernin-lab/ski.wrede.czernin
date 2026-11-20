@@ -47,7 +47,7 @@ struct ResortMapView: UIViewRepresentable {
         private var tokens = Set<AnyCancelable>()
 
         private let sources = ["pistes", "piste_areas", "lifts", "stations", "structures"]
-        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "lifts-line",
+        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-unknown", "lifts-line",
                               "structures-3d", "pistes-label", "lifts-label"]
 
         init(_ parent: ResortMapView) { self.parent = parent }
@@ -64,7 +64,7 @@ struct ResortMapView: UIViewRepresentable {
                 self.apply3D(self.parent.is3D, animated: false)
             }.store(in: &tokens)
 
-            for layer in ["pistes-line", "lifts-line", "structures-3d"] {
+            for layer in ["pistes-line", "pistes-unknown", "lifts-line", "structures-3d"] {
                 mapView.gestures.onLayerTap(layer) { [weak self] feature, _ in
                     self?.parent.selectedFeature = feature.feature.properties?.mapValues { $0?.rawValue ?? "" }
                     return true
@@ -149,55 +149,60 @@ struct ResortMapView: UIViewRepresentable {
                                 duration: 2.5)
         }
 
-        /// European colour code; France also uses green for "novice".
-        private var difficultyColor: Exp {
-            Exp(.match) {
-                Exp(.get) { "piste:difficulty" }
-                "novice"; UIColor(red: 0.13, green: 0.65, blue: 0.27, alpha: 1)
-                "easy"; UIColor(red: 0.10, green: 0.42, blue: 0.86, alpha: 1)
-                "intermediate"; UIColor(red: 0.86, green: 0.15, blue: 0.15, alpha: 1)
-                "advanced"; UIColor.black
-                "expert"; UIColor.black
-                "freeride"; UIColor(red: 0.95, green: 0.55, blue: 0.10, alpha: 1)
-                UIColor.darkGray
-            }
-        }
-
         private func widthByZoom(_ z11: Double, _ z16: Double) -> Value<Double> {
             .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 11; z11; 16; z16 })
         }
 
+        private var isDownhill: Exp { Exp(.eq) { Exp(.get) { "piste:type" }; "downhill" } }
+        private var isUnknown: Exp { Exp(.eq) { Exp(.get) { "piste:difficulty" }; "unknown" } }
+
         private func addLayers(_ map: MapboxMap) {
+            // Piste areas (wide open slopes) as a faint tint under the run lines.
             var areas = FillLayer(id: "piste-areas-fill", source: "piste_areas")
             areas.slot = .middle
-            areas.fillColor = .expression(difficultyColor)
-            areas.fillOpacity = .constant(0.18)
+            areas.fillColor = .expression(PisteDifficulty.colorExpression)
+            areas.fillOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 0.06; 15; 0.14 })
             try? map.addLayer(areas)
 
-            // White casing under each run keeps colours readable on snow, rock and forest.
+            // Runs go in the top slot: drawn above 3D trees and buildings, so forest sections
+            // no longer disappear. Harder runs sort on top where runs overlap.
             var casing = LineLayer(id: "pistes-casing", source: "pistes")
-            casing.slot = .middle
-            casing.filter = Exp(.eq) { Exp(.get) { "piste:type" }; "downhill" }
-            casing.lineColor = .constant(StyleColor(UIColor(white: 1, alpha: 0.9)))
-            casing.lineWidth = widthByZoom(3, 9)
+            casing.slot = .top
+            casing.filter = isDownhill
+            casing.lineColor = .constant(StyleColor(.white))
+            casing.lineOpacity = .constant(0.95)
+            casing.lineWidth = .expression(PisteWidth.expression(PisteWidth.casing))
             casing.lineCap = .constant(.round)
             casing.lineJoin = .constant(.round)
+            casing.lineSortKey = .expression(Exp(.get) { "rank" })
+            casing.lineEmissiveStrength = .constant(1)
             try? map.addLayer(casing)
 
             var pistes = LineLayer(id: "pistes-line", source: "pistes")
-            pistes.slot = .middle
-            pistes.filter = Exp(.eq) { Exp(.get) { "piste:type" }; "downhill" }
-            pistes.lineColor = .expression(difficultyColor)
-            pistes.lineWidth = widthByZoom(1.5, 5)
+            pistes.slot = .top
+            pistes.filter = Exp(.all) { isDownhill; Exp(.not) { isUnknown } }
+            pistes.lineColor = .expression(PisteDifficulty.colorExpression)
+            pistes.lineWidth = .expression(PisteWidth.expression(PisteWidth.line))
             pistes.lineCap = .constant(.round)
             pistes.lineJoin = .constant(.round)
-            pistes.lineEmissiveStrength = .constant(1)   // stays bright under dusk/night lighting
+            pistes.lineSortKey = .expression(Exp(.get) { "rank" })
+            pistes.lineEmissiveStrength = .constant(1)   // same colour at dawn, day, dusk and night
             try? map.addLayer(pistes)
+
+            // Runs OSM doesn't classify: dashed grey, so they never look like a real blue/red/black.
+            var unknown = LineLayer(id: "pistes-unknown", source: "pistes")
+            unknown.slot = .top
+            unknown.filter = Exp(.all) { isDownhill; isUnknown }
+            unknown.lineColor = .constant(StyleColor(PisteDifficulty.unknown.color))
+            unknown.lineWidth = .expression(PisteWidth.expression(PisteWidth.line))
+            unknown.lineDasharray = .constant([1.5, 1])
+            unknown.lineEmissiveStrength = .constant(1)
+            try? map.addLayer(unknown)
 
             var lifts = LineLayer(id: "lifts-line", source: "lifts")
             lifts.slot = .top
             lifts.lineColor = .constant(StyleColor(UIColor(white: 0.12, alpha: 1)))
-            lifts.lineWidth = widthByZoom(1, 3)
+            lifts.lineWidth = widthByZoom(1.5, 3.5)
             lifts.lineDasharray = .constant([2, 1])
             lifts.lineEmissiveStrength = .constant(1)
             try? map.addLayer(lifts)
@@ -217,18 +222,40 @@ struct ResortMapView: UIViewRepresentable {
             structures.fillExtrusionAmbientOcclusionIntensity = .constant(0.3)
             try? map.addLayer(structures)
 
-            for (id, src) in [("pistes-label", "pistes"), ("lifts-label", "lifts")] {
-                var label = SymbolLayer(id: id, source: src)
-                label.slot = .top
-                label.textField = .expression(Exp(.coalesce) { Exp(.get) { "ref" }; Exp(.get) { "name" } })
-                label.symbolPlacement = .constant(.line)
-                label.textSize = .constant(12)
-                label.textHaloColor = .constant(StyleColor(.white))
-                label.textHaloWidth = .constant(1.5)
-                label.textPitchAlignment = .constant(.viewport)
-                label.minZoom = 13
-                try? map.addLayer(label)
-            }
+            // Run number as a coloured badge (white text, halo in the run's colour), name when zoomed in.
+            var runLabel = SymbolLayer(id: "pistes-label", source: "pistes")
+            runLabel.slot = .top
+            runLabel.filter = isDownhill
+            runLabel.textField = .expression(Exp(.step) {
+                Exp(.zoom)
+                Exp(.coalesce) { Exp(.get) { "ref" }; "" }
+                14.5
+                Exp(.coalesce) { Exp(.get) { "name" }; Exp(.get) { "ref" }; "" }
+            })
+            runLabel.symbolPlacement = .constant(.line)
+            runLabel.symbolSpacing = .constant(350)
+            runLabel.textSize = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 11; 16; 14 })
+            runLabel.textColor = .constant(StyleColor(.white))
+            runLabel.textHaloColor = .expression(PisteDifficulty.colorExpression)
+            runLabel.textHaloWidth = .constant(2.5)
+            runLabel.textPitchAlignment = .constant(.viewport)
+            runLabel.textKeepUpright = .constant(true)
+            runLabel.textEmissiveStrength = .constant(1)
+            runLabel.minZoom = 12.5
+            try? map.addLayer(runLabel)
+
+            var liftLabel = SymbolLayer(id: "lifts-label", source: "lifts")
+            liftLabel.slot = .top
+            liftLabel.textField = .expression(Exp(.coalesce) { Exp(.get) { "name" }; Exp(.get) { "ref" }; "" })
+            liftLabel.symbolPlacement = .constant(.line)
+            liftLabel.textSize = .constant(12)
+            liftLabel.textColor = .constant(StyleColor(UIColor(white: 0.1, alpha: 1)))
+            liftLabel.textHaloColor = .constant(StyleColor(.white))
+            liftLabel.textHaloWidth = .constant(1.5)
+            liftLabel.textPitchAlignment = .constant(.viewport)
+            liftLabel.textEmissiveStrength = .constant(1)
+            liftLabel.minZoom = 13.5
+            try? map.addLayer(liftLabel)
         }
     }
 }

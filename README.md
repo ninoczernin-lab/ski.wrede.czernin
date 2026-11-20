@@ -25,7 +25,7 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 2. Put your public token (`pk.…`) in Info.plist as `MBXAccessToken`.
 3. Drag the `data/` folder into the project as a **folder reference** named `ResortData`.
 4. Add `NSLocationWhenInUseUsageDescription` to Info.plist.
-5. Add the 4 Swift files and use `ResortBrowserView()` as the root view.
+5. Add the Swift files in `ios/SkiMaps/` and use `ResortBrowserView()` as the root view.
 
 ## 3D
 
@@ -34,6 +34,20 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 - **Relief shading**: slope steepness stays readable, even in 2D.
 - **3D lift infrastructure**: OSM lift pylons and stations extruded as blocks standing on the terrain (`structures.geojson`).
 - **2D/3D button** on the right edge. Two fingers tilt, twist to rotate.
+
+## How runs are drawn
+
+The pipeline cleans the OSM data (`pipeline/clean.mjs`) so each run is drawn once, in one colour:
+- Route relations hand their difficulty, name and number down to their segments, so no run is drawn twice.
+- Difficulty values are normalised: `Easy` becomes easy, `easy;intermediate` becomes intermediate, and missing values become unknown.
+- Abandoned runs are removed.
+- Segments of the same run are joined into one line, so there are no gaps and one label per run.
+
+The app (`PisteStyle.swift`) keeps colours and widths in one place, shared by the map and the legend:
+- Runs are drawn above the 3D trees.
+- Each run has a white outline, and harder runs are drawn on top where runs overlap.
+- Unclassified runs are dashed grey.
+- Run numbers show as coloured badges.
 
 Runs and lift lines are draped on the terrain surface. Lift cables are not raised above the ground.
 

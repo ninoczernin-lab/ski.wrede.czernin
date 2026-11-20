@@ -1,5 +1,6 @@
 // Turns a raw Overpass JSON response into the slim GeoJSON layers the app bundles.
 import osmtogeojson from 'osmtogeojson';
+import { cleanElements, DIFFICULTIES } from './clean.mjs';
 
 const PISTE_KEEP = new Set(['downhill', 'nordic', 'sled', 'skitour', 'snow_park']);
 const LIFT_SKIP = new Set(['pylon', 'station', 'goods']);
@@ -15,6 +16,7 @@ function slim(f) {
   for (const k of PROPS) if (tags[k] != null) props[k] = tags[k];
   if (!props.name && tags['piste:name']) props.name = tags['piste:name'];
   if (!props.ref && tags['piste:ref']) props.ref = tags['piste:ref'];
+  if (props['piste:difficulty']) props.rank = DIFFICULTIES.indexOf(props['piste:difficulty']);
   return { type: 'Feature', id: props.osm_id, geometry: f.geometry, properties: props };
 }
 
@@ -41,7 +43,7 @@ const isLine = (g) => g.type === 'LineString' || g.type === 'MultiLineString';
 const isArea = (g) => g.type === 'Polygon' || g.type === 'MultiPolygon';
 
 export function convert(overpassJson) {
-  const gj = osmtogeojson(overpassJson, { flatProperties: true });
+  const gj = osmtogeojson(cleanElements(overpassJson), { flatProperties: true });
   const pistes = [], pisteAreas = [], lifts = [], stations = [], pylons = [], boundary = [];
   const seen = new Set();
 

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "fetch": "node fetch.mjs",
-    "test": "node convert.test.mjs"
+    "test": "node convert.test.mjs && node clean.test.mjs"
   },
   "keywords": [],
   "author": "",

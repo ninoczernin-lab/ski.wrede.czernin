@@ -30,6 +30,7 @@ struct ResortBrowserView: View {
             .buttonStyle(.plain).padding(.horizontal, 16).padding(.top, 8)
         }
         .overlay(alignment: .trailing) { mapControls }
+        .overlay(alignment: .bottomLeading) { if let r = resort, selected == nil { legend(r) } }
         .overlay(alignment: .bottom) { if let f = selected { featureCard(f) } }
         .sheet(isPresented: $showPicker) { picker.presentationDetents([.medium, .large]) }
         .onReceive(locator.$coordinate.compactMap { $0 }) { c in
@@ -105,13 +106,31 @@ struct ResortBrowserView: View {
         }
     }
 
+    /// Colour key for the current resort, using the same colours as the map (PisteStyle.swift).
+    private func legend(_ r: Resort) -> some View {
+        HStack(spacing: 10) {
+            ForEach(PisteDifficulty.legend(for: r.country)) { d in
+                HStack(spacing: 4) {
+                    Capsule().fill(Color(d.color)).frame(width: 16, height: 5)
+                        .overlay(Capsule().stroke(.white, lineWidth: 1))
+                    Text(d.label).font(.caption2.weight(.medium))
+                }
+            }
+        }
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .background(.regularMaterial, in: Capsule())
+        .padding(.leading, 12).padding(.bottom, 28)
+        .accessibilityElement(children: .combine)
+    }
+
     private func featureCard(_ p: [String: Any]) -> some View {
         let name = (p["name"] as? String) ?? (p["ref"] as? String) ?? "Unnamed"
-        let detail = (p["piste:difficulty"] as? String) ?? (p["aerialway"] as? String) ?? ""
+        let detail = (p["piste:difficulty"] as? String).flatMap { PisteDifficulty(rawValue: $0)?.label }
+            ?? (p["aerialway"] as? String)?.capitalized ?? ""
         return HStack {
             VStack(alignment: .leading) {
                 Text(name).font(.headline)
-                Text(detail.capitalized).font(.subheadline).foregroundStyle(.secondary)
+                Text(detail).font(.subheadline).foregroundStyle(.secondary)
             }
             Spacer()
             Button { selected = nil } label: { Image(systemName: "xmark.circle.fill") }.buttonStyle(.plain)
