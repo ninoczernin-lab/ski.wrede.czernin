@@ -8,27 +8,13 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convert, summarize } from './convert.mjs';
 import { buildCableSpans } from './cables.mjs';
+import { overpassQuery as query } from './query.mjs';
 import { elevationAt } from './elevation.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(here, '..', 'data');
 const ENDPOINT = process.env.OVERPASS_URL ?? 'https://overpass-api.de/api/interpreter';
 
-const query = ({ south, west, north, east }) => {
-  const b = `${south},${west},${north},${east}`;
-  return `[out:json][timeout:180];
-(
-  way["piste:type"](${b});
-  relation["piste:type"](${b});
-  way["aerialway"](${b});
-  node["aerialway"="station"](${b});
-  way["landuse"="winter_sports"](${b});
-  relation["landuse"="winter_sports"](${b});
-);
-out body;
->;
-out skel qt;`;
-};
 
 async function overpass(q, attempt = 1) {
   const res = await fetch(ENDPOINT, {

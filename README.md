@@ -4,10 +4,35 @@
 Piste and lift data comes from OpenStreetMap. Base map, terrain and offline tiles come from the Mapbox Maps SDK for iOS (v11).
 
 ```
+preview/    Browser preview of the map (same style, layers and data code as the app)
 pipeline/   Node script: OSM (Overpass) → slim GeoJSON per resort
 data/       output of the pipeline (bundle this into the app as "ResortData")
 ios/SkiMaps SwiftUI + Mapbox code: map view, resort search, offline downloads
 ```
+
+## Preview in the browser (no Xcode needed)
+
+`preview/` is a web version of the iOS map: the same Mapbox Standard style, terrain, run colours, hanging
+cables and 2D/3D toggle, built with Mapbox GL JS. It runs the same `pipeline/` code in the browser.
+If you haven't run `npm run fetch`, it loads each resort live from OpenStreetMap, which takes 20–60 s per resort.
+
+On your Mac, from the repo root:
+
+```bash
+npx serve .
+```
+
+Then open http://localhost:3000/preview/ and paste your Mapbox public token (`pk.…`).
+To test on your iPhone, join the same Wi-Fi and open `http://<your-Mac's-IP>:3000/preview/` in Safari.
+You can find your Mac's IP under System Settings → Wi-Fi → Details.
+
+**Hosted alternative:** in the GitHub repo, go to Settings → Pages and set Source to "Deploy from a branch", `main`, `/ (root)`.
+The preview is then at `https://ninoczernin-lab.github.io/ski.wrede.czernin/preview/`.
+GitHub Pages on a private repo needs a paid GitHub plan.
+If you share that link, restrict your Mapbox token to that URL in your Mapbox account.
+
+Controls: pick a resort at the top, use **2D/3D** and the lighting button on the right, and tap a run or lift for details.
+On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with two fingers.
 
 ## 1. Get the resort data (run on your Mac)
 

@@ -109,7 +109,13 @@ struct ResortMapView: UIViewRepresentable {
             try? map.setTerrain(terrain)
 
             // Hillshade makes slope steepness readable, especially when looking straight down.
-            var relief = HillshadeLayer(id: "relief", source: "mapbox-dem")
+            // Own DEM source: sharing the terrain source halves the shading resolution.
+            var shadeDem = RasterDemSource(id: "mapbox-dem-shade")
+            shadeDem.url = OfflineResortStore.demTileset
+            shadeDem.tileSize = 512
+            shadeDem.maxzoom = 14
+            try? map.addSource(shadeDem)
+            var relief = HillshadeLayer(id: "relief", source: "mapbox-dem-shade")
             relief.slot = .bottom
             relief.hillshadeExaggeration = .constant(0.45)
             relief.hillshadeShadowColor = .constant(StyleColor(UIColor(red: 0.20, green: 0.25, blue: 0.35, alpha: 1)))
