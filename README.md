@@ -49,7 +49,7 @@ The app (`PisteStyle.swift`) keeps colours and widths in one place, shared by th
 - Unclassified runs are dashed grey.
 - Run numbers show as coloured badges.
 
-Runs and lift lines are draped on the terrain surface. Lift cables are not raised above the ground.
+
 
 ## How offline works
 

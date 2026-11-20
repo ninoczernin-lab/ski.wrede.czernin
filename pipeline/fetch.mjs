@@ -1,11 +1,14 @@
 // Usage: node fetch.mjs [resort-id ...]   (no args = all resorts in resorts.json)
 // Pulls pistes, lifts, stations and ski-area outlines from OpenStreetMap via Overpass,
 // converts them to GeoJSON and writes ../data/<id>/*.geojson plus ../data/manifest.json.
+// Lift cables are given heights from AWS Terrain Tiles (Mapzen/AWS open data, attribution in README).
 // Data © OpenStreetMap contributors, ODbL. The app must show that attribution.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { convert, summarize } from './convert.mjs';
+import { buildCableSpans } from './cables.mjs';
+import { elevationAt } from './elevation.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(here, '..', 'data');
@@ -51,6 +54,8 @@ for (const r of resorts) {
   if (wanted.length && !wanted.includes(r.id)) continue;
   console.log(`→ ${r.name}`);
   const layers = convert(await overpass(query(r.bbox)));
+  console.log('   sampling terrain for hanging cables…');
+  layers.lift_spans = await buildCableSpans(layers.lifts, elevationAt);
   const dir = path.join(OUT, r.id);
   await fs.mkdir(dir, { recursive: true });
   for (const [name, fc] of Object.entries(layers)) {

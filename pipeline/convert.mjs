@@ -1,6 +1,7 @@
 // Turns a raw Overpass JSON response into the slim GeoJSON layers the app bundles.
 import osmtogeojson from 'osmtogeojson';
 import { cleanElements, DIFFICULTIES } from './clean.mjs';
+import { SUPPORT } from './cables.mjs';
 
 const PISTE_KEEP = new Set(['downhill', 'nordic', 'sled', 'skitour', 'snow_park']);
 const LIFT_SKIP = new Set(['pylon', 'station', 'goods']);
@@ -29,10 +30,19 @@ function square([lon, lat], sizeM) {
   ]] };
 }
 
-export function structuresFrom(pylons, stations) {
+const coordKey = ([lon, lat]) => `${lon.toFixed(7)},${lat.toFixed(7)}`;
+
+/** Pylon height = the cable height its lift type uses, so cables sit exactly on the pylon tops. */
+export function structuresFrom(pylons, stations, lifts = []) {
+  const pylonHeightAt = new Map();
+  for (const l of lifts) {
+    const h = SUPPORT[l.properties.aerialway]?.pylon;
+    if (h && l.geometry.type === 'LineString') for (const c of l.geometry.coordinates) pylonHeightAt.set(coordKey(c), h);
+  }
   const out = [];
   for (const f of pylons) out.push({ type: 'Feature', id: `pylon-${f.id}`, geometry: square(f.geometry.coordinates, 3),
-    properties: { kind: 'pylon', height: Number.parseFloat(f.properties.height) || 14 } });
+    properties: { kind: 'pylon', height: Number.parseFloat(f.properties.height)
+      || pylonHeightAt.get(coordKey(f.geometry.coordinates)) || 14 } });
   for (const f of stations) out.push({ type: 'Feature', id: `station-${f.id}`, geometry: square(f.geometry.coordinates, 16),
     properties: { kind: 'station', name: f.properties.name, height: 9 } });
   return out;
@@ -65,7 +75,7 @@ export function convert(overpassJson) {
   return {
     pistes: fc(pistes), piste_areas: fc(pisteAreas), lifts: fc(lifts),
     stations: fc(stations), boundary: fc(boundary),
-    structures: fc(structuresFrom(pylons, stations)),
+    structures: fc(structuresFrom(pylons, stations, lifts)),
   };
 }
 

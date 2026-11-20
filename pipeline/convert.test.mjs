@@ -28,5 +28,5 @@ assert.deepEqual(summarize(out).downhill_by_difficulty, { intermediate: 1 });
 assert.equal(out.structures.features.length, 2, 'one pylon + one station extruded');
 const pylon = out.structures.features.find((f) => f.properties.kind === 'pylon');
 assert.equal(pylon.geometry.type, 'Polygon');
-assert.equal(pylon.properties.height, 14);
+assert.equal(pylon.properties.height, 14, 'pylon not on a lift line falls back to 14 m');
 console.log('convert.test: all assertions passed');

@@ -1,5 +1,6 @@
 import SwiftUI
-import MapboxMaps
+// Elevated lines (line-z-offset) are an experimental Mapbox v11 API.
+@_spi(Experimental) import MapboxMaps
 
 /// 3D resort map on Mapbox Standard (3D buildings, trees, lighting) with real terrain,
 /// relief shading, OSM pistes/lifts draped on the slopes and extruded lift pylons/stations.
@@ -46,8 +47,14 @@ struct ResortMapView: UIViewRepresentable {
         private var currentId: String?
         private var tokens = Set<AnyCancelable>()
 
-        private let sources = ["pistes", "piste_areas", "lifts", "stations", "structures"]
-        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-unknown", "lifts-line",
+        static let liftShadowOpacity = 0.25
+        static let groundLifts = ["rope_tow", "magic_carpet", "zip_line"]
+        /// Ground lifts always opaque; aerial lifts faint in 3D (the cable above is the real lift).
+        static func liftOpacityJSON(is3D: Bool) -> [Any] {
+            ["match", ["get", "aerialway"], groundLifts, 1.0, is3D ? liftShadowOpacity : 1.0]
+        }
+        private let sources = ["pistes", "piste_areas", "lifts", "lift_spans", "stations", "structures"]
+        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-unknown", "lifts-line", "lifts-cable",
                               "structures-3d", "pistes-label", "lifts-label"]
 
         init(_ parent: ResortMapView) { self.parent = parent }
@@ -64,7 +71,7 @@ struct ResortMapView: UIViewRepresentable {
                 self.apply3D(self.parent.is3D, animated: false)
             }.store(in: &tokens)
 
-            for layer in ["pistes-line", "pistes-unknown", "lifts-line", "structures-3d"] {
+            for layer in ["pistes-line", "pistes-unknown", "lifts-line", "lifts-cable", "structures-3d"] {
                 mapView.gestures.onLayerTap(layer) { [weak self] feature, _ in
                     self?.parent.selectedFeature = feature.feature.properties?.mapValues { $0?.rawValue ?? "" }
                     return true
@@ -125,6 +132,13 @@ struct ResortMapView: UIViewRepresentable {
             if map.layerExists(withId: "structures-3d") {
                 try? map.setLayerProperty(for: "structures-3d", property: "visibility", value: on ? "visible" : "none")
             }
+            // 3D: cables hang in the air and the line on the ground becomes their faint shadow.
+            // 2D: no cables; the ground line is the lift.
+            if map.layerExists(withId: "lifts-cable") {
+                try? map.setLayerProperty(for: "lifts-cable", property: "visibility", value: on ? "visible" : "none")
+                try? map.setLayerProperty(for: "lifts-line", property: "line-opacity",
+                                          value: Coordinator.liftOpacityJSON(is3D: on))
+            }
             try? map.setStyleImportConfigProperty(for: "basemap", config: "show3dObjects", value: on)
             let cam = CameraOptions(pitch: on ? ResortMapView.pitch3D : 0)
             if animated { mapView.camera.ease(to: cam, duration: 0.8) } else { map.setCamera(to: cam) }
@@ -141,6 +155,7 @@ struct ResortMapView: UIViewRepresentable {
                 guard let url = r.layerURL(layer) else { continue }
                 var src = GeoJSONSource(id: layer)
                 src.data = .url(url)
+                if layer == "lift_spans" { src.lineMetrics = true }   // needed for line-progress
                 try? map.addSource(src)
             }
             addLayers(map)
@@ -199,6 +214,8 @@ struct ResortMapView: UIViewRepresentable {
             unknown.lineEmissiveStrength = .constant(1)
             try? map.addLayer(unknown)
 
+            // Lift on the ground: full line in 2D, faint shadow under the cable in 3D.
+            // Ground lifts (rope tows, magic carpets) have no cable, so they always stay fully visible.
             var lifts = LineLayer(id: "lifts-line", source: "lifts")
             lifts.slot = .top
             lifts.lineColor = .constant(StyleColor(UIColor(white: 0.12, alpha: 1)))
@@ -206,12 +223,48 @@ struct ResortMapView: UIViewRepresentable {
             lifts.lineDasharray = .constant([2, 1])
             lifts.lineEmissiveStrength = .constant(1)
             try? map.addLayer(lifts)
+            try? map.setLayerProperty(for: "lifts-line", property: "line-opacity",
+                                      value: Coordinator.liftOpacityJSON(is3D: parent.is3D))
+
+            // Hanging cables. Each chunk carries its clearance above ground at 9 evenly spaced
+            // points (z0…z8, real metres, from the pipeline). They are scaled by the terrain
+            // exaggeration so cables keep the same proportion as the exaggerated mountains.
+            let exaggeration = ResortMapView.terrainExaggeration
+            var cable = LineLayer(id: "lifts-cable", source: "lift_spans")
+            cable.slot = .top
+            cable.lineColor = .expression(Exp(.match) {
+                Exp(.get) { "aerialway" }
+                ["cable_car", "gondola", "mixed_lift"]; UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1)
+                UIColor(red: 0.22, green: 0.22, blue: 0.25, alpha: 1)
+            })
+            cable.lineWidth = widthByZoom(1.2, 3)
+            cable.lineCap = .constant(.round)
+            cable.lineEmissiveStrength = .constant(1)
+            cable.visibility = .constant(parent.is3D ? .visible : .none)
+            try? map.addLayer(cable)
+            // ["interpolate", ["linear"], ["line-progress"], 0, exag*z0, 0.125, exag*z1, … 1, exag*z8]
+            var zOffset: [Any] = ["interpolate", ["linear"], ["line-progress"]]
+            for k in 0..<9 { zOffset += [Double(k) / 8, ["*", exaggeration, ["get", "z\(k)"]]] }
+            do {
+                try map.setLayerProperties(for: "lifts-cable", properties: [
+                    "line-elevation-reference": "ground",
+                    "line-z-offset": zOffset,
+                ])
+            } catch {
+                // Older SDK without elevated lines: fall back to lifts drawn on the ground.
+                print("Elevated lift cables unavailable: \(error)")
+                try? map.removeLayer(withId: "lifts-cable")
+                try? map.setLayerProperty(for: "lifts-line", property: "line-opacity", value: 1.0)
+            }
 
             // Lift pylons and stations as 3D blocks standing on the terrain.
             var structures = FillExtrusionLayer(id: "structures-3d", source: "structures")
             structures.slot = .top
             structures.minZoom = 13
-            structures.fillExtrusionHeight = .expression(Exp(.get) { "height" })
+            // Same exaggeration as the cables, so cables sit on the pylon tops.
+            structures.fillExtrusionHeight = .expression(Exp(.multiply) {
+                ResortMapView.terrainExaggeration; Exp(.get) { "height" }
+            })
             structures.fillExtrusionBase = .constant(0)
             structures.fillExtrusionColor = .expression(Exp(.match) {
                 Exp(.get) { "kind" }
