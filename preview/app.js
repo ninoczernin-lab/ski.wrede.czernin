@@ -22,12 +22,18 @@ const DIFF = {
 };
 const legendFor = (country) => country === 'FR'
   ? ['novice', 'easy', 'intermediate', 'advanced'] : ['easy', 'intermediate', 'advanced', 'freeride'];
-const colorExpr = ['match', ['get', 'piste:difficulty'],
-  ...Object.entries(DIFF).filter(([k]) => k !== 'unknown').flatMap(([k, [c]]) => [k, c]), DIFF.unknown[0]];
+// Run colours of the current look (a look can brighten them; the meaning never changes).
+const RUN_BASE = Object.fromEntries(Object.entries(DIFF).map(([k, [c]]) => [k, c]));
+let RUN = RUN_BASE;
+const runColor = () => ['match', ['get', 'piste:difficulty'],
+  ...Object.entries(RUN).filter(([k]) => k !== 'unknown').flat(), RUN.unknown];
 const widthExpr = (stops) => ['interpolate', ['exponential', 1.4], ['zoom'], ...stops.flat()];
 const LINE_W = widthExpr([[10, 1.8], [12, 3], [14, 5], [16, 7.5]]);
 // Casing = line + ~2.6 px: a crisp white gap between parallel runs so colours never bleed together.
 const CASING_W = widthExpr([[10, 3.6], [12, 5.4], [14, 7.8], [16, 10.8]]);
+// Playful look: chunkier, rounder runs with a thicker white outline.
+const LINE_W_CHUNKY = widthExpr([[10, 2.6], [12, 4.2], [14, 6.8], [16, 10]]);
+const CASING_W_CHUNKY = widthExpr([[10, 5.4], [12, 7.6], [14, 11], [16, 15]]);
 const byZoom = (a, b) => ['interpolate', ['linear'], ['zoom'], 11, a, 16, b];
 
 // --- Lifts -----------------------------------------------------------------------------------
@@ -36,13 +42,14 @@ const LIFT_NAMES = {
   drag_lift: 'Drag lift', t_bar: 'T-bar', j_bar: 'J-bar', platter: 'Button lift', rope_tow: 'Rope tow',
   magic_carpet: 'Magic carpet', zip_line: 'Zip line',
 };
-const LIFT = {
+const LIFT_BASE = {
   cable: '#2b313b', shadow: '#3a414c',                 // thin charcoal for every unselected lift
   select: '#38bdf8', selectCore: '#ffffff',             // glow + core of the selected lift
   terminal: '#ffffff',
   mast: '#727d8c', arm: '#3c4552', wall: '#efe9dd', roof: '#8e2f29',
   cabin: '#d42a2f', chair: '#2b323c',
 };
+let LIFT = LIFT_BASE;
 const liftLabelExpr = ['match', ['get', 'aerialway'], ...Object.entries(LIFT_NAMES).flat(), 'Lift'];
 const NO_MATCH = ['boolean', false];               // filter that hides a layer until a lift is selected
 const DIM = 0.4;                                        // opacity of unselected lifts while one is selected
@@ -53,6 +60,33 @@ const nameKey = ['downcase', ['coalesce', ['get', 'name'], '']];
 // Winter: Standard style repainted as a snowy piste map (white land, blue-grey shadows, contours).
 // Satellite: real imagery on the same terrain.
 const LOOKS = {
+  // Playful: bright, saturated, cartoon-like map with a vivid sky, soft periwinkle shading,
+  // chunky runs and white bubble labels.
+  playful: {
+    label: 'Playful', style: 'mapbox://styles/mapbox/standard',
+    config: { theme: 'default', colorLand: '#f5f9ff', colorGreenspace: '#c4ebb2', colorWater: '#3fb8ff',
+      colorRoads: '#ffffff', colorTrunks: '#ffe08a', colorMotorways: '#ffc94d', colorBuildings: '#ffffff',
+      show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
+      showPlaceLabels: false },
+    shade: { 'hillshade-exaggeration': 0.6, 'hillshade-shadow-color': '#7b86e0',
+      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#5b5fc7' },
+    valleyTint: [500, 'rgba(110, 214, 96, 0.5)', 1100, 'rgba(146, 222, 120, 0.36)', 1500, 'rgba(196, 236, 180, 0.18)',
+      1900, 'rgba(236, 246, 255, 0.05)', 2200, 'rgba(255, 255, 255, 0)'],
+    contour: { minor: 'rgba(110, 118, 210, 0.16)', major: 'rgba(110, 118, 210, 0.32)', text: '#5b5fc7', halo: '#ffffff' },
+    labels: { text: '#1f2340', halo: '#ffffff', peak: '#3d47b8' },
+    fog: { range: [0.8, 10], color: '#ffffff', 'high-color': '#4fb3ff', 'horizon-blend': 0.2,
+      'space-color': '#7fcbff', 'star-intensity': 0 },
+    lights: [
+      { id: 'ambient', type: 'ambient', properties: { color: '#eef2ff', intensity: 0.7 } },
+      { id: 'sun', type: 'directional', properties: { direction: [205, 40], color: '#fff1d0', intensity: 0.55,
+        'cast-shadows': true, 'shadow-intensity': 0.45 } },
+    ],
+    runs: { novice: '#1fcf6b', easy: '#2b8bff', intermediate: '#ff3d5f', advanced: '#24263f', expert: '#24263f',
+      freeride: '#ff9a1f', unknown: '#9aa0b8' },
+    lift: { cable: '#24263f', shadow: '#5a5f86', cabin: '#ff4d6d', chair: '#3b3f6b', roof: '#ff8a3d', wall: '#ffffff',
+      mast: '#8c93b8', arm: '#4a4f7a', select: '#ffcf33' },
+    chunky: true, bubbles: true,
+  },
   winter: {
     label: 'Winter map', style: 'mapbox://styles/mapbox/standard',
     // Greenspace close to the snow tone: forest edges stop drawing a hard line; valley-tint adds the green.
@@ -61,9 +95,10 @@ const LOOKS = {
       showPlaceLabels: false },
     shade: { 'hillshade-exaggeration': 0.85, 'hillshade-shadow-color': '#3b5578',
       'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#22324a' },
-    valleyTint: true,
+    valleyTint: [500, 'rgba(104, 138, 96, 0.34)', 1100, 'rgba(124, 152, 114, 0.26)', 1500, 'rgba(166, 184, 160, 0.15)',
+      1900, 'rgba(226, 233, 234, 0.05)', 2200, 'rgba(255, 255, 255, 0)'],
     contour: { minor: 'rgba(70, 92, 124, 0.26)', major: 'rgba(70, 92, 124, 0.55)', text: '#34465f', halo: '#ffffff' },
-    label: { text: '#1d2836', halo: '#ffffff', peak: '#34465f' },
+    labels: { text: '#1d2836', halo: '#ffffff', peak: '#34465f' },
     fog: { range: [0.5, 8], color: '#e6eef6', 'high-color': '#86abd8', 'horizon-blend': 0.12,
       'space-color': '#bcd2ec', 'star-intensity': 0 },
   },
@@ -74,7 +109,7 @@ const LOOKS = {
       'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#16243a' },
     valleyTint: false,                                  // imagery already has real valley colours
     contour: { minor: 'rgba(255, 255, 255, 0.2)', major: 'rgba(255, 255, 255, 0.45)', text: '#ffffff', halo: 'rgba(14, 22, 34, 0.85)' },
-    label: { text: '#ffffff', halo: 'rgba(14, 22, 34, 0.9)', peak: '#ffffff' },
+    labels: { text: '#ffffff', halo: 'rgba(14, 22, 34, 0.9)', peak: '#ffffff' },
     fog: { range: [0.6, 9], color: '#dbe5f0', 'high-color': '#6f9bd2', 'horizon-blend': 0.1,
       'space-color': '#b5cdea', 'star-intensity': 0 },
   },
@@ -103,7 +138,8 @@ const store = {
   del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
 let is3D = true;
-let look = LOOKS[store.get('map-look')] ? store.get('map-look') : 'winter';
+const LOOK_ORDER = ['playful', 'winter', 'satellite'];
+let look = LOOKS[store.get('map-look')] ? store.get('map-look') : 'playful';
 const presets = ['day', 'dusk', 'night', 'dawn'];
 let preset = 0;
 
@@ -159,6 +195,15 @@ let cablesOK = false;
 /** Everything we add on top of Mapbox's style. Runs again after every style switch. */
 function setup() {
   const L = LOOKS[look];
+  RUN = { ...RUN_BASE, ...(L.runs ?? {}) };
+  LIFT = { ...LIFT_BASE, ...(L.lift ?? {}) };
+  addLabelImages();
+  const lw = L.chunky ? LINE_W_CHUNKY : LINE_W, cw = L.chunky ? CASING_W_CHUNKY : CASING_W;
+  // White bubble behind a label (Playful look), or a plain halo (other looks).
+  const bubble = (img) => (L.bubbles
+    ? { 'icon-image': img, 'icon-text-fit': 'both', 'icon-text-fit-padding': [4, 9, 4, 9],
+        'icon-rotation-alignment': 'viewport', 'icon-pitch-alignment': 'viewport' } : {});
+  const bubbleHalo = (width) => (L.bubbles ? { 'text-halo-width': 0 } : { 'text-halo-width': width });
   for (const [k, v] of Object.entries(L.config)) setBasemap(k, v);
   setBasemap('lightPreset', presets[preset]);
 
@@ -173,9 +218,7 @@ function setup() {
     map.addLayer({ id: 'valley-tint', type: 'raster', source: 'dem-rgb', slot: 'bottom', paint: {
       'raster-color-mix': [6553.6, 25.6, 0.1, -10000],          // decode terrain-RGB to metres
       'raster-color-range': [0, 4000],
-      'raster-color': ['interpolate', ['linear'], ['raster-value'],
-        500, 'rgba(104, 138, 96, 0.34)', 1100, 'rgba(124, 152, 114, 0.26)', 1500, 'rgba(166, 184, 160, 0.15)',
-        1900, 'rgba(226, 233, 234, 0.05)', 2200, 'rgba(255, 255, 255, 0)'],
+      'raster-color': ['interpolate', ['linear'], ['raster-value'], ...L.valleyTint],
       'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
   }
   map.addLayer({ id: 'relief', type: 'hillshade', source: 'mapbox-dem-shade', slot: 'bottom',
@@ -205,16 +248,16 @@ function setup() {
     layout: { 'text-field': ['format', '▲ ', { 'font-scale': 0.7 }, ['get', 'name'], {},
         ['case', ['has', 'elevation_m'], ['concat', '\n', ['to-string', ['get', 'elevation_m']], ' m'], ''], { 'font-scale': 0.82 }],
       'text-font': FONT.medium, 'text-size': byZoom(11, 13), 'text-anchor': 'bottom', 'text-padding': 6,
-      'symbol-sort-key': ['-', ['coalesce', ['get', 'elevation_m'], 0]] },
-    paint: { 'text-color': L.label.peak, 'text-halo-color': L.label.halo, 'text-halo-width': 2.2, 'text-halo-blur': 0.2,
-      'text-emissive-strength': 1 } });
+      'symbol-sort-key': ['-', ['coalesce', ['get', 'elevation_m'], 0]], ...bubble('bubble-peak') },
+    paint: { 'text-color': L.labels.peak, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.2), 'text-halo-blur': 0.2,
+      'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
   map.addLayer({ id: 'place-labels', type: 'symbol', source: 'streets', 'source-layer': 'place_label', slot: 'top', minzoom: 9,
     filter: ['match', ['get', 'class'], ['settlement', 'settlement_subdivision'], true, false],
     layout: { 'text-field': ['get', 'name'], 'text-font': FONT.bold, 'text-padding': 6,
       'text-size': ['match', ['get', 'type'], ['city', 'town'], 16, 'village', 14, 12.5],
-      'text-letter-spacing': 0.02, 'symbol-sort-key': ['coalesce', ['get', 'symbolrank'], 99] },
-    paint: { 'text-color': L.label.text, 'text-halo-color': L.label.halo, 'text-halo-width': 2.4, 'text-halo-blur': 0.2,
-      'text-emissive-strength': 1 } });
+      'text-letter-spacing': 0.02, 'symbol-sort-key': ['coalesce', ['get', 'symbolrank'], 99], ...bubble('bubble') },
+    paint: { 'text-color': L.labels.text, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.4), 'text-halo-blur': 0.2,
+      'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
 
   // Data sources (refilled from the cache below).
   for (const id of DATA_LAYERS) {
@@ -224,16 +267,16 @@ function setup() {
 
   // Runs.
   map.addLayer({ id: 'piste-areas-fill', type: 'fill', source: 'piste_areas', slot: 'middle',
-    paint: { 'fill-color': colorExpr, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.06, 15, 0.14] } });
+    paint: { 'fill-color': runColor(), 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.06, 15, 0.14] } });
   map.addLayer({ id: 'pistes-casing', type: 'line', source: 'pistes', slot: 'top', filter: downhill,
     layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
-    paint: { 'line-color': '#ffffff', 'line-opacity': 1, 'line-width': CASING_W, 'line-blur': 0, 'line-emissive-strength': 1 } });
+    paint: { 'line-color': '#ffffff', 'line-opacity': 1, 'line-width': cw, 'line-blur': 0, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-line', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, ['!', unknown]],
     layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
-    paint: { 'line-color': colorExpr, 'line-width': LINE_W, 'line-emissive-strength': 1 } });
+    paint: { 'line-color': runColor(), 'line-width': lw, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-unknown', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, unknown],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': DIFF.unknown[0], 'line-width': LINE_W, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
+    paint: { 'line-color': DIFF.unknown[0], 'line-width': lw, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
 
   // Lifts: thin charcoal on the ground and in the air; the selected lift gets a bright glow
   // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
@@ -271,31 +314,74 @@ function setup() {
       'fill-extrusion-emissive-strength': 0.4, 'fill-extrusion-opacity': 1 } });
 
   // Labels: run number badges, then lift name with its type underneath.
-  map.addLayer({ id: 'pistes-label', type: 'symbol', source: 'pistes', slot: 'top', filter: downhill, minzoom: 12.5,
-    layout: { 'symbol-placement': 'line', 'symbol-spacing': 420, 'text-pitch-alignment': 'viewport', 'text-keep-upright': true,
-      'text-size': byZoom(11, 14), 'text-font': FONT.bold, 'text-max-angle': 30,
+  map.addLayer({ id: 'pistes-label', type: 'symbol', source: 'pistes', slot: 'top', minzoom: 12.5,
+    filter: ['all', downhill, ['has', 'ref']],
+    layout: { 'symbol-placement': 'line', 'symbol-spacing': 420, 'text-keep-upright': true,
+      // Upright pill badge in the run's colour with the run number in white.
+      'icon-image': ['concat', 'badge-', ['coalesce', ['get', 'piste:difficulty'], 'unknown']],
+      'icon-text-fit': 'both', 'icon-text-fit-padding': [2, 6, 2, 6],
+      'icon-rotation-alignment': 'viewport', 'icon-pitch-alignment': 'viewport',
+      'text-rotation-alignment': 'viewport', 'text-pitch-alignment': 'viewport',
+      'text-field': ['get', 'ref'], 'text-size': byZoom(11, 13.5), 'text-font': FONT.bold,
       // Wide collision padding at medium zoom keeps number shields apart; it relaxes when zoomed in.
       'text-padding': ['interpolate', ['linear'], ['zoom'], 12.5, 12, 15, 4],
-      'symbol-sort-key': ['-', ['coalesce', ['get', 'rank'], 0]],
-      'text-field': ['step', ['zoom'], ['coalesce', ['get', 'ref'], ''], 14.5, ['coalesce', ['get', 'name'], ['get', 'ref'], '']] },
-    paint: { 'text-color': '#ffffff', 'text-halo-color': colorExpr, 'text-halo-width': 3, 'text-halo-blur': 0, 'text-emissive-strength': 1 } });
+      'symbol-sort-key': ['-', ['coalesce', ['get', 'rank'], 0]] },
+    paint: { 'text-color': '#ffffff', 'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
+  map.addLayer({ id: 'pistes-name', type: 'symbol', source: 'pistes', slot: 'top', minzoom: 14.5,
+    filter: ['all', downhill, ['has', 'name']],
+    layout: { 'symbol-placement': 'line', 'symbol-spacing': 500, 'text-field': ['get', 'name'], 'text-font': FONT.bold,
+      'text-size': 12.5, 'text-offset': [0, 1.1], 'text-pitch-alignment': 'viewport', 'text-keep-upright': true,
+      'text-padding': 6, 'text-max-angle': 30 },
+    paint: { 'text-color': runColor(), 'text-halo-color': '#ffffff', 'text-halo-width': 2.4, 'text-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-label', type: 'symbol', source: 'lifts', slot: 'top', minzoom: 13,
     filter: ['has', 'name'],
     layout: { 'symbol-placement': 'line-center', 'text-pitch-alignment': 'viewport', 'text-keep-upright': true,
       'text-field': ['format', ['get', 'name'], { 'font-scale': 1 }, '\n', {}, liftLabelExpr, { 'font-scale': 0.78 }],
       'text-size': byZoom(11, 13.5), 'text-font': FONT.medium, 'text-letter-spacing': 0.02, 'text-offset': [0, -1.2],
-      'text-padding': 6 },
-    paint: { 'text-color': LIFT.cable, 'text-halo-color': '#ffffff', 'text-halo-width': 2.2, 'text-emissive-strength': 1 } });
+      'text-padding': 6, ...bubble('bubble'), ...(L.bubbles && { 'text-rotation-alignment': 'viewport' }) },
+    paint: { 'text-color': LIFT.cable, 'text-halo-color': '#ffffff', ...bubbleHalo(2.2), 'text-emissive-strength': 1,
+      'icon-emissive-strength': 1 } });
 
   apply3D(false);
   applySelection();
+}
+
+/**
+ * Rounded pill drawn on a canvas, registered as a stretchable Mapbox image so icon-text-fit can
+ * wrap it around any label: run badges (run colour, white rim) and white label bubbles.
+ */
+function pillImage(fill, rim, rimWidth, shadow) {
+  const pr = 2, r = 12, pad = 4, w = 2 * r + 2 * pad + 4, h = 2 * r + 2 * pad;
+  const c = document.createElement('canvas');
+  c.width = w * pr; c.height = h * pr;
+  const g = c.getContext('2d');
+  g.scale(pr, pr);
+  g.beginPath();
+  g.roundRect(pad, pad, w - 2 * pad, h - 2 * pad, r);
+  if (shadow) { g.shadowColor = 'rgba(30, 34, 80, 0.28)'; g.shadowBlur = 4; g.shadowOffsetY = 1.5; }
+  g.fillStyle = fill; g.fill();
+  g.shadowColor = 'transparent';
+  if (rimWidth) { g.lineWidth = rimWidth; g.strokeStyle = rim; g.stroke(); }
+  const data = g.getImageData(0, 0, c.width, c.height);
+  return [{ width: c.width, height: c.height, data: new Uint8Array(data.data.buffer) }, {
+    pixelRatio: pr,
+    stretchX: [[(pad + r) * pr, (w - pad - r) * pr]],
+    stretchY: [[(h / 2 - 0.5) * pr, (h / 2 + 0.5) * pr]],
+    content: [(pad + r * 0.55) * pr, (pad + 2) * pr, (w - pad - r * 0.55) * pr, (h - pad - 2) * pr],
+  }];
+}
+function addLabelImages() {
+  const put = (id, args) => { if (map.hasImage(id)) map.removeImage(id); map.addImage(id, ...args); };
+  for (const [k, color] of Object.entries(RUN)) put(`badge-${k}`, pillImage(color, '#ffffff', 2.5, true));
+  put('bubble', pillImage('#ffffff', 'rgba(30, 34, 80, 0.08)', 1, true));
+  put('bubble-peak', pillImage('#eef1ff', 'rgba(61, 71, 184, 0.18)', 1, true));
 }
 
 /** Fog fades distant peaks into the horizon; in daylight a low SSW sun adds cool shadows on 3D objects. */
 function applyFog() {
   const day = presets[preset] === 'day';
   try { map.setFog(day ? LOOKS[look].fog : null); } catch (e) { console.warn(e.message); }
-  try { map.setLights(day ? DAY_LIGHTS : null); } catch (e) { console.warn(e.message); }
+  try { map.setLights(day ? (LOOKS[look].lights ?? DAY_LIGHTS) : null); } catch (e) { console.warn(e.message); }
 }
 
 // --- Lift selection -----------------------------------------------------------------------------
@@ -382,7 +468,7 @@ async function showResort(r, fly = true) {
 }
 
 function renderLegend(r) {
-  const runs = legendFor(r.country).map((k) => `<span><i style="background:${DIFF[k][0]}"></i>${DIFF[k][1]}</span>`).join('');
+  const runs = legendFor(r.country).map((k) => `<span><i style="background:${RUN[k]}"></i>${DIFF[k][1]}</span>`).join('');
   $('#legend').innerHTML = `<div>${runs}</div><div class="lifts"><span><i class="cable"></i>Lift</span>`
     + `<span><b style="background:${LIFT.cabin}"></b>Gondola</span><span><b style="background:${LIFT.chair}"></b>Chair</span></div>`;
 }
@@ -482,7 +568,7 @@ $('#light').addEventListener('click', () => {
   status(`Lighting: ${presets[preset]}`, 1200);
 });
 $('#look').addEventListener('click', () => {
-  look = look === 'winter' ? 'satellite' : 'winter';
+  look = LOOK_ORDER[(LOOK_ORDER.indexOf(look) + 1) % LOOK_ORDER.length];
   store.set('map-look', look);
   $('#look').setAttribute('aria-label', `Map style: ${LOOKS[look].label}. Switch style`);
   status(LOOKS[look].label, 1200);
@@ -490,7 +576,7 @@ $('#look').addEventListener('click', () => {
 });
 let markReady;
 const ready = new Promise((r) => { markReady = r; });
-map.on('style.load', () => { setup(); syncDial(); markReady(); });
+map.on('style.load', () => { setup(); renderLegend(current); syncDial(); markReady(); });
 
 // Tap a run, lift, cabin or station → card (mirrors featureCard in ResortBrowserView.swift).
 map.on('click', (e) => {
@@ -507,7 +593,7 @@ map.on('click', (e) => {
     : [p.kind === 'station' ? 'Station' : null, liftType, seats].filter(Boolean).join(' · ');
   $('#card b').textContent = title;
   $('#card small').textContent = detail;
-  $('#card .dot').style.background = d ? d[0] : (p.lift === 'chair_lift' ? LIFT.chair : LIFT.cabin);
+  $('#card .dot').style.background = d ? RUN[p['piste:difficulty']] : (p.lift === 'chair_lift' ? LIFT.chair : LIFT.cabin);
   $('#card').classList.add('show');
   if (liftType && p.name) { selectedLift = p.name; applySelection(); }
 });

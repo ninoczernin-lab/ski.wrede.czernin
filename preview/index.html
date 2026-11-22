@@ -5,14 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Ski Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.9.0/dist/mapbox-gl.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.9.0/dist/mapbox-gl.js"></script>
   <script type="importmap">
     { "imports": { "osmtogeojson": "https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.5/+esm" } }
   </script>
   <style>
-    /* Glass controls floating over a full-screen map; thumb-reachable on the right and bottom. */
+    /* Playful floating UI over a full-screen map: round bubbly buttons, rounded type, bouncy feedback. */
     :root {
+      --pop: #ffd84d; --pop-ink: #1f2340; --font: "Nunito", -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif;
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
       --surface: rgba(255, 255, 255, 0.86); --text: #15202b; --muted: #5a6778;
       --accent: #0066e6; --border: rgba(20, 32, 48, 0.1); --tick: rgba(21, 32, 43, 0.35);
       --needle: #d42a2f; --ground: #e8eef5;
@@ -32,30 +37,31 @@
     }
     * { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--ground); color: var(--text);
-      font: 15px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+      font: 600 15px/1.35 var(--font);
       -webkit-tap-highlight-color: transparent; overflow: hidden; }
     [hidden] { display: none !important; }
     #map { position: fixed; inset: 0; }
     .glass { background: var(--surface); backdrop-filter: blur(18px) saturate(1.6);
       -webkit-backdrop-filter: blur(18px) saturate(1.6); border: 1px solid var(--border);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12); }
+      box-shadow: 0 6px 22px rgba(30, 34, 80, 0.16), 0 1px 3px rgba(30, 34, 80, 0.1); }
+    button { transition: transform 220ms var(--spring); }
+    button:active { transform: scale(0.88); }
     button:focus-visible, select:focus-visible, #orbit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     #search { position: fixed; top: calc(env(safe-area-inset-top) + 8px);
       left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
-      height: 48px; border-radius: 24px; display: flex; align-items: center; gap: 10px; padding: 0 16px; z-index: 3; }
+      height: 52px; border-radius: 26px; display: flex; align-items: center; gap: 10px; padding: 0 18px; z-index: 3; }
     #search select { flex: 1; min-width: 0; appearance: none; border: 0; background: transparent; color: var(--text);
-      font: 600 16px/1 inherit; font-family: inherit; outline: none; }
+      font: 800 17px/1 var(--font); outline: none; }
     #search svg { flex: none; opacity: 0.6; }
 
     #controls { position: fixed; right: max(12px, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%);
-      border-radius: 14px; display: flex; flex-direction: column; overflow: hidden; z-index: 3; }
-    #controls button { width: 48px; height: 48px; border: 0; background: transparent; color: var(--text);
-      font: 700 15px/1 inherit; font-family: inherit; cursor: pointer; display: grid; place-items: center; }
-    #controls button + button { border-top: 1px solid var(--border); }
+      display: flex; flex-direction: column; gap: 10px; z-index: 3; }
+    #controls button { width: 50px; height: 50px; border-radius: 50%; color: var(--text); padding: 0;
+      font: 900 15px/1 var(--font); cursor: pointer; display: grid; place-items: center; }
 
     /* Orbit dial: a compass strip you drag left/right to turn the mountain. */
-    #orbit { position: fixed; z-index: 3; height: 46px; border-radius: 23px; overflow: hidden; touch-action: none;
+    #orbit { position: fixed; z-index: 3; height: 50px; border-radius: 25px; overflow: hidden; touch-action: none;
       left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
       bottom: calc(env(safe-area-inset-bottom) + 34px); cursor: grab; user-select: none; -webkit-user-select: none;
       max-width: 560px; margin-inline: auto; }
@@ -65,40 +71,44 @@
     #orbit-strip span.mid { height: 11px; }
     #orbit-strip span.big { height: 15px; width: 2px; background: var(--text); }
     #orbit-strip em { position: absolute; bottom: 17px; left: 50%; transform: translateX(-50%); font: 700 11px/1 inherit;
-      font-family: inherit; font-style: normal; letter-spacing: 0.06em; color: var(--text); }
+      font-family: var(--font); font-weight: 900; font-style: normal; letter-spacing: 0.06em; color: var(--text); }
     #orbit::before, #orbit::after { content: ""; position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1; pointer-events: none; }
     #orbit::before { left: 0; background: linear-gradient(to right, var(--surface), transparent); }
     #orbit::after { right: 0; background: linear-gradient(to left, var(--surface), transparent); }
     #orbit-needle { position: absolute; left: 50%; top: 4px; bottom: 4px; width: 2px; margin-left: -1px;
       background: var(--needle); border-radius: 1px; z-index: 2; pointer-events: none; }
-    #orbit-play { position: absolute; right: 4px; top: 4px; width: 38px; height: 38px; border-radius: 19px; z-index: 3;
-      border: 0; background: var(--text); color: var(--surface); cursor: pointer; display: grid; place-items: center; }
+    #orbit-play { position: absolute; right: 5px; top: 5px; width: 40px; height: 40px; border-radius: 20px; z-index: 3;
+      border: 0; background: var(--pop); color: var(--pop-ink); cursor: pointer; display: grid; place-items: center;
+      box-shadow: 0 2px 6px rgba(30, 34, 80, 0.25); }
     #orbit-play[aria-pressed="true"] .play, #orbit-play[aria-pressed="false"] .pause { display: none; }
     #orbit-hint { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); z-index: 3; pointer-events: none;
       font-size: 11px; font-weight: 600; color: var(--muted); }
 
     #legend { position: fixed; left: max(12px, env(safe-area-inset-left)); bottom: calc(env(safe-area-inset-bottom) + 90px);
-      border-radius: 14px; padding: 7px 10px; display: grid; gap: 4px; max-width: calc(100% - 24px);
-      font-size: 11px; font-weight: 600; z-index: 2; }
+      border-radius: 18px; padding: 8px 12px; display: grid; gap: 5px; max-width: calc(100% - 24px);
+      font-size: 11.5px; font-weight: 800; z-index: 2; }
     #legend div { display: flex; flex-wrap: wrap; gap: 4px 10px; }
     #legend span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-    #legend i { width: 16px; height: 5px; border-radius: 3px; outline: 1px solid #fff; }
+    #legend i { width: 18px; height: 7px; border-radius: 4px; outline: 2px solid #fff; }
     #legend i.cable { height: 2px; background: #1b222c; outline: 2px solid rgba(255, 255, 255, 0.8); }
     #legend b { width: 8px; height: 8px; border-radius: 2px; }
     #legend .lifts { color: var(--muted); }
 
     #status { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 66px); transform: translateX(-50%);
-      border-radius: 12px; padding: 8px 14px; font-size: 13px; color: var(--muted); z-index: 3;
+      border-radius: 18px; padding: 8px 16px; font-size: 13px; font-weight: 800; color: var(--muted); z-index: 3;
       max-width: calc(100% - 32px); text-align: center; }
     #status:empty { display: none; }
 
     #card { position: fixed; left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
-      bottom: calc(env(safe-area-inset-bottom) + 90px); border-radius: 16px; max-width: 560px; margin-inline: auto;
-      padding: 14px 16px; display: none; align-items: center; gap: 12px; z-index: 4; }
-    #card.show { display: flex; }
+      bottom: calc(env(safe-area-inset-bottom) + 90px); border-radius: 28px; max-width: 560px; margin-inline: auto;
+      padding: 16px 18px; display: none; align-items: center; gap: 14px; z-index: 4; }
+    #card.show { display: flex; animation: pop-in 420ms var(--spring); }
+    @keyframes pop-in { from { opacity: 0; transform: translateY(18px) scale(0.94); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { #card.show { animation: none; } button, button:active { transition: none; transform: none; } }
     #card.show ~ #legend { display: none; }
-    #card .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; outline: 2px solid #fff; }
-    #card b { display: block; font-size: 16px; }
+    #card .dot { width: 22px; height: 22px; border-radius: 50%; flex: none; outline: 3px solid #fff;
+      box-shadow: 0 2px 6px rgba(30, 34, 80, 0.25); }
+    #card b { display: block; font-size: 18px; font-weight: 900; }
     #card small { color: var(--muted); }
     #card button { margin-left: auto; border: 0; background: transparent; font-size: 22px; color: var(--muted); cursor: pointer; }
 
@@ -121,12 +131,12 @@
     <select id="resort" aria-label="Ski resort"></select>
   </label>
 
-  <div id="controls" class="glass">
-    <button id="toggle3d" aria-label="Switch to flat 2D map">2D</button>
-    <button id="look" aria-label="Switch map style" title="Map style">
+  <div id="controls">
+    <button id="toggle3d" class="glass" aria-label="Switch to flat 2D map">2D</button>
+    <button id="look" class="glass" aria-label="Switch map style" title="Map style">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>
     </button>
-    <button id="light" aria-label="Map lighting" title="Lighting">☀︎</button>
+    <button id="light" class="glass" aria-label="Map lighting" title="Lighting">☀︎</button>
   </div>
 
   <div id="card" class="glass" role="dialog">
