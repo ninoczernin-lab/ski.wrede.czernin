@@ -22,14 +22,14 @@ On your Mac, from the repo root:
 npx serve .
 ```
 
-Then open http://localhost:3000/preview/ and paste your Mapbox public token (`pk.…`).
+Then open http://localhost:3000/preview/ and paste your Mapbox public token (`pk.…`) once. To skip that step, put the token in `preview/config.js` in your local copy.
 To test on your iPhone, join the same Wi-Fi and open `http://<your-Mac's-IP>:3000/preview/` in Safari.
 You can find your Mac's IP under System Settings → Wi-Fi → Details.
 
 **Hosted alternative:** in the GitHub repo, go to Settings → Pages and set Source to "Deploy from a branch", `main`, `/ (root)`.
-The preview is then at `https://ninoczernin-lab.github.io/ski.wrede.czernin/preview/`.
+The map is then at `https://ninoczernin-lab.github.io/ski.wrede.czernin/`, which forwards to `preview/`.
 GitHub Pages on a private repo needs a paid GitHub plan.
-If you share that link, restrict your Mapbox token to that URL in your Mapbox account.
+Visitors paste a token once, or you share a link ending in `?token=pk.…`. GitHub's secret scanning blocks committing a Mapbox token to this repo. If you share a token, restrict it to the site's URL in your Mapbox account.
 
 Controls: pick a resort at the top, use **2D/3D** and the lighting button on the right, and tap a run or lift for details.
 On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with two fingers.

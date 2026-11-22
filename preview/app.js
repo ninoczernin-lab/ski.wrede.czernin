@@ -4,6 +4,7 @@ import { overpassQuery } from '../pipeline/query.mjs';
 import { convert } from '../pipeline/convert.mjs';
 import { buildCableSpans, NSTOPS } from '../pipeline/cables.mjs';
 import { elevationAt } from './elevation-browser.js';
+import { MAPBOX_TOKEN } from './config.js';
 
 const EXAGGERATION = 1.5;
 const PITCH_3D = 65;
@@ -38,7 +39,8 @@ let preset = 0;
 const TOKEN_KEY = 'mapbox-token';
 const readToken = () => { try { return localStorage.getItem(TOKEN_KEY); } catch { return null; } };
 const params = new URLSearchParams(location.search);
-let token = params.get('token') ?? readToken();
+// Order: ?token= in the link, then one the viewer pasted earlier, then the built-in token.
+let token = params.get('token') || readToken() || MAPBOX_TOKEN || null;
 if (!token) {
   $('#token').classList.add('show');
   token = await new Promise((resolve) => $('#token form').addEventListener('submit', (e) => {
