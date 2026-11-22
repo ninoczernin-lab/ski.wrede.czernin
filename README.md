@@ -33,9 +33,10 @@ Visitors paste a token once, or you share a link ending in `?token=pk.…`. GitH
 
 Controls:
 - Pick a resort at the top.
-- The buttons on the right switch **2D/3D**, the **map style** (Winter map or Satellite) and the **lighting**.
+- The round buttons on the right switch **2D/3D**, the **map style** (Playful, Winter map or Satellite) and the **lighting**.
 - In 3D, drag the **compass dial** at the bottom left or right to turn the view around the mountain. Sideways scrolling on a trackpad does the same, and ▶ flies around automatically.
-- Tap a run, lift, cabin or station for details.
+- Tap a run, lift, cabin or station for details. Tapping a lift highlights it and dims the others; × on its card clears the highlight.
+
 On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with two fingers.
 
 ## 1. Get the resort data (run on your Mac)
@@ -61,7 +62,24 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 - **Mapbox Standard style**: 3D buildings, trees and landmarks, with dynamic lighting (dawn, day, dusk, night menu).
 - **Real terrain**: Mapbox DEM at 1.5× exaggeration, camera tilted to 65° (up to 85° by hand).
 - **Relief shading**: slope steepness stays readable, even in 2D.
-- **3D lift infrastructure**: OSM lift pylons and stations extruded as blocks standing on the terrain (`structures.geojson`).
+- **3D lifts** (`pipeline/lift3d.mjs`):
+  - Towers are a mast with a crossarm turned across the lift line.
+  - Stations have walls and a roof.
+  - Cabins and chairs hang under the cable: gondola cabins about every 70 m, chairs every 28 m.
+- **Hanging cables** (`pipeline/cables.mjs`): heights come from real ground elevation (AWS Terrain Tiles). The cable sags between towers, capped at half the tower height.
+
+### Map looks (web map)
+
+| Look | What it's like |
+|---|---|
+| **Playful** (default) | Bright and cartoon-like: vivid blue sky, soft periwinkle shading, bright valley greens. Chunky runs with thick white outlines. Run numbers in coloured pill badges; peaks, villages and lifts in white bubbles. |
+| **Winter map** | Crisp alpine look: snowy land, slate-blue shadows on north faces, white sunlit ridges, horizon haze, contour lines. |
+| **Satellite** | Real imagery on the same 3D terrain. |
+
+In every look:
+- A valley tint blends the green valleys into the snow line, except on Satellite.
+- Run-number badges keep extra spacing at medium zoom so they don't overlap.
+- The selected lift glows and the other lifts dim.
 - **2D/3D button** on the right edge. Two fingers tilt, twist to rotate.
 
 ## How runs are drawn
