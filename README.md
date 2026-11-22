@@ -31,7 +31,11 @@ The map is then at `https://ninoczernin-lab.github.io/ski.wrede.czernin/`, which
 GitHub Pages on a private repo needs a paid GitHub plan.
 Visitors paste a token once, or you share a link ending in `?token=pk.…`. GitHub's secret scanning blocks committing a Mapbox token to this repo. If you share a token, restrict it to the site's URL in your Mapbox account.
 
-Controls: pick a resort at the top, use **2D/3D** and the lighting button on the right, and tap a run or lift for details.
+Controls:
+- Pick a resort at the top.
+- The buttons on the right switch **2D/3D**, the **map style** (Winter map or Satellite) and the **lighting**.
+- In 3D, drag the **compass dial** at the bottom left or right to turn the view around the mountain. Sideways scrolling on a trackpad does the same, and ▶ flies around automatically.
+- Tap a run, lift, cabin or station for details.
 On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with two fingers.
 
 ## 1. Get the resort data (run on your Mac)

@@ -1,7 +1,8 @@
 // Turns a raw Overpass JSON response into the slim GeoJSON layers the app bundles.
 import osmtogeojson from 'osmtogeojson';
 import { cleanElements, DIFFICULTIES } from './clean.mjs';
-import { SUPPORT } from './cables.mjs';
+import { structuresFrom } from './lift3d.mjs';
+export { structuresFrom };
 
 const PISTE_KEEP = new Set(['downhill', 'nordic', 'sled', 'skitour', 'snow_park']);
 const LIFT_SKIP = new Set(['pylon', 'station', 'goods']);
@@ -19,33 +20,6 @@ function slim(f) {
   if (!props.ref && tags['piste:ref']) props.ref = tags['piste:ref'];
   if (props['piste:difficulty']) props.rank = DIFFICULTIES.indexOf(props['piste:difficulty']);
   return { type: 'Feature', id: props.osm_id, geometry: f.geometry, properties: props };
-}
-
-// Square footprint (metres) around a point, for 3D extrusion of pylons and stations.
-function square([lon, lat], sizeM) {
-  const dLat = sizeM / 2 / 111320, dLon = dLat / Math.cos((lat * Math.PI) / 180);
-  return { type: 'Polygon', coordinates: [[
-    [lon - dLon, lat - dLat], [lon + dLon, lat - dLat], [lon + dLon, lat + dLat],
-    [lon - dLon, lat + dLat], [lon - dLon, lat - dLat],
-  ]] };
-}
-
-const coordKey = ([lon, lat]) => `${lon.toFixed(7)},${lat.toFixed(7)}`;
-
-/** Pylon height = the cable height its lift type uses, so cables sit exactly on the pylon tops. */
-export function structuresFrom(pylons, stations, lifts = []) {
-  const pylonHeightAt = new Map();
-  for (const l of lifts) {
-    const h = SUPPORT[l.properties.aerialway]?.pylon;
-    if (h && l.geometry.type === 'LineString') for (const c of l.geometry.coordinates) pylonHeightAt.set(coordKey(c), h);
-  }
-  const out = [];
-  for (const f of pylons) out.push({ type: 'Feature', id: `pylon-${f.id}`, geometry: square(f.geometry.coordinates, 3),
-    properties: { kind: 'pylon', height: Number.parseFloat(f.properties.height)
-      || pylonHeightAt.get(coordKey(f.geometry.coordinates)) || 14 } });
-  for (const f of stations) out.push({ type: 'Feature', id: `station-${f.id}`, geometry: square(f.geometry.coordinates, 16),
-    properties: { kind: 'station', name: f.properties.name, height: 9 } });
-  return out;
 }
 
 const fc = (features) => ({ type: 'FeatureCollection', features });

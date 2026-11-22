@@ -32,8 +32,13 @@ function distance([lon1, lat1], [lon2, lat2]) {
 }
 const lerp = ([x1, y1], [x2, y2], t) => [x1 + (x2 - x1) * t, y1 + (y2 - y1) * t];
 
-/** Sag at mid-span in metres: ~2.5% of span, more for long cable-car spans, capped. */
-export const sagFor = (spanM, type) => Math.min(spanM * (type === 'cable_car' ? 0.04 : 0.025), 60);
+/**
+ * Sag at mid-span in metres: ~2.5% of span (4% for cable cars), but never more than half the
+ * lower support's height. Real towers are built tall enough for their spans; without the cap,
+ * long spans over flat ground would drag the cable into the snow.
+ */
+export const sagFor = (spanM, type, supportA = Infinity, supportB = Infinity) =>
+  Math.min(spanM * (type === 'cable_car' ? 0.04 : 0.025), 60, 0.5 * Math.min(supportA, supportB));
 
 /**
  * @param lifts  GeoJSON lift LineStrings (from convert.mjs)
@@ -57,7 +62,7 @@ export async function buildCableSpans(lifts, elevationAt) {
       const a = pts[s], b = pts[s + 1];
       const span = distance(a, b);
       if (span < 1) continue;
-      const sag = sagFor(span, type);
+      const sag = sagFor(span, type, cableAlt[s] - ground[s], cableAlt[s + 1] - ground[s + 1]);
       const cableAt = (t) => cableAlt[s] + (cableAlt[s + 1] - cableAlt[s]) * t - 4 * sag * t * (1 - t);
 
       const nChunks = Math.max(1, Math.ceil(span / CHUNK_M));

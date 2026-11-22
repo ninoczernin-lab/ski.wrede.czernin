@@ -53,9 +53,9 @@ struct ResortMapView: UIViewRepresentable {
         static func liftOpacityJSON(is3D: Bool) -> [Any] {
             ["match", ["get", "aerialway"], groundLifts, 1.0, is3D ? liftShadowOpacity : 1.0]
         }
-        private let sources = ["pistes", "piste_areas", "lifts", "lift_spans", "stations", "structures"]
+        private let sources = ["pistes", "piste_areas", "lifts", "lift_spans", "stations", "structures", "cabins"]
         private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-unknown", "lifts-line", "lifts-cable",
-                              "structures-3d", "pistes-label", "lifts-label"]
+                              "structures-3d", "cabins-3d", "pistes-label", "lifts-label"]
 
         init(_ parent: ResortMapView) { self.parent = parent }
 
@@ -71,7 +71,7 @@ struct ResortMapView: UIViewRepresentable {
                 self.apply3D(self.parent.is3D, animated: false)
             }.store(in: &tokens)
 
-            for layer in ["pistes-line", "pistes-unknown", "lifts-line", "lifts-cable", "structures-3d"] {
+            for layer in ["pistes-line", "pistes-unknown", "lifts-line", "lifts-cable", "structures-3d", "cabins-3d"] {
                 mapView.gestures.onLayerTap(layer) { [weak self] feature, _ in
                     self?.parent.selectedFeature = feature.feature.properties?.mapValues { $0?.rawValue ?? "" }
                     return true
@@ -137,6 +137,7 @@ struct ResortMapView: UIViewRepresentable {
             }
             if map.layerExists(withId: "structures-3d") {
                 try? map.setLayerProperty(for: "structures-3d", property: "visibility", value: on ? "visible" : "none")
+                try? map.setLayerProperty(for: "cabins-3d", property: "visibility", value: on ? "visible" : "none")
             }
             // 3D: cables hang in the air and the line on the ground becomes their faint shadow.
             // 2D: no cables; the ground line is the lift.
@@ -263,23 +264,40 @@ struct ResortMapView: UIViewRepresentable {
                 try? map.setLayerProperty(for: "lifts-line", property: "line-opacity", value: 1.0)
             }
 
-            // Lift pylons and stations as 3D blocks standing on the terrain.
+            // Lift towers (mast + crossarm), stations (walls + roof) and hanging cabins as 3D boxes.
+            // base/height are metres above ground from the pipeline (lift3d.mjs), scaled like the cables.
+            let ex = ResortMapView.terrainExaggeration
+            func scaled(_ prop: String) -> Value<Double> { .expression(Exp(.multiply) { ex; Exp(.get) { prop } }) }
+            func hex(_ v: UInt32) -> UIColor {
+                UIColor(red: CGFloat((v >> 16) & 0xff) / 255, green: CGFloat((v >> 8) & 0xff) / 255, blue: CGFloat(v & 0xff) / 255, alpha: 1)
+            }
             var structures = FillExtrusionLayer(id: "structures-3d", source: "structures")
             structures.slot = .top
-            structures.minZoom = 13
-            // Same exaggeration as the cables, so cables sit on the pylon tops.
-            structures.fillExtrusionHeight = .expression(Exp(.multiply) {
-                ResortMapView.terrainExaggeration; Exp(.get) { "height" }
-            })
-            structures.fillExtrusionBase = .constant(0)
+            structures.minZoom = 12.5
+            structures.fillExtrusionBase = scaled("base")
+            structures.fillExtrusionHeight = scaled("height")
             structures.fillExtrusionColor = .expression(Exp(.match) {
-                Exp(.get) { "kind" }
-                "station"; UIColor(red: 0.85, green: 0.30, blue: 0.20, alpha: 1)
-                UIColor(white: 0.35, alpha: 1)
+                Exp(.get) { "part" }
+                "mast"; hex(0x727d8c)
+                "arm"; hex(0x3c4552)
+                "roof"; hex(0x8e2f29)
+                hex(0xefe9dd)                                  // station walls
             })
-            structures.fillExtrusionOpacity = .constant(0.95)
-            structures.fillExtrusionAmbientOcclusionIntensity = .constant(0.3)
+            structures.fillExtrusionVerticalGradient = .constant(true)
+            structures.fillExtrusionAmbientOcclusionIntensity = .constant(0.35)
             try? map.addLayer(structures)
+
+            var cabins = FillExtrusionLayer(id: "cabins-3d", source: "cabins")
+            cabins.slot = .top
+            cabins.minZoom = 13
+            cabins.fillExtrusionBase = scaled("base")
+            cabins.fillExtrusionHeight = scaled("height")
+            cabins.fillExtrusionColor = .expression(Exp(.match) {
+                Exp(.get) { "lift" }
+                "chair_lift"; hex(0x2b323c)
+                hex(0xd42a2f)                                  // gondola / cable-car cabins
+            })
+            try? map.addLayer(cabins)
 
             // Run number as a coloured badge (white text, halo in the run's colour), name when zoomed in.
             var runLabel = SymbolLayer(id: "pistes-label", source: "pistes")
