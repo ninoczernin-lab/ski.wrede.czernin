@@ -25,8 +25,9 @@ const legendFor = (country) => country === 'FR'
 const colorExpr = ['match', ['get', 'piste:difficulty'],
   ...Object.entries(DIFF).filter(([k]) => k !== 'unknown').flatMap(([k, [c]]) => [k, c]), DIFF.unknown[0]];
 const widthExpr = (stops) => ['interpolate', ['exponential', 1.4], ['zoom'], ...stops.flat()];
-const LINE_W = widthExpr([[10, 2.2], [12, 3.5], [14, 5.5], [16, 8]]);
-const CASING_W = widthExpr([[10, 4], [12, 6], [14, 9], [16, 13]]);
+const LINE_W = widthExpr([[10, 1.8], [12, 3], [14, 5], [16, 7.5]]);
+// Casing = line + ~2.6 px: a crisp white gap between parallel runs so colours never bleed together.
+const CASING_W = widthExpr([[10, 3.6], [12, 5.4], [14, 7.8], [16, 10.8]]);
 const byZoom = (a, b) => ['interpolate', ['linear'], ['zoom'], 11, a, 16, b];
 
 // --- Lifts -----------------------------------------------------------------------------------
@@ -36,11 +37,17 @@ const LIFT_NAMES = {
   magic_carpet: 'Magic carpet', zip_line: 'Zip line',
 };
 const LIFT = {
-  cable: '#1b222c', glow: '#ffffff', shadow: '#26303d',
+  cable: '#2b313b', shadow: '#3a414c',                 // thin charcoal for every unselected lift
+  select: '#38bdf8', selectCore: '#ffffff',             // glow + core of the selected lift
+  terminal: '#ffffff',
   mast: '#727d8c', arm: '#3c4552', wall: '#efe9dd', roof: '#8e2f29',
   cabin: '#d42a2f', chair: '#2b323c',
 };
 const liftLabelExpr = ['match', ['get', 'aerialway'], ...Object.entries(LIFT_NAMES).flat(), 'Lift'];
+const NO_MATCH = ['boolean', false];               // filter that hides a layer until a lift is selected
+const DIM = 0.4;                                        // opacity of unselected lifts while one is selected
+let selectedLift = 'Valfagehrbahn';                     // tap another lift to change, × on the card clears
+const nameKey = ['downcase', ['coalesce', ['get', 'name'], '']];
 
 // --- Map looks ---------------------------------------------------------------------------------
 // Winter: Standard style repainted as a snowy piste map (white land, blue-grey shadows, contours).
@@ -48,24 +55,39 @@ const liftLabelExpr = ['match', ['get', 'aerialway'], ...Object.entries(LIFT_NAM
 const LOOKS = {
   winter: {
     label: 'Winter map', style: 'mapbox://styles/mapbox/standard',
-    config: { theme: 'faded', colorLand: '#f3f6fa', colorGreenspace: '#dde6e2', colorWater: '#9cc3e6',
-      show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false },
-    shade: { 'hillshade-exaggeration': 0.7, 'hillshade-shadow-color': '#4a5d7e',
-      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#2e3c55' },
-    contour: { minor: 'rgba(79, 101, 133, 0.28)', major: 'rgba(79, 101, 133, 0.55)', text: '#4f6585', halo: '#f3f6fa' },
-    fog: { range: [1, 10], color: '#eaf1f8', 'high-color': '#a9c6e8', 'horizon-blend': 0.07,
-      'space-color': '#cfe0f3', 'star-intensity': 0 },
+    // Greenspace close to the snow tone: forest edges stop drawing a hard line; valley-tint adds the green.
+    config: { theme: 'faded', colorLand: '#f4f7fb', colorGreenspace: '#e6ede8', colorWater: '#9cc3e6',
+      show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
+      showPlaceLabels: false },
+    shade: { 'hillshade-exaggeration': 0.85, 'hillshade-shadow-color': '#3b5578',
+      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#22324a' },
+    valleyTint: true,
+    contour: { minor: 'rgba(70, 92, 124, 0.26)', major: 'rgba(70, 92, 124, 0.55)', text: '#34465f', halo: '#ffffff' },
+    label: { text: '#1d2836', halo: '#ffffff', peak: '#34465f' },
+    fog: { range: [0.5, 8], color: '#e6eef6', 'high-color': '#86abd8', 'horizon-blend': 0.12,
+      'space-color': '#bcd2ec', 'star-intensity': 0 },
   },
   satellite: {
     label: 'Satellite', style: 'mapbox://styles/mapbox/standard-satellite',
-    config: { showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false },
-    shade: { 'hillshade-exaggeration': 0.25, 'hillshade-shadow-color': '#1d2433',
-      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#1d2433' },
-    contour: { minor: 'rgba(255, 255, 255, 0.18)', major: 'rgba(255, 255, 255, 0.4)', text: '#ffffff', halo: 'rgba(0, 0, 0, 0.55)' },
-    fog: { range: [1, 12], color: '#dfe8f2', 'high-color': '#7ea6d9', 'horizon-blend': 0.05,
-      'space-color': '#b9d0ec', 'star-intensity': 0 },
+    config: { showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false, showPlaceLabels: false },
+    shade: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#1f3350',
+      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#16243a' },
+    valleyTint: false,                                  // imagery already has real valley colours
+    contour: { minor: 'rgba(255, 255, 255, 0.2)', major: 'rgba(255, 255, 255, 0.45)', text: '#ffffff', halo: 'rgba(14, 22, 34, 0.85)' },
+    label: { text: '#ffffff', halo: 'rgba(14, 22, 34, 0.9)', peak: '#ffffff' },
+    fog: { range: [0.6, 9], color: '#dbe5f0', 'high-color': '#6f9bd2', 'horizon-blend': 0.1,
+      'space-color': '#b5cdea', 'star-intensity': 0 },
   },
 };
+
+// Sun from the south-south-west: north-facing slopes fall into cool shadow, sunny ridges go white.
+const SUN_AZIMUTH = 205;
+const DAY_LIGHTS = [
+  { id: 'ambient', type: 'ambient', properties: { color: '#d3dff0', intensity: 0.5 } },
+  { id: 'sun', type: 'directional', properties: { direction: [SUN_AZIMUTH, 42], color: '#fff6e8', intensity: 0.7,
+    'cast-shadows': true, 'shadow-intensity': 0.75 } },
+];
+const FONT = { medium: ['DIN Pro Medium', 'Arial Unicode MS Regular'], bold: ['DIN Pro Bold', 'Arial Unicode MS Bold'] };
 
 // --- UI state -----------------------------------------------------------------------------------
 const $ = (s) => document.querySelector(s);
@@ -129,7 +151,6 @@ const setLayout = (id, k, v) => { if (map.getLayer(id)) map.setLayoutProperty(id
 const empty = { type: 'FeatureCollection', features: [] };
 const downhill = ['==', ['get', 'piste:type'], 'downhill'];
 const unknown = ['==', ['get', 'piste:difficulty'], 'unknown'];
-const liftOpacity = () => ['match', ['get', 'aerialway'], GROUND_LIFTS, 1, is3D && cablesOK ? SHADOW : 1];
 const zOffset = ['interpolate', ['linear'], ['line-progress'],
   ...Array.from({ length: NSTOPS }, (_, k) => [k / (NSTOPS - 1), ['*', EXAGGERATION, ['get', `z${k}`]]]).flat()];
 const elevated = { 'line-elevation-reference': 'ground', 'line-z-offset': zOffset };
@@ -145,8 +166,20 @@ function setup() {
   map.addSource('mapbox-dem', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
   if (is3D) map.setTerrain({ source: 'mapbox-dem', exaggeration: EXAGGERATION });
   map.addSource('mapbox-dem-shade', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
+  // Valley tint: green below ~1100 m fading through grey-green to nothing by ~2200 m, so valleys
+  // blend into the snow line instead of meeting it at a hard landcover edge.
+  if (L.valleyTint) {
+    map.addSource('dem-rgb', { type: 'raster', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512 });
+    map.addLayer({ id: 'valley-tint', type: 'raster', source: 'dem-rgb', slot: 'bottom', paint: {
+      'raster-color-mix': [6553.6, 25.6, 0.1, -10000],          // decode terrain-RGB to metres
+      'raster-color-range': [0, 4000],
+      'raster-color': ['interpolate', ['linear'], ['raster-value'],
+        500, 'rgba(104, 138, 96, 0.34)', 1100, 'rgba(124, 152, 114, 0.26)', 1500, 'rgba(166, 184, 160, 0.15)',
+        1900, 'rgba(226, 233, 234, 0.05)', 2200, 'rgba(255, 255, 255, 0)'],
+      'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
+  }
   map.addLayer({ id: 'relief', type: 'hillshade', source: 'mapbox-dem-shade', slot: 'bottom',
-    paint: { ...L.shade, 'hillshade-illumination-anchor': 'map', 'hillshade-illumination-direction': 315 } });
+    paint: { ...L.shade, 'hillshade-illumination-anchor': 'map', 'hillshade-illumination-direction': SUN_AZIMUTH } });
   applyFog();
 
   // Elevation contours: thin every 50 m, stronger every 200 m with height labels.
@@ -160,36 +193,67 @@ function setup() {
   map.addLayer({ id: 'contours-label', type: 'symbol', source: 'contours', 'source-layer': 'contour', slot: 'middle', minzoom: 13,
     filter: major,
     layout: { 'symbol-placement': 'line', 'text-field': ['concat', ['to-string', ['get', 'ele']], ' m'],
-      'text-size': 10, 'text-pitch-alignment': 'map', 'text-rotation-alignment': 'map', 'symbol-spacing': 500 },
-    paint: { 'text-color': L.contour.text, 'text-halo-color': L.contour.halo, 'text-halo-width': 1.2 } });
+      'text-size': 10.5, 'text-font': FONT.medium, 'text-pitch-alignment': 'map', 'text-rotation-alignment': 'map',
+      'symbol-spacing': 500, 'text-padding': 4 },
+    paint: { 'text-color': L.contour.text, 'text-halo-color': L.contour.halo, 'text-halo-width': 2, 'text-halo-blur': 0.2 } });
+
+  // Peaks and villages, redrawn from Mapbox Streets with strong halos (the basemap's own place
+  // labels are switched off above, since their halos can't be restyled from outside the style).
+  map.addSource('streets', { type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8' });
+  map.addLayer({ id: 'peak-labels', type: 'symbol', source: 'streets', 'source-layer': 'natural_label', slot: 'top', minzoom: 10.5,
+    filter: ['match', ['get', 'maki'], ['mountain', 'volcano'], true, false],
+    layout: { 'text-field': ['format', '▲ ', { 'font-scale': 0.7 }, ['get', 'name'], {},
+        ['case', ['has', 'elevation_m'], ['concat', '\n', ['to-string', ['get', 'elevation_m']], ' m'], ''], { 'font-scale': 0.82 }],
+      'text-font': FONT.medium, 'text-size': byZoom(11, 13), 'text-anchor': 'bottom', 'text-padding': 6,
+      'symbol-sort-key': ['-', ['coalesce', ['get', 'elevation_m'], 0]] },
+    paint: { 'text-color': L.label.peak, 'text-halo-color': L.label.halo, 'text-halo-width': 2.2, 'text-halo-blur': 0.2,
+      'text-emissive-strength': 1 } });
+  map.addLayer({ id: 'place-labels', type: 'symbol', source: 'streets', 'source-layer': 'place_label', slot: 'top', minzoom: 9,
+    filter: ['match', ['get', 'class'], ['settlement', 'settlement_subdivision'], true, false],
+    layout: { 'text-field': ['get', 'name'], 'text-font': FONT.bold, 'text-padding': 6,
+      'text-size': ['match', ['get', 'type'], ['city', 'town'], 16, 'village', 14, 12.5],
+      'text-letter-spacing': 0.02, 'symbol-sort-key': ['coalesce', ['get', 'symbolrank'], 99] },
+    paint: { 'text-color': L.label.text, 'text-halo-color': L.label.halo, 'text-halo-width': 2.4, 'text-halo-blur': 0.2,
+      'text-emissive-strength': 1 } });
 
   // Data sources (refilled from the cache below).
   for (const id of DATA_LAYERS) {
     map.addSource(id, { type: 'geojson', data: cache.get(current.id)?.[id] ?? empty, ...(id === 'lift_spans' && { lineMetrics: true }) });
   }
+  map.addSource('lift_terminals', { type: 'geojson', data: terminalsFrom(cache.get(current.id)?.lifts) });
 
   // Runs.
   map.addLayer({ id: 'piste-areas-fill', type: 'fill', source: 'piste_areas', slot: 'middle',
     paint: { 'fill-color': colorExpr, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.06, 15, 0.14] } });
   map.addLayer({ id: 'pistes-casing', type: 'line', source: 'pistes', slot: 'top', filter: downhill,
     layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
-    paint: { 'line-color': '#fff', 'line-opacity': 0.95, 'line-width': CASING_W, 'line-emissive-strength': 1 } });
+    paint: { 'line-color': '#ffffff', 'line-opacity': 1, 'line-width': CASING_W, 'line-blur': 0, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-line', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, ['!', unknown]],
     layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
     paint: { 'line-color': colorExpr, 'line-width': LINE_W, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-unknown', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, unknown],
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': DIFF.unknown[0], 'line-width': LINE_W, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
 
-  // Lifts: shadow on the ground, then a white halo and the steel cable in the air.
+  // Lifts: thin charcoal on the ground and in the air; the selected lift gets a bright glow
+  // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
+  map.addLayer({ id: 'lift-selected-glow', type: 'line', source: 'lifts', slot: 'top', filter: NO_MATCH,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': LIFT.select, 'line-width': byZoom(8, 16), 'line-blur': byZoom(3, 6), 'line-opacity': 0.9,
+      'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-line', type: 'line', source: 'lifts', slot: 'top',
-    paint: { 'line-color': LIFT.shadow, 'line-width': byZoom(1.2, 2.8), 'line-dasharray': [2, 1.2],
-      'line-emissive-strength': 1, 'line-opacity': 1 } });
-  map.addLayer({ id: 'lifts-cable-glow', type: 'line', source: 'lift_spans', slot: 'top',
-    layout: { 'line-cap': 'round', ...elevated },
-    paint: { 'line-color': LIFT.glow, 'line-opacity': 0.75, 'line-width': byZoom(3, 6.5), 'line-emissive-strength': 1 } });
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': LIFT.shadow, 'line-dasharray': [2, 1.2], 'line-emissive-strength': 1 } });
+  map.addLayer({ id: 'lifts-cable-glow', type: 'line', source: 'lift_spans', slot: 'top', filter: NO_MATCH,
+    layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
+    paint: { 'line-color': LIFT.select, 'line-width': byZoom(8, 16), 'line-blur': byZoom(3, 6), 'line-opacity': 0.9,
+      'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-cable', type: 'line', source: 'lift_spans', slot: 'top',
-    layout: { 'line-cap': 'round', ...elevated },
-    paint: { 'line-color': LIFT.cable, 'line-width': byZoom(1.3, 2.8), 'line-emissive-strength': 1 } });
+    layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
+    paint: { 'line-emissive-strength': 1 } });
+  map.addLayer({ id: 'lift-terminals', type: 'circle', source: 'lift_terminals', slot: 'top', minzoom: 11.5,
+    paint: { 'circle-radius': byZoom(2, 4.5), 'circle-color': LIFT.terminal, 'circle-stroke-color': LIFT.cable,
+      'circle-stroke-width': byZoom(1.2, 1.8), 'circle-pitch-alignment': 'viewport', 'circle-emissive-strength': 1 } });
   // Mapbox GL skips (doesn't throw on) a layer it can't validate, so check it really exists.
   cablesOK = Boolean(map.getLayer('lifts-cable'));
   if (!cablesOK) console.warn('Elevated lines unavailable in this Mapbox GL version; lifts stay on the ground');
@@ -208,29 +272,67 @@ function setup() {
 
   // Labels: run number badges, then lift name with its type underneath.
   map.addLayer({ id: 'pistes-label', type: 'symbol', source: 'pistes', slot: 'top', filter: downhill, minzoom: 12.5,
-    layout: { 'symbol-placement': 'line', 'symbol-spacing': 350, 'text-pitch-alignment': 'viewport', 'text-keep-upright': true,
-      'text-size': byZoom(11, 14),
+    layout: { 'symbol-placement': 'line', 'symbol-spacing': 420, 'text-pitch-alignment': 'viewport', 'text-keep-upright': true,
+      'text-size': byZoom(11, 14), 'text-font': FONT.bold, 'text-max-angle': 30,
+      // Wide collision padding at medium zoom keeps number shields apart; it relaxes when zoomed in.
+      'text-padding': ['interpolate', ['linear'], ['zoom'], 12.5, 12, 15, 4],
+      'symbol-sort-key': ['-', ['coalesce', ['get', 'rank'], 0]],
       'text-field': ['step', ['zoom'], ['coalesce', ['get', 'ref'], ''], 14.5, ['coalesce', ['get', 'name'], ['get', 'ref'], '']] },
-    paint: { 'text-color': '#fff', 'text-halo-color': colorExpr, 'text-halo-width': 2.5, 'text-emissive-strength': 1 } });
+    paint: { 'text-color': '#ffffff', 'text-halo-color': colorExpr, 'text-halo-width': 3, 'text-halo-blur': 0, 'text-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-label', type: 'symbol', source: 'lifts', slot: 'top', minzoom: 13,
     filter: ['has', 'name'],
     layout: { 'symbol-placement': 'line-center', 'text-pitch-alignment': 'viewport', 'text-keep-upright': true,
       'text-field': ['format', ['get', 'name'], { 'font-scale': 1 }, '\n', {}, liftLabelExpr, { 'font-scale': 0.78 }],
-      'text-size': byZoom(11, 13.5), 'text-letter-spacing': 0.02, 'text-offset': [0, -1.2] },
-    paint: { 'text-color': LIFT.cable, 'text-halo-color': '#ffffff', 'text-halo-width': 2, 'text-emissive-strength': 1 } });
+      'text-size': byZoom(11, 13.5), 'text-font': FONT.medium, 'text-letter-spacing': 0.02, 'text-offset': [0, -1.2],
+      'text-padding': 6 },
+    paint: { 'text-color': LIFT.cable, 'text-halo-color': '#ffffff', 'text-halo-width': 2.2, 'text-emissive-strength': 1 } });
 
   apply3D(false);
+  applySelection();
 }
 
+/** Fog fades distant peaks into the horizon; in daylight a low SSW sun adds cool shadows on 3D objects. */
 function applyFog() {
-  try { map.setFog(presets[preset] === 'day' ? LOOKS[look].fog : null); } catch (e) { console.warn(e.message); }
+  const day = presets[preset] === 'day';
+  try { map.setFog(day ? LOOKS[look].fog : null); } catch (e) { console.warn(e.message); }
+  try { map.setLights(day ? DAY_LIGHTS : null); } catch (e) { console.warn(e.message); }
+}
+
+// --- Lift selection -----------------------------------------------------------------------------
+function terminalsFrom(lifts) {
+  const features = (lifts?.features ?? []).filter((f) => f.geometry.type === 'LineString').flatMap((f) =>
+    [f.geometry.coordinates[0], f.geometry.coordinates.at(-1)].map((c) => ({ type: 'Feature',
+      geometry: { type: 'Point', coordinates: c }, properties: { name: f.properties.name ?? null, aerialway: f.properties.aerialway } })));
+  return { type: 'FeatureCollection', features };
+}
+
+/** Highlight the selected lift and dim the rest; with no selection (or not in this resort) all lifts look equal. */
+function applySelection() {
+  if (!map.getLayer('lifts-cable')) return;
+  const names = new Set((cache.get(current.id)?.lifts.features ?? []).map((f) => (f.properties.name ?? '').toLowerCase()));
+  const active = Boolean(selectedLift) && names.has(selectedLift.toLowerCase());
+  const sel = ['==', nameKey, active ? selectedLift.toLowerCase() : '\u0000'];
+  const pick = (on, off) => (active ? ['case', sel, on, off] : off);
+  const groundBase = ['match', ['get', 'aerialway'], GROUND_LIFTS, 1, is3D && cablesOK ? SHADOW : 1];
+  map.setFilter('lift-selected-glow', active && (!is3D || !cablesOK) ? sel : NO_MATCH);
+  map.setFilter('lifts-cable-glow', active ? sel : NO_MATCH);
+  map.setPaintProperty('lifts-cable', 'line-color', pick(LIFT.selectCore, LIFT.cable));
+  map.setPaintProperty('lifts-cable', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.2, 0.9), 16, pick(4, 2)]);
+  map.setPaintProperty('lifts-cable', 'line-opacity', pick(1, active ? DIM : 1));
+  map.setPaintProperty('lifts-line', 'line-color', pick(LIFT.selectCore, LIFT.shadow));
+  map.setPaintProperty('lifts-line', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.4, 0.9), 16, pick(4.5, 2)]);
+  map.setPaintProperty('lifts-line', 'line-opacity', active ? ['case', sel, is3D && cablesOK ? 0.5 : 1, ['*', DIM, groundBase]] : groundBase);
+  map.setPaintProperty('lift-terminals', 'circle-opacity', pick(1, active ? DIM : 1));
+  map.setPaintProperty('lift-terminals', 'circle-stroke-opacity', pick(1, active ? DIM : 1));
+  map.setPaintProperty('lift-terminals', 'circle-stroke-color', pick(LIFT.select, LIFT.cable));
+  map.setPaintProperty('lifts-label', 'text-opacity', pick(1, active ? 0.55 : 1));
 }
 
 function apply3D(animate) {
   map.setTerrain(is3D ? { source: 'mapbox-dem', exaggeration: EXAGGERATION } : null);
   setBasemap('show3dObjects', is3D);
   for (const id of ['lift-structures', 'lift-cabins', 'lifts-cable', 'lifts-cable-glow']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
-  if (map.getLayer('lifts-line')) map.setPaintProperty('lifts-line', 'line-opacity', liftOpacity());
+  applySelection();
   $('#orbit').hidden = !is3D;
   $('#toggle3d').textContent = is3D ? '2D' : '3D';
   $('#toggle3d').setAttribute('aria-label', is3D ? 'Switch to flat 2D map' : 'Switch to 3D map');
@@ -270,6 +372,8 @@ async function showResort(r, fly = true) {
     const layers = await loadResortData(r);
     if (current !== r) return;                    // the viewer picked another resort meanwhile
     for (const id of DATA_LAYERS) map.getSource(id)?.setData(layers[id] ?? empty);
+    map.getSource('lift_terminals')?.setData(terminalsFrom(layers.lifts));
+    applySelection();
     const runs = layers.pistes.features.filter((f) => f.properties['piste:type'] === 'downhill').length;
     status(`${r.name}: ${runs} runs, ${layers.lifts.features.length} lifts`, 3500);
   } catch (e) {
@@ -405,9 +509,17 @@ map.on('click', (e) => {
   $('#card small').textContent = detail;
   $('#card .dot').style.background = d ? d[0] : (p.lift === 'chair_lift' ? LIFT.chair : LIFT.cabin);
   $('#card').classList.add('show');
+  if (liftType && p.name) { selectedLift = p.name; applySelection(); }
 });
-$('#card button').addEventListener('click', () => $('#card').classList.remove('show'));
+$('#card button').addEventListener('click', () => {
+  $('#card').classList.remove('show');
+  selectedLift = null;
+  applySelection();
+});
 
 await ready;
 showResort(current, false);
-window.__preview = { map, resorts, get cablesOK() { return cablesOK; } };   // handy in the console
+window.__preview = {                                    // handy in the console
+  map, resorts, get cablesOK() { return cablesOK; },
+  selectLift(name) { selectedLift = name; applySelection(); },
+};
