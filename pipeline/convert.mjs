@@ -28,7 +28,7 @@ const isArea = (g) => g.type === 'Polygon' || g.type === 'MultiPolygon';
 
 export function convert(overpassJson) {
   const gj = osmtogeojson(cleanElements(overpassJson), { flatProperties: true });
-  const pistes = [], pisteAreas = [], lifts = [], stations = [], pylons = [], boundary = [];
+  const pistes = [], pisteAreas = [], lifts = [], stations = [], pylons = [], boundary = [], forests = [];
   const seen = new Set();
 
   for (const raw of gj.features) {
@@ -38,6 +38,8 @@ export function convert(overpassJson) {
     if (seen.has(f.id)) continue;
     seen.add(f.id);
 
+    const tags = raw.properties.tags ?? raw.properties;
+    if ((tags.landuse === 'forest' || tags.natural === 'wood') && isArea(g)) { forests.push({ type: 'Feature', geometry: g, properties: {} }); continue; }
     if (p.landuse === 'winter_sports' && isArea(g)) boundary.push(f);
     else if (p['piste:type'] && PISTE_KEEP.has(p['piste:type'])) {
       if (isLine(g)) pistes.push(f);
@@ -50,6 +52,8 @@ export function convert(overpassJson) {
     pistes: fc(pistes), piste_areas: fc(pisteAreas), lifts: fc(lifts),
     stations: fc(stations), boundary: fc(boundary),
     structures: fc(structuresFrom(pylons, stations, lifts)),
+    // Only present when the query asked for forests; used for the pine scatter, never written out.
+    ...(forests.length && { forests: fc(forests) }),
   };
 }
 

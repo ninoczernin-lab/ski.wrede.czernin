@@ -49,9 +49,13 @@ struct Daylight {
         relief = 0.95 - 0.2 * min(1, max(0, altitude) / 45)
     }
 
-    var clock: String {
-        let m = Int((hour * 60).rounded())
-        return String(format: "%02d:%02d", m / 60, m % 60)
+    var clock: String { clock(twelveHour: false) }
+
+    /// "18:05", or "6:05 PM" in 12-hour mode.
+    func clock(twelveHour: Bool) -> String {
+        let m = Int((hour * 60).rounded()), h = (m / 60) % 24, mm = m % 60
+        if !twelveHour { return String(format: "%02d:%02d", h, mm) }
+        return String(format: "%d:%02d %@", h % 12 == 0 ? 12 : h % 12, mm, h < 12 ? "AM" : "PM")
     }
 }
 

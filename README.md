@@ -56,7 +56,12 @@ On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with
 cd pipeline && npm install && npm test && npm run fetch
 ```
 
-This writes `data/<resort-id>/{pistes,piste_areas,lifts,stations,boundary}.geojson` and `data/manifest.json`.
+This writes `data/<resort-id>/{pistes,piste_areas,lifts,stations,boundary,structures,lift_spans,cabins,pines}.geojson` and `data/manifest.json`.
+
+`pines.geojson` holds tree positions for the iPhone app, which works offline:
+- Trees are placed in OpenStreetMap forests (`landuse=forest` / `natural=wood` ways), below the tree line and away from runs and lifts.
+- Forest multipolygon relations are not fetched, so a few large forests may be missing.
+- The web map places its pines live from Mapbox landcover instead.
 Resort areas are bounding boxes in `pipeline/resorts.json`. Expect a few runs or lifts from neighbouring
 areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`.
 

@@ -32,9 +32,17 @@ export const presetFor = (h) => (h < 6.4 ? 'night' : h < 8.2 ? 'dawn' : h < 17.2
 export const dayPart = (h) => (h < 6.4 ? 'Before dawn' : h < 8.2 ? 'Sunrise' : h < 11 ? 'Morning' : h < 14 ? 'Midday'
   : h < 17 ? 'Afternoon' : h < 18.6 ? 'Golden hour' : h < 20.2 ? 'Blue hour' : 'Night');
 
-export const formatHour = (h) => {
-  const m = Math.round(h * 60);
-  return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+/** 24-hour "18:05", or 12-hour "6:05 PM" when `twelve` is true. */
+export const formatHour = (h, twelve = false) => {
+  const m = Math.round(h * 60), hh = Math.floor(m / 60) % 24, mm = String(m % 60).padStart(2, '0');
+  if (!twelve) return `${String(hh).padStart(2, '0')}:${mm}`;
+  return `${hh % 12 || 12}:${mm} ${hh < 12 ? 'AM' : 'PM'}`;
+};
+
+/** Whether this device's locale uses a 12-hour clock. */
+export const deviceUses12h = () => {
+  try { return ['h11', 'h12'].includes(new Intl.DateTimeFormat(undefined, { hour: 'numeric' }).resolvedOptions().hourCycle); }
+  catch { return false; }
 };
 
 /**
@@ -53,7 +61,8 @@ export function lightAt(hour, { south = false } = {}) {
   const azimuthNorth = 90 + (h - 6) * 15;                 // 6:00 east, 12:00 south, 18:00 west
   const azimuth = ((south ? 180 - azimuthNorth : azimuthNorth) + 360) % 360;
   const altitude = n(6);
-  const sunUp = altitude > 0;
+  // 0 when the sun is 1° below the horizon, 1 once it's 6° up: shadows and ridge light fade, never snap.
+  const sunFade = Math.min(1, Math.max(0, (altitude + 1) / 7));
   const horizon = c(1), zenith = c(2);
   const dark = luminance(horizon) < 0.22;
 
@@ -69,8 +78,8 @@ export function lightAt(hour, { south = false } = {}) {
       { id: 'sun', type: 'directional', properties: {
         // [azimuth, polar angle from straight up]; keep the light just above the horizon when the sun is down
         direction: [azimuth, Math.min(88, 90 - Math.max(altitude, 2))],
-        color: c(4), intensity: sunUp ? n(5) : Math.max(0, n(5)),
-        'cast-shadows': sunUp, 'shadow-intensity': sunUp ? 0.75 : 0 } },
+        color: c(4), intensity: Math.max(0, n(5)),
+        'cast-shadows': true, 'shadow-intensity': 0.75 * sunFade } },
     ],
     shade: {
       'hillshade-shadow-color': c(9), 'hillshade-highlight-color': c(10), 'hillshade-accent-color': c(11),
@@ -78,6 +87,7 @@ export function lightAt(hour, { south = false } = {}) {
     },
     // Low sun rakes across ridges: stronger relief at sunrise and golden hour.
     relief: lerp(0.95, 0.75, Math.min(1, Math.max(0, altitude) / 45)),
+    ridge: lerp(0.15, 0.55, sunFade),
     hud: { skyTop: zenith, skyBottom: horizon, dark },
   };
 }

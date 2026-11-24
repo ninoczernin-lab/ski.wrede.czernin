@@ -6,7 +6,7 @@ import { convert } from '../pipeline/convert.mjs';
 import { buildCableSpans, NSTOPS } from '../pipeline/cables.mjs';
 import { buildCabins, liftTracks, carsAt } from '../pipeline/lift3d.mjs';
 import { elevationAt } from './elevation-browser.js';
-import { lightAt, formatHour, HOUR_MIN, HOUR_MAX } from './daylight.js';
+import { lightAt, formatHour, deviceUses12h, HOUR_MIN, HOUR_MAX } from './daylight.js';
 import { pineShapes, scatterPines, avoidGrid } from './pines.js';
 import { createSnow } from './snow.js';
 import { MAPBOX_TOKEN } from './config.js';
@@ -472,22 +472,26 @@ let lastPreset = null;
 function applyLight() {
   light = lightAt(hour, { south: current.camera.lat < 0 });
   const L = LOOKS[look];
-  if (light.preset !== lastPreset) { setBasemap('lightPreset', light.preset); lastPreset = light.preset; }
+  // Standard's own preset is a heavy relight with its own transition: switch it only when the slider
+  // is let go, so dragging through 17:00–20:00 stays smooth (sky, sun and shading still move live).
+  if (!scrubbing && light.preset !== lastPreset) { setBasemap('lightPreset', light.preset); lastPreset = light.preset; }
   try { map.setFog(light.fog); } catch (e) { console.warn(e.message); }
   try { map.setLights(light.lights); } catch (e) { console.warn(e.message); }
   if (map.getLayer('relief')) {
     for (const [k, v] of Object.entries(light.shade)) map.setPaintProperty('relief', k, v);
     map.setPaintProperty('relief', 'hillshade-exaggeration', light.relief * L.relief);
     map.setPaintProperty('ridge-light', 'hillshade-illumination-direction', light.azimuth);
-    map.setPaintProperty('ridge-light', 'hillshade-exaggeration', Math.max(0, light.altitude) > 0 ? 0.55 * L.relief : 0.15);
+    map.setPaintProperty('ridge-light', 'hillshade-exaggeration', light.ridge * L.relief);
   }
   const root = document.documentElement.style;
   root.setProperty('--sky-top', light.hud.skyTop);
   root.setProperty('--sky-bottom', light.hud.skyBottom);
   document.documentElement.dataset.sky = light.hud.dark ? 'dark' : 'light';
-  $('#hour-label').textContent = `${formatHour(hour)} · ${light.part}`;
-  $('#hour').value = String(hour);
-  $('#hour').setAttribute('aria-valuetext', `${formatHour(hour)}, ${light.part}`);
+  $('#hour-label').textContent = `${formatHour(hour, twelveHour)} · ${light.part}`;
+  // Never write the slider while a finger is on it: overwriting a range input mid-drag makes the thumb
+  // jump back to an older value, which is what made dusk feel twitchy.
+  if (!scrubbing) $('#hour').value = String(hour);
+  $('#hour').setAttribute('aria-valuetext', `${formatHour(hour, twelveHour)}, ${light.part}`);
   placeSun();
 }
 
@@ -617,7 +621,7 @@ map.on('wheel', () => { flight++; });
 
 function renderTitle(r) {
   $('#resort-name').textContent = r.name;
-  $('#resort-meta').textContent = `${COUNTRY[r.country] ?? r.country} · ${TIER[r.tier ?? 3].label}`;
+  $('#resort-meta').textContent = COUNTRY[r.country] ?? r.country;
   $('#resort-counts').textContent = 'Loading runs and lifts…';
   document.title = `${r.name} · Ski Map`;
 }
@@ -663,7 +667,7 @@ function renderResults() {
   list.innerHTML = (input.value.trim() ? '' : '<li class="hint" role="presentation">Biggest resorts · type to search all</li>')
     + (hits.length ? hits.map((r, i) => `<li role="option" id="opt-${i}" data-i="${i}" aria-selected="${i === active}">
         <i style="background:${TIER[r.tier ?? 3].color}"></i>
-        <span><b>${r.name}</b><small>${COUNTRY[r.country] ?? r.country} · ${TIER[r.tier ?? 3].label}</small></span></li>`).join('')
+        <span><b>${r.name}</b><small>${COUNTRY[r.country] ?? r.country}</small></span></li>`).join('')
       : '<li class="hint" role="presentation">No resort found. Try a village or country.</li>');
   list.hidden = false;
   $('#search').setAttribute('aria-expanded', 'true');
@@ -813,6 +817,19 @@ map.on('mousemove', (e) => {
 $('#toggle3d').addEventListener('click', () => { is3D = !is3D; if (!is3D) stopMotion(); apply3D(true); syncDial(); });
 $('#hour').min = String(HOUR_MIN); $('#hour').max = String(HOUR_MAX);
 let hourFrame = 0;
+// Clock: follows the device's 12/24-hour setting; tapping the time switches it and is remembered.
+let twelveHour = store.get('clock') ? store.get('clock') === '12' : deviceUses12h();
+let scrubbing = false;
+$('#hour-label').addEventListener('click', () => {
+  twelveHour = !twelveHour;
+  store.set('clock', twelveHour ? '12' : '24');
+  $('#hour-label').setAttribute('aria-label', `Time shown in ${twelveHour ? '12' : '24'}-hour format. Switch`);
+  applyLight();
+});
+$('#hour').addEventListener('pointerdown', () => { scrubbing = true; });
+// Let go (or a keyboard step finishes): now apply Standard's preset for the final hour.
+$('#hour').addEventListener('change', () => { scrubbing = false; applyLight(); });
+addEventListener('pointerup', () => { if (scrubbing) { scrubbing = false; applyLight(); } });
 $('#hour').addEventListener('input', (e) => {
   hour = Number(e.target.value);
   cancelAnimationFrame(hourFrame);

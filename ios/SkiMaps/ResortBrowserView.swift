@@ -13,12 +13,20 @@ struct ResortBrowserView: View {
     @State private var selected: [String: Any]?
     @State private var is3D = true
     @State private var hour = 15.5
+    @State private var scrubbing = false
+    /// Clock: follows the device's 12/24-hour setting until the time is tapped, then remembers the choice.
+    @AppStorage("clockTwelveHour") private var clockChoice: Int = -1   // -1 device, 0 24-hour, 1 12-hour
 
     private var daylight: Daylight { Daylight(hour: hour, southern: (resort?.camera.lat ?? 47) < 0) }
+    private var twelveHour: Bool {
+        if clockChoice >= 0 { return clockChoice == 1 }
+        // The device's own setting: its preferred hour pattern contains "a" when it uses AM/PM.
+        return (DateFormatter.dateFormat(fromTemplate: "j", options: 0, locale: .current) ?? "").contains("a")
+    }
 
     var body: some View {
         ZStack(alignment: .top) {
-            ResortMapView(resort: resort, is3D: is3D, hour: hour, selectedFeature: $selected)
+            ResortMapView(resort: resort, is3D: is3D, hour: hour, isScrubbing: scrubbing, selectedFeature: $selected)
                 .ignoresSafeArea()
 
             // Sky wash behind the title, in the hour's own zenith colour, so the type stays legible.
@@ -76,21 +84,11 @@ struct ResortBrowserView: View {
             Text(r.name)
                 .font(.largeTitle.weight(.light))
                 .lineLimit(2).minimumScaleFactor(0.7)
-            Text([Locale.current.localizedString(forRegionCode: r.country) ?? r.country, tierLabel(r.tier)]
-                .compactMap { $0 }.joined(separator: " · "))
+            Text(Locale.current.localizedString(forRegionCode: r.country) ?? r.country)
                 .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
             legend(r).padding(.top, 6)
         }
         .accessibilityElement(children: .combine)
-    }
-
-    private func tierLabel(_ tier: Int?) -> String? {
-        switch tier {
-        case 1: "Over 2 M skier visits"
-        case 2: "1–2 M skier visits"
-        case 3: "0.5–1 M skier visits"
-        default: nil
-        }
     }
 
     /// Run colours in this region's words, from the same palette as the map (PisteStyle.swift).
@@ -138,15 +136,25 @@ struct ResortBrowserView: View {
                 .font(.title3)
                 .frame(width: 28)
                 .contentTransition(.symbolEffect(.replace))
-            Slider(value: $hour, in: Daylight.range)
+            // Holding the slider keeps the light smooth; Standard's preset switch waits for release.
+            Slider(value: $hour, in: Daylight.range) { editing in scrubbing = editing }
                 .tint(Color(daylight.horizon.mixed(with: .orange, 0.35)))
                 .accessibilityLabel("Time of day")
-                .accessibilityValue("\(daylight.clock), \(daylight.part)")
-            VStack(alignment: .trailing, spacing: 0) {
-                Text(daylight.clock).font(.subheadline.weight(.semibold)).monospacedDigit()
-                Text(daylight.part).font(.caption2).foregroundStyle(.secondary)
+                .accessibilityValue("\(daylight.clock(twelveHour: twelveHour)), \(daylight.part)")
+            // Tap the time to switch between 12-hour and 24-hour; it follows the device until you do.
+            Button { clockChoice = twelveHour ? 0 : 1 } label: {
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text(daylight.clock(twelveHour: twelveHour)).font(.subheadline.weight(.semibold)).monospacedDigit()
+                    Text(daylight.part).font(.caption2).foregroundStyle(.secondary)
+                }
+                // Fixed width: if the text ("Golden hour" vs "Night") resized the slider, the hour would jump under the finger.
+                .frame(width: 104, alignment: .trailing)
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
-            .frame(minWidth: 76, alignment: .trailing)
+            .buttonStyle(.plain)
+            .accessibilityLabel("Time format")
+            .accessibilityHint("Switches between 12-hour and 24-hour time")
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
@@ -162,8 +170,7 @@ struct ResortBrowserView: View {
                     Button { select(r); showPicker = false } label: {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(r.name).font(.headline)
-                            Text([Locale.current.localizedString(forRegionCode: r.country) ?? r.country, tierLabel(r.tier)]
-                                .compactMap { $0 }.joined(separator: " · "))
+                            Text(Locale.current.localizedString(forRegionCode: r.country) ?? r.country)
                                 .font(.caption).foregroundStyle(.secondary).lineLimit(1)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
