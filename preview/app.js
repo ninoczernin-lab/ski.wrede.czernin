@@ -351,9 +351,9 @@ function setup() {
   // From afar a cabin is smaller than a pixel: draw it as a travelling dot that hands over to the 3D cabin up close.
   map.addSource('cabin-dots', { type: 'geojson', data: empty });
   map.addLayer({ id: 'lift-cabin-dots', type: 'circle', source: 'cabin-dots', slot: 'top', minzoom: 10.5, maxzoom: 14,
-    // Charcoal with a white edge: the lift's own colour, never a run colour.
-    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, 1.6, 13, 2.4],
-      'circle-color': LIFT.cable, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1,
+    // Dark beads sitting inside the cable (no ring): the solid charcoal thread stays the dominant mark.
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, 1.9, 13, 2.6],
+      'circle-color': '#0b0f14', 'circle-stroke-width': 0,
       'circle-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 1, 13.6, 0],
       'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 1, 13.6, 0],
       'circle-pitch-alignment': 'viewport', 'circle-emissive-strength': 1 } });
@@ -876,13 +876,17 @@ function carsLoop(now) {
 /** Same cabins twice: 3D boxes, and their centres as dots for the far view. */
 function setCabins(fc) {
   map.getSource('cabins')?.setData(fc);
-  // Thin the far-view dots so they read as a few travelling cabins, not a beaded line.
-  const z = map.getZoom(), every = z < 12 ? 6 : z < 12.8 ? 3 : 1;
-  map.getSource('cabin-dots')?.setData({ type: 'FeatureCollection', features: fc.features.filter((_, i) => i % every === 0).map((f) => {
+  // Far-view dots: kept at least 14 px apart on screen so they read as a few travelling cabins on the
+  // thread, never as a dotted line (which would look like an unclassified run).
+  const kept = [];
+  for (const f of fc.features) {
     const ring = f.geometry.coordinates[0].slice(0, 4);
-    return { type: 'Feature', geometry: { type: 'Point', coordinates: [ring.reduce((a, p) => a + p[0], 0) / 4, ring.reduce((a, p) => a + p[1], 0) / 4] },
-      properties: { lift: f.properties.lift } };
-  }) });
+    const c = [ring.reduce((a, p) => a + p[0], 0) / 4, ring.reduce((a, p) => a + p[1], 0) / 4];
+    const px = map.project(c);
+    if (kept.some((k) => Math.hypot(k.px.x - px.x, k.px.y - px.y) < 14)) continue;
+    kept.push({ px, f: { type: 'Feature', geometry: { type: 'Point', coordinates: c }, properties: { lift: f.properties.lift } } });
+  }
+  map.getSource('cabin-dots')?.setData({ type: 'FeatureCollection', features: kept.map((k) => k.f) });
 }
 /** Miniature level of detail: cabins drawn larger when zoomed out so the lifts read as lifts on arrival. */
 const cabinScale = () => { const z = map.getZoom(); return z >= 14 ? 1 : z >= 13 ? 1.6 : z >= 12 ? 2.3 : 3; };
