@@ -8,6 +8,7 @@ import SwiftUI
 struct ResortMapView: UIViewRepresentable {
     let resort: Resort?
     var is3D: Bool = true
+    var satellite = false                     // Diorama (Standard) or Standard Satellite imagery
     var hour: Double = 15.5                   // time of day; drives sun, sky and shading (Daylight.swift)
     var isScrubbing = false                   // while the hour slider is held, skip Standard's heavy preset switch
     @Binding var selectedFeature: [String: Any]?
@@ -18,7 +19,7 @@ struct ResortMapView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
     func makeUIView(context: Context) -> MapView {
-        let opts = MapInitOptions(styleURI: OfflineResortStore.styleURI)
+        let opts = MapInitOptions(styleURI: satellite ? .standardSatellite : OfflineResortStore.styleURI)
         let mapView = MapView(frame: .zero, mapInitOptions: opts)
         mapView.ornaments.options.scaleBar.visibility = .hidden
         mapView.ornaments.options.compass.visibility = .visible
@@ -38,6 +39,7 @@ struct ResortMapView: UIViewRepresentable {
         c.parent = self
         c.show(resort)
         if old.is3D != is3D { c.apply3D(is3D, animated: true) }
+        if old.satellite != satellite { c.switchStyle(satellite: satellite) }
         if old.hour != hour || old.isScrubbing != isScrubbing { c.applyLight() }
     }
 
@@ -99,8 +101,24 @@ struct ResortMapView: UIViewRepresentable {
 
         // MARK: Standard style config (3D buildings, trees, lighting)
 
+        /// Satellite imagery or the snow diorama. The style reload re-adds terrain, runs and lifts via onStyleLoaded.
+        /// Offline tile regions hold the diorama style only, so satellite needs a connection.
+        func switchStyle(satellite: Bool) {
+            guard let mapView else { return }
+            styleLoaded = false
+            lastPreset = nil
+            mapView.mapboxMap.styleURI = satellite ? .standardSatellite : OfflineResortStore.styleURI
+        }
+
         private func configureStandard() {
             guard let map = mapView?.mapboxMap else { return }
+            if parent.satellite {
+                for key in ["showPointOfInterestLabels", "showTransitLabels", "showRoadLabels"] {
+                    try? map.setStyleImportConfigProperty(for: "basemap", config: key, value: false)
+                }
+                applyLight()
+                return
+            }
             // Snow diorama: faded theme, snow-toned land, greenspace close to the snow so forests draw no hard edge.
             let config: [String: Any] = [
                 "theme": "faded", "colorLand": "#f4f7fb", "colorGreenspace": "#e3ebe6", "colorWater": "#79aed6",

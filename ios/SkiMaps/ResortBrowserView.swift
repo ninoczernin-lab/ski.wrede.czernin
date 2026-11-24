@@ -14,6 +14,7 @@ struct ResortBrowserView: View {
     @State private var is3D = true
     @State private var hour = 15.5
     @State private var scrubbing = false
+    @AppStorage("mapSatellite") private var satellite = false
     /// Clock: follows the device's 12/24-hour setting until the time is tapped, then remembers the choice.
     @AppStorage("clockTwelveHour") private var clockChoice: Int = -1   // -1 device, 0 24-hour, 1 12-hour
 
@@ -26,7 +27,8 @@ struct ResortBrowserView: View {
 
     var body: some View {
         ZStack(alignment: .top) {
-            ResortMapView(resort: resort, is3D: is3D, hour: hour, isScrubbing: scrubbing, selectedFeature: $selected)
+            ResortMapView(resort: resort, is3D: is3D, satellite: satellite, hour: hour, isScrubbing: scrubbing,
+                          selectedFeature: $selected)
                 .ignoresSafeArea()
 
             // Sky wash behind the title, in the hour's own zenith colour, so the type stays legible.
@@ -53,7 +55,14 @@ struct ResortBrowserView: View {
         }
         // After dusk the materials and type switch to their dark appearance.
         .environment(\.colorScheme, daylight.isDark ? .dark : .light)
-        .sheet(isPresented: $showPicker) { picker.presentationDetents([.medium, .large]) }
+        .sheet(isPresented: $showPicker) {
+            picker
+                .presentationDetents([.medium, .large])
+                // Swiping the list scrolls it, instead of first resizing the sheet.
+                .presentationContentInteraction(.scrolls)
+                .presentationBackground(.thinMaterial)
+                .presentationCornerRadius(28)
+        }
         .onReceive(locator.$coordinate.compactMap { $0 }) { c in
             if resort == nil { select(ResortCatalog.nearest(to: c) ?? ResortCatalog.all.first) }
         }
@@ -108,24 +117,47 @@ struct ResortBrowserView: View {
 
     // MARK: Controls
 
+    /// The resort selector: a glass pill that opens the resort list.
     private var searchButton: some View {
         Button { showPicker = true } label: {
-            Image(systemName: "magnifyingglass").font(.body.weight(.semibold))
-                .frame(width: 48, height: 48)
-                .background(.regularMaterial, in: Circle())
+            HStack(spacing: 7) {
+                Image(systemName: "magnifyingglass")
+                Text("Resorts")
+            }
+            .font(.subheadline.weight(.semibold))
+            .glassLabel()
+            .padding(.horizontal, 16)
+            .frame(minHeight: 44)
+            .glass(in: Capsule())
+            .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(GlassPressStyle())
         .accessibilityLabel("Search ski resorts")
     }
 
+    /// Map view rail, like Apple Maps' floating controls: 2D/3D and Diorama/Satellite on one glass capsule.
     private var viewControls: some View {
-        Button { withAnimation(.snappy) { is3D.toggle() } } label: {
-            Text(is3D ? "2D" : "3D").font(.subheadline.weight(.semibold)).frame(width: 48, height: 48)
-                .background(.regularMaterial, in: Circle())
+        VStack(spacing: 0) {
+            Button { withAnimation(.snappy) { is3D.toggle() } } label: {
+                Text(is3D ? "2D" : "3D").font(.subheadline.weight(.semibold))
+                    .glassLabel()
+                    .frame(width: 48, height: 48).contentShape(Rectangle())
+            }
+            .buttonStyle(GlassPressStyle())
+            .accessibilityLabel(is3D ? "Switch to flat 2D map" : "Switch to 3D map")
+            Rectangle().fill(.primary.opacity(0.12)).frame(width: 26, height: 0.5)
+            Button { satellite.toggle() } label: {
+                Image(systemName: satellite ? "mountain.2.fill" : "globe.europe.africa.fill")
+                    .font(.body.weight(.semibold))
+                    .glassLabel()
+                    .contentTransition(.symbolEffect(.replace))
+                    .frame(width: 48, height: 48).contentShape(Rectangle())
+            }
+            .buttonStyle(GlassPressStyle())
+            .accessibilityLabel(satellite ? "Switch to the diorama map" : "Switch to satellite imagery")
         }
-        .buttonStyle(.plain)
+        .glass(in: Capsule())
         .padding(.trailing, 16)
-        .accessibilityLabel(is3D ? "Switch to flat 2D map" : "Switch to 3D map")
     }
 
     /// The hour: drag to relight sun, sky and shadows across the mountain.
@@ -144,7 +176,7 @@ struct ResortBrowserView: View {
             // Tap the time to switch between 12-hour and 24-hour; it follows the device until you do.
             Button { clockChoice = twelveHour ? 0 : 1 } label: {
                 VStack(alignment: .trailing, spacing: 0) {
-                    Text(daylight.clock(twelveHour: twelveHour)).font(.subheadline.weight(.semibold)).monospacedDigit()
+                    Text(daylight.clock(twelveHour: twelveHour)).font(.subheadline.weight(.semibold)).monospacedDigit().glassLabel()
                     Text(daylight.part).font(.caption2).foregroundStyle(.secondary)
                 }
                 // Fixed width: if the text ("Golden hour" vs "Night") resized the slider, the hour would jump under the finger.
@@ -152,12 +184,12 @@ struct ResortBrowserView: View {
                 .frame(minHeight: 44)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(GlassPressStyle())
             .accessibilityLabel("Time format")
             .accessibilityHint("Switches between 12-hour and 24-hour time")
         }
         .padding(.horizontal, 16).padding(.vertical, 10)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .glass(in: RoundedRectangle(cornerRadius: 24, style: .continuous), interactive: false)
     }
 
     // MARK: Search
@@ -219,18 +251,19 @@ struct ResortBrowserView: View {
                 Image(systemName: "cablecar.fill").font(.body).foregroundStyle(.primary).frame(width: 20)
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(name).font(.headline).lineLimit(1)
+                Text(name).font(.headline).lineLimit(1).glassLabel()
                 Text(detail).font(.subheadline).foregroundStyle(.secondary)
             }
             Spacer()
             Button { selected = nil } label: {
-                Image(systemName: "xmark").font(.body.weight(.semibold)).frame(width: 44, height: 44)
+                Image(systemName: "xmark").font(.body.weight(.semibold)).glassLabel()
+                    .frame(width: 44, height: 44).contentShape(Circle())
             }
-            .buttonStyle(.plain)
+            .buttonStyle(GlassPressStyle())
             .accessibilityLabel("Close details")
         }
         .padding(.leading, 18).padding(.vertical, 6).padding(.trailing, 6)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .glass(in: RoundedRectangle(cornerRadius: 24, style: .continuous), interactive: false)
     }
 }
 
