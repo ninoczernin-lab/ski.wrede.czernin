@@ -38,3 +38,19 @@ for (const c of cabins) assert.ok(c.properties.base >= 0.5 && c.properties.heigh
 const maxClear = Math.max(...spans.features.flatMap((f) => Array.from({ length: 9 }, (_, k) => f.properties[`z${k}`])));
 assert.ok(cabins.every((c) => c.properties.height < maxClear), 'cabins below the cable');
 console.log('lift3d.test: all assertions passed');
+
+// Moving cabins: positions advance with time, stay on the track, use both cables, cull by view.
+{
+  const { liftTracks, carsAt } = await import('./lift3d.mjs');
+  const tracks = liftTracks(spans);
+  assert.equal(tracks.length, 1);
+  assert.ok(Math.abs(tracks[0].total - 1004) < 15, `track length ${tracks[0].total}`);
+  const a = carsAt(tracks, 0).features, b = carsAt(tracks, 3).features;
+  assert.ok(a.length >= 20, `both directions populated (${a.length})`);
+  const c0 = (f) => f.geometry.coordinates[0][0][0];
+  assert.notEqual(c0(a[0]), c0(b[0]), 'cabins move over time');
+  for (const f of a) assert.ok(f.properties.base >= 0.5 && f.properties.height > f.properties.base);
+  assert.equal(carsAt(tracks, 0, [20, 20, 21, 21]).features.length, 0, 'culled outside the view');
+  assert.ok(carsAt(tracks, 0, null, 5).features.length === 5, 'limit respected');
+  console.log('lift3d.test: moving cabins passed');
+}

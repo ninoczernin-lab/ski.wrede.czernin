@@ -1,14 +1,18 @@
-// Web version of the ski map. Same data code as pipeline/ and the same run colours as the iOS
-// app (PisteStyle.swift). Mapbox GL JS v3 with Standard / Standard Satellite.
+// Web version of the ski map: each resort as a living miniature mountain at a chosen hour.
+// Same data code as pipeline/ and the same run colours as the iOS app (PisteStyle.swift).
+// Mapbox GL JS v3 with Standard / Standard Satellite.
 import { overpassQuery } from '../pipeline/query.mjs';
 import { convert } from '../pipeline/convert.mjs';
 import { buildCableSpans, NSTOPS } from '../pipeline/cables.mjs';
-import { buildCabins } from '../pipeline/lift3d.mjs';
+import { buildCabins, liftTracks, carsAt } from '../pipeline/lift3d.mjs';
 import { elevationAt } from './elevation-browser.js';
+import { lightAt, formatHour, HOUR_MIN, HOUR_MAX } from './daylight.js';
+import { pineShapes, scatterPines, avoidGrid } from './pines.js';
+import { createSnow } from './snow.js';
 import { MAPBOX_TOKEN } from './config.js';
 
 const EXAGGERATION = 1.5;
-const PITCH_3D = 65;
+const PITCH_3D = 62;                                    // tilted-diorama angle
 const SHADOW = 0.22;
 const GROUND_LIFTS = ['rope_tow', 'magic_carpet', 'zip_line'];
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
@@ -57,9 +61,8 @@ const widthExpr = (stops) => ['interpolate', ['exponential', 1.4], ['zoom'], ...
 const LINE_W = widthExpr([[10, 1.8], [12, 3], [14, 5], [16, 7.5]]);
 // Casing = line + ~2.6 px: a crisp white gap between parallel runs so colours never bleed together.
 const CASING_W = widthExpr([[10, 3.6], [12, 5.4], [14, 7.8], [16, 10.8]]);
-// Playful look: chunkier, rounder runs with a thicker white outline.
-const LINE_W_CHUNKY = widthExpr([[10, 2.6], [12, 4.2], [14, 6.8], [16, 10]]);
-const CASING_W_CHUNKY = widthExpr([[10, 5.4], [12, 7.6], [14, 11], [16, 15]]);
+// Snow sheen: a thin light line down the middle of every run, like groomed corduroy catching the sun.
+const SHEEN_W = widthExpr([[12, 0.4], [14, 1.2], [16, 2]]);
 const byZoom = (a, b) => ['interpolate', ['linear'], ['zoom'], 11, a, 16, b];
 
 // --- Lifts -----------------------------------------------------------------------------------
@@ -69,11 +72,11 @@ const LIFT_NAMES = {
   magic_carpet: 'Magic carpet', zip_line: 'Zip line',
 };
 const LIFT_BASE = {
-  cable: '#2b313b', shadow: '#3a414c',                 // thin charcoal for every unselected lift
-  select: '#38bdf8', selectCore: '#ffffff',             // glow + core of the selected lift
+  cable: '#232a33', shadow: '#4a5361',                 // thin charcoal threads for every unselected lift
+  select: '#ffc65a', selectCore: '#ffffff',             // sun-gold glow + white core of the selected lift
   terminal: '#ffffff',
-  mast: '#727d8c', arm: '#3c4552', wall: '#efe9dd', roof: '#8e2f29',
-  cabin: '#d42a2f', chair: '#2b323c',
+  mast: '#6f7a88', arm: '#353d49', wall: '#f1ece2', roof: '#b0362e',
+  cabin: '#d8352f', chair: '#2a313b',
 };
 let LIFT = LIFT_BASE;
 const liftLabelExpr = ['match', ['get', 'aerialway'], ...Object.entries(LIFT_NAMES).flat(), 'Lift'];
@@ -83,71 +86,34 @@ let selectedLift = 'Valfagehrbahn';                     // tap another lift to c
 const nameKey = ['downcase', ['coalesce', ['get', 'name'], '']];
 
 // --- Map looks ---------------------------------------------------------------------------------
-// Winter: Standard style repainted as a snowy piste map (white land, blue-grey shadows, contours).
-// Satellite: real imagery on the same terrain.
+// Diorama: Standard repainted as a crisp snow model; light, sky and shading come from the hour.
+// Satellite: real imagery on the same terrain, under the same hour.
 const LOOKS = {
-  // Playful: bright, saturated, cartoon-like map with a vivid sky, soft periwinkle shading,
-  // chunky runs and white bubble labels.
-  playful: {
-    label: 'Playful', style: 'mapbox://styles/mapbox/standard',
-    config: { theme: 'default', colorLand: '#f5f9ff', colorGreenspace: '#c4ebb2', colorWater: '#3fb8ff',
-      colorRoads: '#ffffff', colorTrunks: '#ffe08a', colorMotorways: '#ffc94d', colorBuildings: '#ffffff',
+  diorama: {
+    label: 'Diorama', style: 'mapbox://styles/mapbox/standard',
+    // Greenspace close to the snow so forest polygons draw no hard edge; valley-tint and pines add the green.
+    config: { theme: 'faded', colorLand: '#f4f7fb', colorGreenspace: '#e3ebe6', colorWater: '#79aed6',
       show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
       showPlaceLabels: false },
-    shade: { 'hillshade-exaggeration': 0.6, 'hillshade-shadow-color': '#7b86e0',
-      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#5b5fc7' },
-    valleyTint: [500, 'rgba(110, 214, 96, 0.5)', 1100, 'rgba(146, 222, 120, 0.36)', 1500, 'rgba(196, 236, 180, 0.18)',
-      1900, 'rgba(236, 246, 255, 0.05)', 2200, 'rgba(255, 255, 255, 0)'],
-    contour: { minor: 'rgba(110, 118, 210, 0.16)', major: 'rgba(110, 118, 210, 0.32)', text: '#5b5fc7', halo: '#ffffff' },
-    labels: { text: '#1f2340', halo: '#ffffff', peak: '#3d47b8' },
-    fog: { range: [0.8, 10], color: '#ffffff', 'high-color': '#4fb3ff', 'horizon-blend': 0.2,
-      'space-color': '#7fcbff', 'star-intensity': 0 },
-    lights: [
-      { id: 'ambient', type: 'ambient', properties: { color: '#eef2ff', intensity: 0.7 } },
-      { id: 'sun', type: 'directional', properties: { direction: [205, 40], color: '#fff1d0', intensity: 0.55,
-        'cast-shadows': true, 'shadow-intensity': 0.45 } },
-    ],
-    runs: { novice: '#1fcf6b', easy: '#2b8bff', intermediate: '#ff3d5f', advanced: '#24263f', expert: '#24263f',
-      freeride: '#ff9a1f', unknown: '#9aa0b8' },
-    lift: { cable: '#24263f', shadow: '#5a5f86', cabin: '#ff4d6d', chair: '#3b3f6b', roof: '#ff8a3d', wall: '#ffffff',
-      mast: '#8c93b8', arm: '#4a4f7a', select: '#ffcf33' },
-    chunky: true, bubbles: true,
-  },
-  winter: {
-    label: 'Winter map', style: 'mapbox://styles/mapbox/standard',
-    // Greenspace close to the snow tone: forest edges stop drawing a hard line; valley-tint adds the green.
-    config: { theme: 'faded', colorLand: '#f4f7fb', colorGreenspace: '#e6ede8', colorWater: '#9cc3e6',
-      show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
-      showPlaceLabels: false },
-    shade: { 'hillshade-exaggeration': 0.85, 'hillshade-shadow-color': '#3b5578',
-      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#22324a' },
-    valleyTint: [500, 'rgba(104, 138, 96, 0.34)', 1100, 'rgba(124, 152, 114, 0.26)', 1500, 'rgba(166, 184, 160, 0.15)',
-      1900, 'rgba(226, 233, 234, 0.05)', 2200, 'rgba(255, 255, 255, 0)'],
-    contour: { minor: 'rgba(70, 92, 124, 0.26)', major: 'rgba(70, 92, 124, 0.55)', text: '#34465f', halo: '#ffffff' },
-    labels: { text: '#1d2836', halo: '#ffffff', peak: '#34465f' },
-    fog: { range: [0.5, 8], color: '#e6eef6', 'high-color': '#86abd8', 'horizon-blend': 0.12,
-      'space-color': '#bcd2ec', 'star-intensity': 0 },
+    relief: 1,
+    valleyTint: [500, 'rgba(40, 84, 64, 0.42)', 1000, 'rgba(52, 96, 74, 0.34)', 1400, 'rgba(86, 122, 102, 0.2)',
+      1800, 'rgba(196, 214, 208, 0.07)', 2100, 'rgba(255, 255, 255, 0)'],
+    contour: { minor: 'rgba(64, 86, 120, 0.22)', major: 'rgba(64, 86, 120, 0.48)', text: '#33445c', halo: '#ffffff' },
+    labels: { text: '#16202c', halo: '#ffffff', peak: '#2c3b52' },
+    runs: { novice: '#14a85a', easy: '#1f6fe5', intermediate: '#e2203a', advanced: '#141820', expert: '#141820',
+      freeride: '#f08a12', unknown: '#8a93a6' },
+    pines: true,
   },
   satellite: {
     label: 'Satellite', style: 'mapbox://styles/mapbox/standard-satellite',
     config: { showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false, showPlaceLabels: false },
-    shade: { 'hillshade-exaggeration': 0.35, 'hillshade-shadow-color': '#1f3350',
-      'hillshade-highlight-color': '#ffffff', 'hillshade-accent-color': '#16243a' },
+    relief: 0.4,
     valleyTint: false,                                  // imagery already has real valley colours
     contour: { minor: 'rgba(255, 255, 255, 0.2)', major: 'rgba(255, 255, 255, 0.45)', text: '#ffffff', halo: 'rgba(14, 22, 34, 0.85)' },
     labels: { text: '#ffffff', halo: 'rgba(14, 22, 34, 0.9)', peak: '#ffffff' },
-    fog: { range: [0.6, 9], color: '#dbe5f0', 'high-color': '#6f9bd2', 'horizon-blend': 0.1,
-      'space-color': '#b5cdea', 'star-intensity': 0 },
+    pines: false,
   },
 };
-
-// Sun from the south-south-west: north-facing slopes fall into cool shadow, sunny ridges go white.
-const SUN_AZIMUTH = 205;
-const DAY_LIGHTS = [
-  { id: 'ambient', type: 'ambient', properties: { color: '#d3dff0', intensity: 0.5 } },
-  { id: 'sun', type: 'directional', properties: { direction: [SUN_AZIMUTH, 42], color: '#fff6e8', intensity: 0.7,
-    'cast-shadows': true, 'shadow-intensity': 0.75 } },
-];
 const FONT = { medium: ['DIN Pro Medium', 'Arial Unicode MS Regular'], bold: ['DIN Pro Bold', 'Arial Unicode MS Bold'] };
 
 // --- UI state -----------------------------------------------------------------------------------
@@ -164,10 +130,11 @@ const store = {
   del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
 let is3D = true;
-const LOOK_ORDER = ['playful', 'winter', 'satellite'];
-let look = LOOKS[store.get('map-look')] ? store.get('map-look') : 'playful';
-const presets = ['day', 'dusk', 'night', 'dawn'];
-let preset = 0;
+const LOOK_ORDER = ['diorama', 'satellite'];
+let look = LOOKS[store.get('map-look')] ? store.get('map-look') : 'diorama';
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Effects quality: 2 full, 1 lighter (no snow, fewer pines, slower cabins), 0 static. Drops when frames slip.
+let quality = reduceMotion ? 1 : 2;
 
 const TOKEN_KEY = 'mapbox-token';
 const params = new URLSearchParams(location.search);
@@ -187,16 +154,21 @@ if (!token) {
 
 const resorts = await (await fetch('../pipeline/resorts.json')).json();
 let current = resorts.find((r) => r.id === params.get('resort')) ?? resorts[0];
-$('#resort-q').value = current.name;
-$('#resort-q').placeholder = `Search ${resorts.length} ski resorts`;
+$('#resort-q').placeholder = `Search ${resorts.length} resorts, villages, countries`;
+
+// The hour: starts at the resort's own local time when it's daylight there, otherwise mid-afternoon.
+const localHour = (r) => ((new Date().getUTCHours() + new Date().getUTCMinutes() / 60 + r.camera.lon / 15) % 24 + 24) % 24;
+let hour = (() => { const h = localHour(current); return h >= 7.5 && h <= 19 ? h : 15.5; })();
+let light = lightAt(hour, { south: current.camera.lat < 0 });
 
 // --- Map ------------------------------------------------------------------------------------------
 mapboxgl.accessToken = token;
 const map = new mapboxgl.Map({
   container: 'map', style: LOOKS[look].style,
-  center: [current.camera.lon, current.camera.lat], zoom: current.camera.zoom,
-  bearing: current.camera.bearing, pitch: PITCH_3D, maxPitch: 85, hash: false,
-  config: { basemap: { lightPreset: 'day', ...LOOKS[look].config } },
+  // Opens high above the resort; the fly-in brings the camera down once the scene is ready.
+  center: [current.camera.lon, current.camera.lat], zoom: Math.max(7, current.camera.zoom - 3.2),
+  bearing: current.camera.bearing - 60, pitch: 30, maxPitch: 85, hash: false, attributionControl: true,
+  config: { basemap: { lightPreset: light.preset, ...LOOKS[look].config } },
 });
 map.on('error', (e) => {
   const msg = e.error?.message ?? String(e.error);
@@ -217,6 +189,8 @@ const zOffset = ['interpolate', ['linear'], ['line-progress'],
   ...Array.from({ length: NSTOPS }, (_, k) => [k / (NSTOPS - 1), ['*', EXAGGERATION, ['get', `z${k}`]]]).flat()];
 const elevated = { 'line-elevation-reference': 'ground', 'line-z-offset': zOffset };
 let cablesOK = false;
+let pinesOK = false;
+const PINE = { trunk: '#4a3a30', low: '#244c3d', mid: '#2f5f4b', snow: '#eef4f8' };
 
 /** Everything we add on top of Mapbox's style. Runs again after every style switch. */
 function setup() {
@@ -224,14 +198,12 @@ function setup() {
   RUN = computeRun(L, current.country);
   LIFT = { ...LIFT_BASE, ...(L.lift ?? {}) };
   addLabelImages();
-  const lw = L.chunky ? LINE_W_CHUNKY : LINE_W, cw = L.chunky ? CASING_W_CHUNKY : CASING_W;
-  // White bubble behind a label (Playful look), or a plain halo (other looks).
-  const bubble = (img) => (L.bubbles
-    ? { 'icon-image': img, 'icon-text-fit': 'both', 'icon-text-fit-padding': [4, 9, 4, 9],
-        'icon-rotation-alignment': 'viewport', 'icon-pitch-alignment': 'viewport' } : {});
-  const bubbleHalo = (width) => (L.bubbles ? { 'text-halo-width': 0 } : { 'text-halo-width': width });
+  const lw = LINE_W, cw = CASING_W;
+  const bubble = () => ({});
+  const bubbleHalo = (width) => ({ 'text-halo-width': width });
   for (const [k, v] of Object.entries(L.config)) setBasemap(k, v);
-  setBasemap('lightPreset', presets[preset]);
+  setBasemap('lightPreset', light.preset);
+  lastPreset = light.preset;
 
   // Terrain + relief shading (own DEM source: sharing one halves the shading resolution).
   map.addSource('mapbox-dem', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
@@ -248,8 +220,13 @@ function setup() {
       'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
   }
   map.addLayer({ id: 'relief', type: 'hillshade', source: 'mapbox-dem-shade', slot: 'bottom',
-    paint: { ...L.shade, 'hillshade-illumination-anchor': 'map', 'hillshade-illumination-direction': SUN_AZIMUTH } });
-  applyFog();
+    paint: { 'hillshade-illumination-anchor': 'map' } });
+  // Ridge light: a second, highlight-only pass from the sun's side so crests catch a crisp white edge.
+  map.addLayer({ id: 'ridge-light', type: 'hillshade', source: 'mapbox-dem-shade', slot: 'bottom',
+    paint: { 'hillshade-illumination-anchor': 'map', 'hillshade-shadow-color': 'rgba(0, 0, 0, 0)',
+      'hillshade-accent-color': 'rgba(0, 0, 0, 0)', 'hillshade-highlight-color': 'rgba(255, 255, 255, 0.9)',
+      'hillshade-exaggeration': 0.55 } });
+  applyLight();
 
   // Elevation contours: thin every 50 m, stronger every 200 m with height labels.
   map.addSource('contours', { type: 'vector', url: 'mapbox://mapbox.mapbox-terrain-v2' });
@@ -269,11 +246,15 @@ function setup() {
   // Peaks and villages, redrawn from Mapbox Streets with strong halos (the basemap's own place
   // labels are switched off above, since their halos can't be restyled from outside the style).
   map.addSource('streets', { type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8' });
+  // Forest areas feed the pine scatter; drawn invisibly so their tiles stay queryable.
+  map.addLayer({ id: 'forest-mask', type: 'fill', source: 'streets', 'source-layer': 'landcover', slot: 'bottom',
+    filter: ['==', ['get', 'class'], 'wood'], paint: { 'fill-opacity': 0 } });
   map.addLayer({ id: 'peak-labels', type: 'symbol', source: 'streets', 'source-layer': 'natural_label', slot: 'top', minzoom: 10.5,
     filter: ['match', ['get', 'maki'], ['mountain', 'volcano'], true, false],
-    layout: { 'text-field': ['format', '▲ ', { 'font-scale': 0.7 }, ['get', 'name'], {},
+    layout: { 'text-field': ['format', ['get', 'name'], {},
         ['case', ['has', 'elevation_m'], ['concat', '\n', ['to-string', ['get', 'elevation_m']], ' m'], ''], { 'font-scale': 0.82 }],
-      'text-font': FONT.medium, 'text-size': byZoom(11, 13), 'text-anchor': 'bottom', 'text-padding': 6,
+      'icon-image': 'peak', 'icon-anchor': 'bottom', 'text-anchor': 'bottom', 'text-offset': [0, -0.9],
+      'text-font': FONT.medium, 'text-size': byZoom(11, 13), 'text-padding': 6,
       'symbol-sort-key': ['-', ['coalesce', ['get', 'elevation_m'], 0]], ...bubble('bubble-peak') },
     paint: { 'text-color': L.labels.peak, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.2), 'text-halo-blur': 0.2,
       'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
@@ -320,6 +301,10 @@ function setup() {
   map.addLayer({ id: 'pistes-line', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, ['!', unknown]],
     layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
     paint: { 'line-color': runColor(), 'line-width': lw, 'line-emissive-strength': 1 } });
+  map.addLayer({ id: 'pistes-sheen', type: 'line', source: 'pistes', slot: 'top', minzoom: 12, filter: downhill,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#ffffff', 'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 13.5, 0.38],
+      'line-width': SHEEN_W, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-unknown', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, unknown],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': DIFF.unknown[0], 'line-width': lw, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
@@ -359,6 +344,20 @@ function setup() {
       'fill-extrusion-color': ['match', ['get', 'lift'], 'chair_lift', LIFT.chair, LIFT.cabin],
       'fill-extrusion-emissive-strength': 0.4, 'fill-extrusion-opacity': 1 } });
 
+  // Stylized pines in real forest areas: stacked octagonal tiers with a snow cap.
+  pinesOK = false;
+  if (L.pines) {
+    map.addSource('pines', { type: 'geojson', data: empty });
+    const exP = (prop) => ['*', EXAGGERATION, ['get', prop]];
+    map.addLayer({ id: 'pines', type: 'fill-extrusion', source: 'pines', slot: 'middle', minzoom: 12.8,
+      paint: { 'fill-extrusion-base': exP('base'), 'fill-extrusion-height': exP('height'),
+        'fill-extrusion-color': ['match', ['get', 'part'], 'trunk', PINE.trunk, 'low', PINE.low, 'mid', PINE.mid, PINE.snow],
+        'fill-extrusion-vertical-gradient': true, 'fill-extrusion-ambient-occlusion-intensity': 0.45,
+        'fill-extrusion-ambient-occlusion-radius': 6,
+        'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 0, 13.4, 1] } });
+    pinesOK = Boolean(map.getLayer('pines'));
+  }
+
   // Labels: run number badges, then lift name with its type underneath.
   map.addLayer({ id: 'pistes-label', type: 'symbol', source: 'pistes', slot: 'top', minzoom: 12.5,
     filter: ['all', downhill, ['has', 'ref']],
@@ -390,6 +389,7 @@ function setup() {
 
   apply3D(false);
   applySelection();
+  schedulePines();
 }
 
 /**
@@ -430,15 +430,56 @@ function applyRunColors() {
 function addLabelImages() {
   const put = (id, args) => { if (map.hasImage(id)) map.removeImage(id); map.addImage(id, ...args); };
   for (const [k, color] of Object.entries(RUN)) put(`badge-${k}`, pillImage(color, '#ffffff', 2.5, true));
-  put('bubble', pillImage('#ffffff', 'rgba(30, 34, 80, 0.08)', 1, true));
-  put('bubble-peak', pillImage('#eef1ff', 'rgba(61, 71, 184, 0.18)', 1, true));
+  put('peak', peakImage());
 }
 
-/** Fog fades distant peaks into the horizon; in daylight a low SSW sun adds cool shadows on 3D objects. */
-function applyFog() {
-  const day = presets[preset] === 'day';
-  try { map.setFog(day ? LOOKS[look].fog : null); } catch (e) { console.warn(e.message); }
-  try { map.setLights(day ? (LOOKS[look].lights ?? DAY_LIGHTS) : null); } catch (e) { console.warn(e.message); }
+/** Small drawn summit mark for peak labels: a filled triangle with a snow cap. */
+function peakImage() {
+  const pr = 2, w = 14, h = 11, c = document.createElement('canvas');
+  c.width = w * pr; c.height = h * pr;
+  const g = c.getContext('2d');
+  g.scale(pr, pr);
+  g.beginPath(); g.moveTo(1, h - 1); g.lineTo(w / 2, 1); g.lineTo(w - 1, h - 1); g.closePath();
+  g.fillStyle = LOOKS[look].labels.peak; g.fill();
+  g.beginPath(); g.moveTo(w / 2 - 2.6, 5.2); g.lineTo(w / 2, 1.6); g.lineTo(w / 2 + 2.6, 5.2); g.lineTo(w / 2, 4.2); g.closePath();
+  g.fillStyle = '#ffffff'; g.fill();
+  g.lineWidth = 1; g.strokeStyle = 'rgba(255,255,255,0.85)';
+  g.beginPath(); g.moveTo(1, h - 1); g.lineTo(w / 2, 1); g.lineTo(w - 1, h - 1); g.closePath(); g.stroke();
+  const d = g.getImageData(0, 0, c.width, c.height);
+  return [{ width: c.width, height: c.height, data: new Uint8Array(d.data.buffer) }, { pixelRatio: pr }];
+}
+
+let lastPreset = null;
+/** Apply the current hour: sky gradient fog, 3D lights, relief shading, Standard's preset and the HUD tint. */
+function applyLight() {
+  light = lightAt(hour, { south: current.camera.lat < 0 });
+  const L = LOOKS[look];
+  if (light.preset !== lastPreset) { setBasemap('lightPreset', light.preset); lastPreset = light.preset; }
+  try { map.setFog(light.fog); } catch (e) { console.warn(e.message); }
+  try { map.setLights(light.lights); } catch (e) { console.warn(e.message); }
+  if (map.getLayer('relief')) {
+    for (const [k, v] of Object.entries(light.shade)) map.setPaintProperty('relief', k, v);
+    map.setPaintProperty('relief', 'hillshade-exaggeration', light.relief * L.relief);
+    map.setPaintProperty('ridge-light', 'hillshade-illumination-direction', light.azimuth);
+    map.setPaintProperty('ridge-light', 'hillshade-exaggeration', Math.max(0, light.altitude) > 0 ? 0.55 * L.relief : 0.15);
+  }
+  const root = document.documentElement.style;
+  root.setProperty('--sky-top', light.hud.skyTop);
+  root.setProperty('--sky-bottom', light.hud.skyBottom);
+  document.documentElement.dataset.sky = light.hud.dark ? 'dark' : 'light';
+  $('#hour-label').textContent = `${formatHour(hour)} · ${light.part}`;
+  $('#hour').value = String(hour);
+  $('#hour').setAttribute('aria-valuetext', `${formatHour(hour)}, ${light.part}`);
+  placeSun();
+}
+
+/** The sun glyph rides an arc over the hour track: low at the ends of the day, high at noon. */
+function placeSun() {
+  const t = (hour - HOUR_MIN) / (HOUR_MAX - HOUR_MIN);
+  const up = Math.max(-0.25, light.altitude / 46);
+  $('#sun').style.setProperty('--x', `${(t * 100).toFixed(2)}%`);
+  $('#sun').style.setProperty('--y', `${(-up * 22).toFixed(1)}px`);
+  $('#sun').dataset.below = light.altitude <= 0 ? 'true' : 'false';
 }
 
 // --- Lift selection -----------------------------------------------------------------------------
@@ -474,12 +515,13 @@ function applySelection() {
 function apply3D(animate) {
   map.setTerrain(is3D ? { source: 'mapbox-dem', exaggeration: EXAGGERATION } : null);
   setBasemap('show3dObjects', is3D);
-  for (const id of ['lift-structures', 'lift-cabins', 'lifts-cable', 'lifts-cable-glow']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
+  for (const id of ['lift-structures', 'lift-cabins', 'lifts-cable', 'lifts-cable-glow', 'pines']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
   applySelection();
   $('#orbit').hidden = !is3D;
   $('#toggle3d').textContent = is3D ? '2D' : '3D';
   $('#toggle3d').setAttribute('aria-label', is3D ? 'Switch to flat 2D map' : 'Switch to 3D map');
-  if (animate) map.easeTo({ pitch: is3D ? PITCH_3D : 0, duration: 800 });
+  if (animate) map.easeTo({ pitch: is3D ? PITCH_3D : 0, duration: reduceMotion ? 0 : 800 });
+  updateEffects();
 }
 
 // --- Data: bundled pipeline output if present, otherwise live from OSM -------------------------
@@ -505,32 +547,60 @@ async function loadResortData(r) {
   return layers;
 }
 
-async function showResort(r, fly = true) {
+async function showResort(r) {
   current = r;
-  $('#resort-q').value = r.name;
   applyRunColors();
+  renderTitle(r);
   renderLegend(r);
+  applyLight();                                   // hemisphere can change the sun's path
   $('#card').classList.remove('show');
-  if (fly) map.flyTo({ center: [r.camera.lon, r.camera.lat], zoom: r.camera.zoom, bearing: r.camera.bearing,
-    pitch: is3D ? PITCH_3D : 0, duration: 2500, essential: true });
+  tracks = [];
+  pines.clear();
+  flyIn(r);
   try {
     const layers = await loadResortData(r);
     if (current !== r) return;                    // the viewer picked another resort meanwhile
     for (const id of DATA_LAYERS) map.getSource(id)?.setData(layers[id] ?? empty);
     map.getSource('lift_terminals')?.setData(terminalsFrom(layers.lifts));
+    tracks = liftTracks(layers.lift_spans);
     applySelection();
     const runs = layers.pistes.features.filter((f) => f.properties['piste:type'] === 'downhill').length;
-    status(`${r.name}: ${runs} runs, ${layers.lifts.features.length} lifts`, 3500);
+    $('#resort-counts').textContent = `${runs} runs · ${layers.lifts.features.length} lifts`;
+    status();
+    schedulePines();
+    updateEffects();
   } catch (e) {
     status(e.message);
   }
 }
 
+// --- Cinematic fly-in: a high drone pass, then a slow descending arc onto the resort's angle ---
+let flight = 0;
+function flyIn(r) {
+  const id = ++flight;
+  const target = { center: [r.camera.lon, r.camera.lat], zoom: r.camera.zoom, bearing: r.camera.bearing,
+    pitch: is3D ? PITCH_3D : 0 };
+  if (reduceMotion) { map.jumpTo(target); return; }
+  map.flyTo({ center: target.center, zoom: target.zoom - 1.4, bearing: target.bearing - 55, pitch: is3D ? 44 : 0,
+    curve: 1.6, speed: 1.1, essential: true });
+  map.once('moveend', () => {
+    if (id !== flight || current !== r) return;   // interrupted by the user or another resort
+    map.easeTo({ ...target, duration: 3200, easing: (t) => 1 - (1 - t) ** 3, essential: true });
+  });
+}
+map.on('dragstart', () => { flight++; });
+map.on('wheel', () => { flight++; });
+
+function renderTitle(r) {
+  $('#resort-name').textContent = r.name;
+  $('#resort-meta').textContent = `${COUNTRY[r.country] ?? r.country} · ${TIER[r.tier ?? 3].label}`;
+  $('#resort-counts').textContent = 'Loading runs and lifts…';
+  document.title = `${r.name} · Ski Map`;
+}
+
 function renderLegend(r) {
-  const runs = legendFor(r.country).map(([k, label]) => `<span><i style="background:${RUN[k]}"></i>${label}</span>`).join('');
-  $('#legend').hidden = false;
-  $('#legend').innerHTML = `<div>${runs}</div><div class="lifts"><span><i class="cable"></i>Lift</span>`
-    + `<span><b style="background:${LIFT.cabin}"></b>Gondola</span><span><b style="background:${LIFT.chair}"></b>Chair</span></div>`;
+  $('#legend').innerHTML = legendFor(r.country).map(([k, label]) => `<li><i style="background:${RUN[k]}"></i>${label}</li>`).join('')
+    + `<li class="lift"><i></i>Lift</li>`;
 }
 
 // --- All resorts: tiers, overview dots, search -------------------------------------------------
@@ -584,32 +654,48 @@ function moveActive(d) {
   list.querySelector(`#opt-${active}`)?.scrollIntoView({ block: 'nearest' });
   input.setAttribute('aria-activedescendant', `opt-${active}`);
 }
-function pickResort(r) {
+function openSearch() {
+  document.body.classList.add('searching');
+  input.value = '';
+  input.focus();
+}
+function closeSearch() {
   closeResults();
+  document.body.classList.remove('searching');
   input.blur();
+  $('#search-open').focus({ preventScroll: true });
+}
+function pickResort(r) {
+  closeSearch();
   history.replaceState(null, '', `?resort=${r.id}`);
   stopMotion();
   showResort(r);
 }
-input.addEventListener('focus', () => { input.select(); renderResults(); });
+$('#search-open').addEventListener('click', openSearch);
+$('#search-close').addEventListener('click', closeSearch);
+addEventListener('keydown', (e) => {
+  if (e.key === '/' && document.activeElement !== input && !e.metaKey && !e.ctrlKey) { e.preventDefault(); openSearch(); }
+});
+input.addEventListener('focus', () => { renderResults(); });
 input.addEventListener('input', renderResults);
 input.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
   else if (e.key === 'Enter' && hits[active]) { e.preventDefault(); pickResort(hits[active]); }
-  else if (e.key === 'Escape') { closeResults(); input.value = current.name; input.blur(); }
+  else if (e.key === 'Escape') { closeSearch(); }
 });
 list.addEventListener('pointerdown', (e) => {
   const li = e.target.closest('[role=option]');
   if (li) { e.preventDefault(); pickResort(hits[Number(li.dataset.i)]); }
 });
-input.addEventListener('blur', () => setTimeout(() => { closeResults(); if (!input.value.trim()) input.value = current.name; }, 120));
+input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== input && !document.activeElement?.closest('#search')) closeSearch(); }, 150));
 
 // Globe button: zoom out to every resort.
 $('#world').addEventListener('click', () => {
   stopMotion();
+  flight++;
   $('#card').classList.remove('show');
-  map.flyTo({ center: [10, 35], zoom: 1.4, pitch: 0, bearing: 0, duration: 2200, essential: true });
+  map.flyTo({ center: [10, 35], zoom: 1.4, pitch: 0, bearing: 0, duration: reduceMotion ? 0 : 2600, essential: true });
 });
 
 // --- Orbit: drag the dial (or scroll sideways) to turn the mountain ------------------------------
@@ -679,7 +765,6 @@ map.getCanvasContainer().addEventListener('wheel', (e) => {
   turn(e.deltaX * 0.25);
 }, { capture: true, passive: false });
 
-const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 $('#orbit-play').addEventListener('click', () => {
   if (spin) { stopMotion(); return; }
   stopMotion();
@@ -690,8 +775,8 @@ $('#orbit-play').addEventListener('click', () => {
 });
 map.on('dragstart', stopMotion);
 map.on('touchstart', () => { if (spin) stopMotion(); });
-// The run legend only makes sense inside a resort, not over the world view.
-map.on('zoom', () => { $('#legend').classList.toggle('far', map.getZoom() < 9); });
+// Resort title, legend and hour only make sense inside a resort, not over the world view.
+map.on('zoom', () => { document.body.classList.toggle('far', map.getZoom() < 8.5); });
 map.on('mousemove', (e) => {
   const over = map.getLayer('resort-dots') && map.getZoom() < 10.5
     && map.queryRenderedFeatures(e.point, { layers: ['resort-dots', 'resort-dot-labels'] }).length;
@@ -700,19 +785,19 @@ map.on('mousemove', (e) => {
 
 // --- Controls -----------------------------------------------------------------------------------
 $('#toggle3d').addEventListener('click', () => { is3D = !is3D; if (!is3D) stopMotion(); apply3D(true); syncDial(); });
-$('#light').addEventListener('click', () => {
-  preset = (preset + 1) % presets.length;
-  setBasemap('lightPreset', presets[preset]);
-  applyFog();
-  $('#light').textContent = { day: '☀︎', dusk: '◐', night: '☾', dawn: '◑' }[presets[preset]];
-  status(`Lighting: ${presets[preset]}`, 1200);
+$('#hour').min = String(HOUR_MIN); $('#hour').max = String(HOUR_MAX);
+let hourFrame = 0;
+$('#hour').addEventListener('input', (e) => {
+  hour = Number(e.target.value);
+  cancelAnimationFrame(hourFrame);
+  hourFrame = requestAnimationFrame(applyLight);  // at most one relight per frame while scrubbing
 });
 $('#look').addEventListener('click', () => {
   look = LOOK_ORDER[(LOOK_ORDER.indexOf(look) + 1) % LOOK_ORDER.length];
   store.set('map-look', look);
   $('#look').setAttribute('aria-label', `Map style: ${LOOKS[look].label}. Switch style`);
   status(LOOKS[look].label, 1200);
-  map.setStyle(LOOKS[look].style, { config: { basemap: { lightPreset: presets[preset], ...LOOKS[look].config } } });
+  map.setStyle(LOOKS[look].style, { config: { basemap: { lightPreset: light.preset, ...LOOKS[look].config } } });
 });
 let markReady;
 const ready = new Promise((r) => { markReady = r; });
@@ -724,6 +809,7 @@ map.on('click', (e) => {
     && map.queryRenderedFeatures([[e.point.x - 8, e.point.y - 8], [e.point.x + 8, e.point.y + 8]], { layers: ['resort-dots', 'resort-dot-labels'] })[0];
   if (dot) { pickResort(resorts.find((r) => r.id === dot.properties.id)); return; }
   const layers = ['pistes-line', 'pistes-unknown', 'lifts-cable', 'lifts-line', 'lift-cabins', 'lift-structures'].filter((l) => map.getLayer(l));
+  stopMotion();
   const pad = 10;
   const f = map.queryRenderedFeatures([[e.point.x - pad, e.point.y - pad], [e.point.x + pad, e.point.y + pad]], { layers })[0];
   if (!f) { $('#card').classList.remove('show'); return; }
@@ -746,10 +832,95 @@ $('#card button').addEventListener('click', () => {
   applySelection();
 });
 
+// --- Living scene: moving cabins, pines, snow, and a frame-budget guard -----------------------------
+let tracks = [];
+let carsTimer = 0, carsLast = 0;
+const sceneT0 = performance.now();
+function carsLoop(now) {
+  carsTimer = requestAnimationFrame(carsLoop);
+  const fps = quality >= 2 ? 15 : 7;
+  if (now - carsLast < 1000 / fps) return;
+  carsLast = now;
+  const b = map.getBounds();
+  const view = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+  map.getSource('cabins')?.setData(carsAt(tracks, (now - sceneT0) / 1000, view, quality >= 2 ? 600 : 300));
+}
+function carsWanted() {
+  return is3D && quality >= 1 && !reduceMotion && tracks.length && map.getZoom() >= 13 && !document.hidden;
+}
+function updateCars() {
+  if (carsWanted()) { if (!carsTimer) carsTimer = requestAnimationFrame(carsLoop); return; }
+  if (carsTimer) {
+    cancelAnimationFrame(carsTimer); carsTimer = 0;
+    map.getSource('cabins')?.setData(cache.get(current.id)?.cabins ?? empty);   // park the cabins
+  }
+}
+
+const snow = createSnow($('#snow'), {
+  getBearing: () => map.getBearing(),
+  // Snow shows in 3D at resort zoom; stronger as you get closer, softer in the dark.
+  getStrength: () => (is3D ? Math.max(0, Math.min(1, (map.getZoom() - 11) / 2)) * (light.hud.dark ? 0.6 : 0.85) : 0),
+});
+function updateSnow() {
+  if (is3D && quality >= 2 && !reduceMotion && map.getZoom() >= 11 && !document.hidden) snow.start(); else snow.stop();
+}
+
+const pines = {
+  timer: 0,
+  clear() { map.getSource('pines')?.setData(empty); },
+};
+const TREELINE = { eu: 2050, na: 3450, asia: 2500 };
+function schedulePines() {
+  clearTimeout(pines.timer);
+  pines.timer = setTimeout(placePines, 350);
+}
+function placePines() {
+  if (!pinesOK || !is3D || quality < 1 || map.getZoom() < 12.8) { pines.clear(); return; }
+  const layers = cache.get(current.id);
+  const forests = map.querySourceFeatures('streets', { sourceLayer: 'landcover', filter: ['==', ['get', 'class'], 'wood'] });
+  const b = map.getBounds();
+  const avoid = layers ? avoidGrid([...layers.pistes.features, ...layers.piste_areas.features, ...layers.lifts.features]) : null;
+  const pts = scatterPines({
+    forests, avoid, bounds: [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]],
+    spacingM: map.getZoom() >= 14.5 ? 26 : map.getZoom() >= 13.5 ? 34 : 46,
+    treeline: TREELINE[schemeFor(current.country)] ?? 2050,
+    elevationAt: ([lon, lat]) => map.queryTerrainElevation([lon, lat], { exaggerated: false }),
+    max: quality >= 2 ? 1800 : 800,
+  });
+  // Diorama sizing: taller trees when zoomed out so they still read; near true size up close.
+  const z = map.getZoom();
+  map.getSource('pines')?.setData(pineShapes(pts, z < 14 ? 30 : z < 15 ? 24 : 19));
+}
+map.on('moveend', () => { schedulePines(); updateEffects(); });
+
+function updateEffects() { updateCars(); updateSnow(); }
+map.on('zoomend', updateEffects);
+document.addEventListener('visibilitychange', updateEffects);
+
+// Frame-budget guard: if too many frames run long, step effects down (never back up mid-session).
+(function watchFrames() {
+  let last = performance.now(), slow = 0, total = 0;
+  const tick = (now) => {
+    const dt = now - last; last = now;
+    if (!document.hidden && dt < 500) { total++; if (dt > 40) slow++; }
+    if (total >= 90) {
+      if (slow / total > 0.3 && quality > 0) {
+        quality--;
+        updateEffects(); schedulePines();
+        status(quality === 1 ? 'Lighter effects for smoother movement' : 'Effects paused for smoother movement', 2500);
+      }
+      slow = 0; total = 0;
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+})();
+
 await ready;
-showResort(current, false);
+showResort(current);
 window.__preview = {                                    // handy in the console
-  map, resorts, get cablesOK() { return cablesOK; },
+  map, resorts, get cablesOK() { return cablesOK; }, get pinesOK() { return pinesOK; },
+  get quality() { return quality; }, setHour(h) { hour = h; applyLight(); }, get light() { return light; },
   selectLift(name) { selectedLift = name; applySelection(); },
   findResorts, pickResort: (id) => pickResort(resorts.find((r) => r.id === id)),
 };

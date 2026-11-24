@@ -123,3 +123,83 @@ export function buildCabins(spans) {
   }
   return { type: 'FeatureCollection', features: out };
 }
+
+// ---------- moving cabins ----------
+// Miniature-world speeds (metres per second along the cable): faster than real lifts so the
+// movement reads at map scale, slow enough to stay calm.
+const SPEED = { gondola: 9, mixed_lift: 9, cable_car: 7, chair_lift: 6 };
+const LANE = { gondola: 2.4, mixed_lift: 2.4, cable_car: 3.2, chair_lift: 2.6 };  // half the cable spacing
+
+/**
+ * One track per aerial lift with cabins: every cable stop in order with distance, clearance and
+ * direction, plus a bbox for culling. Build once per resort.
+ */
+export function liftTracks(spans) {
+  const byLift = new Map();
+  for (const f of spans.features) {
+    if (!CABIN[f.properties.aerialway]) continue;
+    if (!byLift.has(f.properties.lift_id)) byLift.set(f.properties.lift_id, []);
+    byLift.get(f.properties.lift_id).push(f);
+  }
+  const tracks = [];
+  for (const [id, chunks] of byLift) {
+    const type = chunks[0].properties.aerialway;
+    const stops = [];
+    let dist = 0, prev = null;
+    let w = Infinity, s = Infinity, e = -Infinity, n = -Infinity;
+    for (const f of chunks) {
+      f.geometry.coordinates.forEach((p, k) => {
+        if (prev && p[0] === prev[0] && p[1] === prev[1]) return;
+        if (prev) dist += Math.hypot((p[0] - prev[0]) * M_PER_DEG_LAT * Math.cos(rad(p[1])), (p[1] - prev[1]) * M_PER_DEG_LAT);
+        stops.push({ p, d: dist, z: f.properties[`z${k}`] });
+        prev = p;
+        w = Math.min(w, p[0]); e = Math.max(e, p[0]); s = Math.min(s, p[1]); n = Math.max(n, p[1]);
+      });
+    }
+    if (dist < 20) continue;
+    for (let i = 0; i < stops.length; i++) {
+      stops[i].brg = bearing(stops[Math.max(0, i - 1)].p, stops[Math.min(stops.length - 1, i + 1)].p);
+    }
+    tracks.push({ id, type, name: chunks[0].properties.name, total: dist, stops, bbox: [w, s, e, n] });
+  }
+  return tracks;
+}
+
+function pointAt(track, d) {
+  const st = track.stops;
+  let lo = 0, hi = st.length - 1;
+  while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (st[mid].d <= d) lo = mid; else hi = mid; }
+  const a = st[lo], b = st[hi], t = b.d > a.d ? (d - a.d) / (b.d - a.d) : 0;
+  return { p: [a.p[0] + (b.p[0] - a.p[0]) * t, a.p[1] + (b.p[1] - a.p[1]) * t], z: a.z + (b.z - a.z) * t, brg: a.brg };
+}
+
+/**
+ * Cabin boxes at time `seconds`: up the right-hand cable, down the left-hand one, for tracks whose
+ * bbox meets `view` ([w, s, e, n], optional). Returns at most `limit` features.
+ */
+export function carsAt(tracks, seconds, view = null, limit = 600) {
+  const out = [];
+  for (const tr of tracks) {
+    if (view && (tr.bbox[2] < view[0] || tr.bbox[0] > view[2] || tr.bbox[3] < view[1] || tr.bbox[1] > view[3])) continue;
+    const c = CABIN[tr.type];
+    const every = c.every ?? tr.total / 2;               // cable car: two cabins shuttling
+    const shift = ((seconds * (SPEED[tr.type] ?? 6)) % every + every) % every;
+    const lane = LANE[tr.type] ?? 2.5;
+    for (const dir of [1, -1]) {
+      for (let d0 = shift; d0 < tr.total; d0 += every) {
+        const d = dir === 1 ? d0 : tr.total - d0;
+        const at = pointAt(tr, d);
+        const top = at.z - c.drop;
+        if (top - c.tall < 0.5) continue;
+        // Offset sideways from the line: right of travel uphill, left coming down.
+        const side = rad(at.brg + 90), mLon = M_PER_DEG_LAT * Math.cos(rad(at.p[1]));
+        const p = [at.p[0] + (Math.sin(side) * lane * dir) / mLon, at.p[1] + (Math.cos(side) * lane * dir) / M_PER_DEG_LAT];
+        out.push({ type: 'Feature', geometry: orientedRect(p, at.brg, c.along, c.across),
+          properties: { kind: 'cabin', lift: tr.type, name: tr.name ?? null,
+            base: Math.round((top - c.tall) * 10) / 10, height: Math.round(top * 10) / 10 } });
+        if (out.length >= limit) return { type: 'FeatureCollection', features: out };
+      }
+    }
+  }
+  return { type: 'FeatureCollection', features: out };
+}

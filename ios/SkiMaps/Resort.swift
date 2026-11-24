@@ -9,6 +9,8 @@ struct Resort: Codable, Identifiable, Hashable {
     let id: String
     let name: String
     let country: String
+    /// 1 = over 2 M skier visits, 2 = 1–2 M, 3 = 0.5–1 M (pipeline/catalog.mjs).
+    let tier: Int?
     let villages: [String]
     let bbox: BBox
     let camera: Camera

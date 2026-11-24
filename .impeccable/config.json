@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "preview/index.html"
+        ],
+        "createdAt": "2026-11-24T14:24:09.404Z",
+        "reason": "agent: the only shadow is a navy-tinted elevation shadow with a 10px y-offset and negative spread (0 10px 30px -8px), not a zero-offset chromatic halo; the page reads dark only in the night hour"
+      }
+    ]
+  }
+}

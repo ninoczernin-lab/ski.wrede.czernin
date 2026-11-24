@@ -1,188 +1,273 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-sky="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Ski Map</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.9.0/dist/mapbox-gl.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.9.0/dist/mapbox-gl.js"></script>
   <script type="importmap">
     { "imports": { "osmtogeojson": "https://cdn.jsdelivr.net/npm/osmtogeojson@3.0.0-beta.5/+esm" } }
   </script>
   <style>
-    /* Playful floating UI over a full-screen map: round bubbly buttons, rounded type, bouncy feedback. */
+    @font-face {
+      font-family: "Sora"; font-style: normal; font-weight: 100 800; font-display: swap;
+      src: url("fonts/sora-latin.woff2") format("woff2");
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "Sora"; font-style: normal; font-weight: 100 800; font-display: swap;
+      src: url("fonts/sora-latin-ext.woff2") format("woff2");
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    /* The HUD is thin frosted glass over a living diorama, tinted by the hour (--sky-* set by app.js). */
     :root {
-      --pop: #ffd84d; --pop-ink: #1f2340; --font: "Nunito", -apple-system, BlinkMacSystemFont, "SF Pro Rounded", system-ui, sans-serif;
-      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-      --surface: rgba(255, 255, 255, 0.86); --text: #15202b; --muted: #5a6778;
-      --accent: #0066e6; --border: rgba(20, 32, 48, 0.1); --tick: rgba(21, 32, 43, 0.35);
-      --needle: #d42a2f; --ground: #e8eef5;
-      color-scheme: light dark;
+      --sky-top: #5aa6e8; --sky-bottom: #f2f7fc;
+      --ink: #121b27; --ink-soft: #3f4d60; --ink-faint: #6a778a;
+      --glass: rgba(250, 252, 255, 0.58); --glass-strong: rgba(250, 252, 255, 0.82);
+      --edge: rgba(255, 255, 255, 0.55); --hair: rgba(18, 27, 39, 0.1);
+      --sun: #ffb23e; --focus: #1f6fe5;
+      --shadow: 0 10px 30px -8px rgba(18, 30, 52, 0.28), 0 2px 6px rgba(18, 30, 52, 0.1);
+      --font: "Sora", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      --ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --gutter-l: max(16px, env(safe-area-inset-left)); --gutter-r: max(16px, env(safe-area-inset-right));
+      color-scheme: light;
     }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --surface: rgba(24, 29, 36, 0.86); --text: #eef2f6; --muted: #a3adba;
-        --accent: #4d9bff; --border: rgba(255, 255, 255, 0.1); --tick: rgba(238, 242, 246, 0.4);
-        --needle: #ff5a5f; --ground: #151a20;
-      }
-    }
-    :root[data-theme="dark"] {
-      --surface: rgba(24, 29, 36, 0.86); --text: #eef2f6; --muted: #a3adba;
-      --accent: #4d9bff; --border: rgba(255, 255, 255, 0.1); --tick: rgba(238, 242, 246, 0.4);
-      --needle: #ff5a5f; --ground: #151a20;
+    /* After dusk the glass turns to night glass and the type to moonlight. */
+    :root[data-sky="dark"] {
+      --ink: #eef2fb; --ink-soft: #c3cbe0; --ink-faint: #97a2bf;
+      --glass: rgba(18, 22, 44, 0.5); --glass-strong: rgba(18, 22, 44, 0.78);
+      --edge: rgba(190, 200, 240, 0.18); --hair: rgba(238, 242, 251, 0.14);
+      --focus: #8fb6ff;
+      color-scheme: dark;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--ground); color: var(--text);
-      font: 600 15px/1.35 var(--font);
-      -webkit-tap-highlight-color: transparent; overflow: hidden; }
+    html, body { margin: 0; height: 100%; overflow: hidden; background: var(--sky-bottom); color: var(--ink);
+      font: 400 14px/1.4 var(--font); -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+    ::selection { background: color-mix(in srgb, var(--sun) 45%, transparent); color: var(--ink); }
+    input { caret-color: var(--sun); }
     [hidden] { display: none !important; }
+    :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+
     #map { position: fixed; inset: 0; }
-    .glass { background: var(--surface); backdrop-filter: blur(18px) saturate(1.6);
-      -webkit-backdrop-filter: blur(18px) saturate(1.6); border: 1px solid var(--border);
-      box-shadow: 0 6px 22px rgba(30, 34, 80, 0.16), 0 1px 3px rgba(30, 34, 80, 0.1); }
-    button { transition: transform 220ms var(--spring); }
-    button:active { transform: scale(0.88); }
-    button:focus-visible, select:focus-visible, #orbit:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    #snow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    /* Sky wash behind the title: keeps the type legible over bright snow or dark ridges at any hour. */
+    #wash { position: fixed; inset: 0 0 auto; height: 220px; z-index: 1; pointer-events: none;
+      background: linear-gradient(to bottom, color-mix(in srgb, var(--sky-top) 55%, transparent), transparent);
+      transition: background 600ms var(--ease); }
 
-    #search { position: fixed; top: calc(env(safe-area-inset-top) + 8px);
-      left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
-      height: 52px; border-radius: 26px; display: flex; align-items: center; gap: 10px; padding: 0 18px; z-index: 3; }
-    #search input { flex: 1; min-width: 0; appearance: none; border: 0; background: transparent; color: var(--text);
-      font: 800 17px/1 var(--font); outline: none; padding: 0; }
-    #search input::placeholder { color: var(--muted); font-weight: 700; }
+    .glass { background: var(--glass); border: 1px solid var(--edge); box-shadow: var(--shadow);
+      -webkit-backdrop-filter: blur(22px) saturate(1.5); backdrop-filter: blur(22px) saturate(1.5); }
+
+    /* ---- Title block: the resort, set large and light over the sky ---- */
+    #title { position: fixed; z-index: 2; top: calc(env(safe-area-inset-top) + 18px); left: var(--gutter-l);
+      right: calc(var(--gutter-r) + 64px); pointer-events: none; transition: opacity 400ms var(--ease), transform 400ms var(--ease); }
+    #resort-name { margin: 0; font-weight: 300; font-size: clamp(28px, 7.4vw, 46px); line-height: 1.02;
+      letter-spacing: -0.03em; text-wrap: balance; text-shadow: 0 1px 18px color-mix(in srgb, var(--sky-bottom) 70%, transparent); }
+    #resort-meta, #resort-counts { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: 0.01em; }
+    #resort-counts { margin-top: 2px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+    #legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; padding: 0; list-style: none;
+      font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+    #legend li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+    #legend i { width: 20px; height: 6px; border-radius: 3px; box-shadow: 0 0 0 1.5px #fff; }
+    #legend li.lift i { height: 2px; background: #232a33; box-shadow: 0 0 0 1px rgba(255,255,255,0.8); }
+    #status { margin: 10px 0 0; font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+    #status:empty { display: none; }
+    body.far #title, body.far #dock .hour-row { opacity: 0; transform: translateY(-6px); }
+
+    /* ---- Search: a round button that opens into a full-width field ---- */
+    #search-open { position: fixed; z-index: 3; top: calc(env(safe-area-inset-top) + 16px); right: var(--gutter-r);
+      width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; padding: 0; }
+    #search { position: fixed; z-index: 6; top: calc(env(safe-area-inset-top) + 12px); left: var(--gutter-l); right: var(--gutter-r);
+      max-width: 620px; margin-inline: auto; height: 56px; border-radius: 28px; display: flex; align-items: center; gap: 12px;
+      padding: 0 8px 0 20px; background: var(--glass-strong);
+      opacity: 0; transform: translateY(-10px) scale(0.98); pointer-events: none;
+      transition: opacity 220ms var(--ease), transform 320ms var(--ease); }
+    body.searching #search { opacity: 1; transform: none; pointer-events: auto; }
+    body.searching #search-open, body.searching #title { opacity: 0; pointer-events: none; }
+    #search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); outline: none; padding: 0;
+      font: 400 17px/1 var(--font); letter-spacing: -0.01em; }
+    #search input::placeholder { color: var(--ink-faint); }
     #search input::-webkit-search-cancel-button { display: none; }
-    #world { flex: none; width: 38px; height: 38px; margin-right: -10px; border: 0; border-radius: 50%; cursor: pointer;
-      background: transparent; color: var(--text); display: grid; place-items: center; }
-    #results { position: fixed; z-index: 5; margin: 0; padding: 6px; list-style: none; border-radius: 22px;
-      top: calc(env(safe-area-inset-top) + 68px); left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
-      max-width: 560px; max-height: min(60vh, 460px); overflow-y: auto; overscroll-behavior: contain; }
-    #results li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; cursor: pointer; }
-    #results li[aria-selected="true"], #results li[role=option]:hover { background: var(--border); }
-    #results li i { width: 12px; height: 12px; border-radius: 50%; flex: none; outline: 2px solid #fff; }
-    #results li span { display: grid; min-width: 0; }
-    #results li b { font-weight: 900; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    #results li small { color: var(--muted); font-size: 12px; font-weight: 700; }
-    #results li.hint { cursor: default; color: var(--muted); font-size: 12px; font-weight: 800; padding: 6px 12px; }
-    #search svg { flex: none; opacity: 0.6; }
+    #search-close { width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent; display: grid; place-items: center; }
+    #search-close:hover { background: var(--hair); }
+    #results { position: fixed; z-index: 6; margin: 0; padding: 6px; list-style: none; border-radius: 24px;
+      top: calc(env(safe-area-inset-top) + 76px); left: var(--gutter-l); right: var(--gutter-r); max-width: 620px; margin-inline: auto;
+      max-height: min(62vh, 480px); overflow-y: auto; overscroll-behavior: contain; background: var(--glass-strong);
+      scrollbar-width: thin; scrollbar-color: var(--hair) transparent; }
+    #results li { display: flex; align-items: center; gap: 14px; padding: 11px 14px; border-radius: 18px; cursor: pointer; }
+    #results li[aria-selected="true"], #results li[role=option]:hover { background: color-mix(in srgb, var(--sun) 16%, transparent); }
+    #results li i { width: 10px; height: 10px; border-radius: 50%; flex: none; box-shadow: 0 0 0 2px #fff; }
+    #results li span { display: grid; min-width: 0; gap: 1px; }
+    #results li b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #results li small { color: var(--ink-faint); font-size: 12px; }
+    #results li.hint { cursor: default; color: var(--ink-faint); font-size: 12px; padding: 8px 14px 4px; }
 
-    #controls { position: fixed; right: max(12px, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%);
-      display: flex; flex-direction: column; gap: 10px; z-index: 3; }
-    #controls button { width: 50px; height: 50px; border-radius: 50%; color: var(--text); padding: 0;
-      font: 900 15px/1 var(--font); cursor: pointer; display: grid; place-items: center; }
+    /* ---- Control rail ---- */
+    #rail { position: fixed; z-index: 3; right: var(--gutter-r); top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column; border-radius: 26px; padding: 4px; gap: 2px; }
+    #rail button { width: 44px; height: 44px; border: 0; border-radius: 22px; background: transparent; padding: 0;
+      display: grid; place-items: center; font-weight: 600; font-size: 13px; letter-spacing: 0.02em;
+      transition: background 150ms var(--ease), transform 200ms var(--ease); }
+    #rail button:hover { background: var(--hair); }
+    #rail button:active, #search-open:active, #orbit-play:active { transform: scale(0.92); }
+    #search-open { border: 1px solid var(--edge); transition: transform 200ms var(--ease), opacity 200ms var(--ease); }
 
-    /* Orbit dial: a compass strip you drag left/right to turn the mountain. */
-    #orbit { position: fixed; z-index: 3; height: 50px; border-radius: 25px; overflow: hidden; touch-action: none;
-      left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
-      bottom: calc(env(safe-area-inset-bottom) + 34px); cursor: grab; user-select: none; -webkit-user-select: none;
-      max-width: 560px; margin-inline: auto; }
+    /* ---- Dock: the hour scrubber over the compass dial ---- */
+    #dock { position: fixed; z-index: 3; left: var(--gutter-l); right: var(--gutter-r); bottom: calc(env(safe-area-inset-bottom) + 30px);
+      max-width: 560px; margin-inline: auto; border-radius: 26px; padding: 12px 12px 10px; display: grid; gap: 8px; }
+    .hour-row { display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 10px; padding: 0 6px;
+      transition: opacity 400ms var(--ease), transform 400ms var(--ease); }
+    #hour-label { font-size: 12px; font-weight: 500; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .track { position: relative; height: 40px; }
+    /* The arc the sun travels, drawn as a faint dashed curve. */
+    .track svg.arc { position: absolute; left: 0; right: 0; top: 2px; width: 100%; height: 30px; overflow: visible; }
+    .track svg.arc path { fill: none; stroke: var(--ink-faint); stroke-opacity: 0.45; stroke-width: 1; stroke-dasharray: 2 4; }
+    #sun { position: absolute; left: var(--x, 50%); bottom: 10px; width: 18px; height: 18px; margin-left: -9px;
+      transform: translateY(var(--y, -20px)); border-radius: 50%; pointer-events: none;
+      background: radial-gradient(circle at 40% 38%, #fff7e2, var(--sun) 62%);
+      box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.95), 0 3px 8px rgba(18, 30, 52, 0.28);
+      transition: background 300ms var(--ease), box-shadow 300ms var(--ease); }
+    #sun[data-below="true"] { background: radial-gradient(circle at 60% 40%, #f4f6ff, #b9c4ee 70%);
+      box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.7), 0 3px 8px rgba(4, 8, 24, 0.45); }
+    #hour { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 40px; margin: 0; background: transparent;
+      -webkit-appearance: none; appearance: none; cursor: grab; }
+    #hour:active { cursor: grabbing; }
+    #hour::-webkit-slider-runnable-track { height: 2px; margin-top: 30px; background: linear-gradient(to right, #3a4478, #f4b39b 14%, #9cc8f0 30%, #e9f2fb 50%, #ffd28f 80%, #7d72b8 90%, #1c2446); border-radius: 1px; }
+    #hour::-moz-range-track { height: 2px; background: linear-gradient(to right, #3a4478, #f4b39b 14%, #9cc8f0 30%, #e9f2fb 50%, #ffd28f 80%, #7d72b8 90%, #1c2446); border-radius: 1px; }
+    #hour::-webkit-slider-thumb { -webkit-appearance: none; width: 28px; height: 40px; margin-top: -30px; background: transparent; border: 0; }
+    #hour::-moz-range-thumb { width: 28px; height: 40px; background: transparent; border: 0; }
+    #hour:focus-visible { outline-offset: 0; border-radius: 12px; }
+
+    #orbit { position: relative; height: 38px; border-radius: 19px; overflow: hidden; touch-action: none; cursor: grab;
+      user-select: none; -webkit-user-select: none; background: color-mix(in srgb, var(--ink) 5%, transparent); }
     #orbit:active { cursor: grabbing; }
     #orbit-strip { position: absolute; inset: 0 auto 0 0; will-change: transform; }
-    #orbit-strip span { position: absolute; bottom: 8px; width: 1px; height: 7px; background: var(--tick); }
-    #orbit-strip span.mid { height: 11px; }
-    #orbit-strip span.big { height: 15px; width: 2px; background: var(--text); }
-    #orbit-strip em { position: absolute; bottom: 17px; left: 50%; transform: translateX(-50%); font: 700 11px/1 inherit;
-      font-family: var(--font); font-weight: 900; font-style: normal; letter-spacing: 0.06em; color: var(--text); }
-    #orbit::before, #orbit::after { content: ""; position: absolute; top: 0; bottom: 0; width: 56px; z-index: 1; pointer-events: none; }
-    #orbit::before { left: 0; background: linear-gradient(to right, var(--surface), transparent); }
-    #orbit::after { right: 0; background: linear-gradient(to left, var(--surface), transparent); }
-    #orbit-needle { position: absolute; left: 50%; top: 4px; bottom: 4px; width: 2px; margin-left: -1px;
-      background: var(--needle); border-radius: 1px; z-index: 2; pointer-events: none; }
-    #orbit-play { position: absolute; right: 5px; top: 5px; width: 40px; height: 40px; border-radius: 20px; z-index: 3;
-      border: 0; background: var(--pop); color: var(--pop-ink); cursor: pointer; display: grid; place-items: center;
-      box-shadow: 0 2px 6px rgba(30, 34, 80, 0.25); }
+    #orbit-strip span { position: absolute; bottom: 6px; width: 1px; height: 5px; background: var(--ink-faint); opacity: 0.6; }
+    #orbit-strip span.mid { height: 8px; }
+    #orbit-strip span.big { height: 11px; opacity: 1; background: var(--ink); }
+    #orbit-strip em { position: absolute; bottom: 13px; left: 50%; transform: translateX(-50%); font-style: normal;
+      font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--ink); }
+    #orbit::before, #orbit::after { content: ""; position: absolute; top: 0; bottom: 0; width: 48px; z-index: 1; pointer-events: none; }
+    #orbit::before { left: 0; background: linear-gradient(to right, var(--glass-strong), transparent); }
+    #orbit::after { right: 0; background: linear-gradient(to left, var(--glass-strong), transparent); }
+    #orbit-needle { position: absolute; left: 50%; top: 5px; bottom: 5px; width: 2px; margin-left: -1px; border-radius: 1px;
+      background: var(--sun); z-index: 2; pointer-events: none; }
+    #orbit-play { position: absolute; right: 3px; top: 3px; width: 32px; height: 32px; border-radius: 16px; z-index: 3; border: 0;
+      background: var(--ink); color: var(--sky-bottom); display: grid; place-items: center; padding: 0;
+      transition: transform 200ms var(--ease); }
     #orbit-play[aria-pressed="true"] .play, #orbit-play[aria-pressed="false"] .pause { display: none; }
-    #orbit-hint { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); z-index: 3; pointer-events: none;
-      font-size: 11px; font-weight: 600; color: var(--muted); }
 
-    #legend { position: fixed; left: max(12px, env(safe-area-inset-left)); bottom: calc(env(safe-area-inset-bottom) + 90px);
-      border-radius: 18px; padding: 8px 12px; display: grid; gap: 5px; max-width: calc(100% - 24px);
-      font-size: 11.5px; font-weight: 800; z-index: 2; }
-    #legend div { display: flex; flex-wrap: wrap; gap: 4px 10px; }
-    #legend span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
-    #legend i { width: 18px; height: 7px; border-radius: 4px; outline: 2px solid #fff; }
-    #legend i.cable { height: 2px; background: #1b222c; outline: 2px solid rgba(255, 255, 255, 0.8); }
-    #legend b { width: 8px; height: 8px; border-radius: 2px; }
-    #legend .lifts { color: var(--muted); }
-    #legend.far { display: none; }
+    /* ---- Details sheet ---- */
+    #card { position: fixed; z-index: 4; left: var(--gutter-l); right: var(--gutter-r); max-width: 560px; margin-inline: auto;
+      bottom: calc(env(safe-area-inset-bottom) + 150px); border-radius: 22px; padding: 14px 10px 14px 18px; display: flex;
+      align-items: center; gap: 14px; background: var(--glass-strong);
+      opacity: 0; transform: translateY(12px); pointer-events: none;
+      transition: opacity 200ms var(--ease), transform 360ms var(--ease); }
+    #card.show { opacity: 1; transform: none; pointer-events: auto; }
+    #card .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px #fff, 0 2px 8px rgba(18, 30, 52, 0.25); }
+    #card div { min-width: 0; }
+    #card b { display: block; font-weight: 500; font-size: 17px; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    #card small { color: var(--ink-soft); font-size: 13px; }
+    #card button { margin-left: auto; width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent;
+      display: grid; place-items: center; flex: none; }
+    #card button:hover { background: var(--hair); }
 
-    #status { position: fixed; left: 50%; top: calc(env(safe-area-inset-top) + 66px); transform: translateX(-50%);
-      border-radius: 18px; padding: 8px 16px; font-size: 13px; font-weight: 800; color: var(--muted); z-index: 3;
-      max-width: calc(100% - 32px); text-align: center; }
-    #status:empty { display: none; }
-
-    #card { position: fixed; left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right));
-      bottom: calc(env(safe-area-inset-bottom) + 90px); border-radius: 28px; max-width: 560px; margin-inline: auto;
-      padding: 16px 18px; display: none; align-items: center; gap: 14px; z-index: 4; }
-    #card.show { display: flex; animation: pop-in 420ms var(--spring); }
-    @keyframes pop-in { from { opacity: 0; transform: translateY(18px) scale(0.94); } to { opacity: 1; transform: none; } }
-    @media (prefers-reduced-motion: reduce) { #card.show { animation: none; } button, button:active { transition: none; transform: none; } }
-    #card.show ~ #legend { display: none; }
-    #card .dot { width: 22px; height: 22px; border-radius: 50%; flex: none; outline: 3px solid #fff;
-      box-shadow: 0 2px 6px rgba(30, 34, 80, 0.25); }
-    #card b { display: block; font-size: 18px; font-weight: 900; }
-    #card small { color: var(--muted); }
-    #card button { margin-left: auto; border: 0; background: transparent; font-size: 22px; color: var(--muted); cursor: pointer; }
-
-    #token { position: fixed; inset: 0; display: none; place-items: center; padding: 16px; z-index: 10; background: var(--ground); }
+    /* ---- Token screen ---- */
+    #token { position: fixed; inset: 0; display: none; place-items: center; z-index: 10; padding: 16px;
+      background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom)); }
     #token.show { display: grid; }
-    #token form { width: 100%; max-width: 420px; border-radius: 20px; padding: 24px; }
-    #token h1 { margin: 0 0 6px; font-size: 22px; }
-    #token p { margin: 0 0 16px; color: var(--muted); }
-    #token input { width: 100%; height: 46px; border-radius: 12px; border: 1px solid var(--border); padding: 0 12px;
-      font: 15px ui-monospace, Menlo, monospace; background: transparent; color: var(--text); }
-    #token button { margin-top: 12px; width: 100%; height: 46px; border-radius: 12px; border: 0; background: var(--accent);
-      color: #fff; font: 600 16px inherit; font-family: inherit; cursor: pointer; }
+    #token form { width: 100%; max-width: 420px; border-radius: 26px; padding: 28px; background: var(--glass-strong); }
+    #token h1 { margin: 0 0 8px; font-weight: 300; font-size: 30px; letter-spacing: -0.03em; }
+    #token p { margin: 0 0 18px; color: var(--ink-soft); line-height: 1.5; }
+    #token input { width: 100%; height: 48px; border-radius: 14px; border: 1px solid var(--hair); padding: 0 14px;
+      font: 14px ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(255,255,255,0.6); color: var(--ink); }
+    #token button { margin-top: 12px; width: 100%; height: 48px; border-radius: 14px; border: 0; background: var(--ink);
+      color: #fff; font-weight: 500; font-size: 15px; }
+
+    .mapboxgl-ctrl-bottom-left, .mapboxgl-ctrl-bottom-right { z-index: 2; }
+    @media (min-width: 900px) {
+      #dock { left: auto; right: calc(var(--gutter-r) + 70px); bottom: calc(env(safe-area-inset-bottom) + 34px); width: 460px; }
+      #card { left: var(--gutter-l); right: auto; width: 380px; bottom: calc(env(safe-area-inset-bottom) + 40px); margin: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
+    }
   </style>
 </head>
 <body>
   <div id="map"></div>
+  <canvas id="snow" aria-hidden="true"></canvas>
+  <div id="wash" aria-hidden="true"></div>
 
+  <header id="title">
+    <h1 id="resort-name">Ski Map</h1>
+    <p id="resort-meta"></p>
+    <p id="resort-counts"></p>
+    <ul id="legend" aria-label="Run colours"></ul>
+    <p id="status" role="status"></p>
+  </header>
+
+  <button id="search-open" class="glass" aria-label="Search ski resorts (press /)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
+  </button>
   <div id="search" class="glass" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-owns="results">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>
     <input id="resort-q" type="search" autocomplete="off" spellcheck="false" enterkeyhint="go"
            aria-label="Search ski resorts" aria-autocomplete="list" aria-controls="results">
-    <button id="world" aria-label="Show all ski resorts" title="All resorts">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3Z"/></svg>
+    <button id="search-close" aria-label="Close search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
   </div>
   <ul id="results" class="glass" role="listbox" aria-label="Ski resorts" hidden></ul>
 
-  <div id="controls">
-    <button id="toggle3d" class="glass" aria-label="Switch to flat 2D map">2D</button>
-    <button id="look" class="glass" aria-label="Switch map style" title="Map style">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 13 9 5 9-5"/></svg>
+  <nav id="rail" class="glass" aria-label="Map view">
+    <button id="toggle3d" aria-label="Switch to flat 2D map">2D</button>
+    <button id="look" aria-label="Switch map style" title="Map style">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round" aria-hidden="true"><path d="m12 3.5 8.5 4.75L12 13 3.5 8.25 12 3.5Z"/><path d="m3.5 12.5 8.5 4.75 8.5-4.75"/><path d="m3.5 16.25 8.5 4.75 8.5-4.75" opacity=".5"/></svg>
     </button>
-    <button id="light" class="glass" aria-label="Map lighting" title="Lighting">☀︎</button>
-  </div>
+    <button id="world" aria-label="Show all ski resorts" title="All resorts">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.5 3.6 5.3 3.6 8.5s-1.2 6-3.6 8.5c-2.4-2.5-3.6-5.3-3.6-8.5S9.6 6 12 3.5Z"/></svg>
+    </button>
+  </nav>
 
-  <div id="card" class="glass" role="dialog">
-    <div class="dot"></div>
+  <div id="card" role="dialog" aria-label="Details" class="glass">
+    <span class="dot"></span>
     <div><b></b><small></small></div>
-    <button aria-label="Close">×</button>
-  </div>
-  <div id="legend" class="glass" aria-label="Map key"></div>
-  <div id="status" class="glass" role="status"></div>
-
-  <div id="orbit" class="glass" role="slider" tabindex="0" aria-label="Turn the view: drag left or right"
-       aria-valuemin="0" aria-valuemax="359" aria-valuenow="0">
-    <div id="orbit-strip"></div>
-    <div id="orbit-needle"></div>
-    <button id="orbit-play" aria-pressed="false" aria-label="Fly around the mountain">
-      <svg class="play" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>
-      <svg class="pause" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+    <button aria-label="Close details">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
     </button>
   </div>
+
+  <section id="dock" class="glass" aria-label="Time of day and view direction">
+    <div class="hour-row">
+      <div class="track">
+        <svg class="arc" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 28 Q50 -14 100 28"/></svg>
+        <span id="sun" aria-hidden="true"></span>
+        <input id="hour" type="range" step="0.05" aria-label="Time of day">
+      </div>
+      <span id="hour-label"></span>
+    </div>
+    <div id="orbit" role="slider" tabindex="0" aria-label="Turn the view: drag left or right"
+         aria-valuemin="0" aria-valuemax="359" aria-valuenow="0">
+      <div id="orbit-strip"></div>
+      <div id="orbit-needle"></div>
+      <button id="orbit-play" aria-pressed="false" aria-label="Fly around the mountain">
+        <svg class="play" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l12.5-7.5z"/></svg>
+        <svg class="pause" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6.5 4.5h4v15h-4zM13.5 4.5h4v15h-4z"/></svg>
+      </button>
+    </div>
+  </section>
 
   <div id="token">
-    <form class="glass">
-      <h1>Ski map</h1>
-      <p>Paste your Mapbox public token (starts with <code>pk.</code>). It is kept in this browser only.</p>
-      <input name="t" placeholder="pk.eyJ…" autocomplete="off" required pattern="pk\..+">
-      <button>Open map</button>
+    <form>
+      <h1>Ski Map</h1>
+      <p>Paste your Mapbox public token (it starts with <code>pk.</code>). It stays in this browser.</p>
+      <input name="t" placeholder="pk.eyJ…" autocomplete="off" required pattern="pk\..+" aria-label="Mapbox public token">
+      <button>Open the mountains</button>
     </form>
   </div>
 

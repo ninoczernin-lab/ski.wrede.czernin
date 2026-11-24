@@ -2,17 +2,17 @@ import SwiftUI
 // Elevated lines (line-z-offset) are an experimental Mapbox v11 API.
 @_spi(Experimental) import MapboxMaps
 
-/// 3D resort map on Mapbox Standard (3D buildings, trees, lighting) with real terrain,
-/// relief shading, OSM pistes/lifts draped on the slopes and extruded lift pylons/stations.
-/// One MapView for every resort; switching resort swaps data and flies the camera.
+/// Each resort as a living miniature mountain at a chosen hour: Mapbox Standard repainted as a crisp
+/// snow diorama, real terrain, relief and ridge light from the sun's side, OSM runs as high-contrast
+/// ribbons and hanging lift cables. One MapView for every resort; switching resort flies the camera in.
 struct ResortMapView: UIViewRepresentable {
     let resort: Resort?
     var is3D: Bool = true
-    var lightPreset: String = "day"          // "dawn" | "day" | "dusk" | "night"
+    var hour: Double = 15.5                   // time of day; drives sun, sky and shading (Daylight.swift)
     @Binding var selectedFeature: [String: Any]?
 
     static let terrainExaggeration = 1.5
-    static let pitch3D = 65.0
+    static let pitch3D = 62.0                 // tilted-diorama angle
 
     func makeCoordinator() -> Coordinator { Coordinator(self) }
 
@@ -37,7 +37,7 @@ struct ResortMapView: UIViewRepresentable {
         c.parent = self
         c.show(resort)
         if old.is3D != is3D { c.apply3D(is3D, animated: true) }
-        if old.lightPreset != lightPreset { c.applyLight() }
+        if old.hour != hour { c.applyLight() }
     }
 
     final class Coordinator {
@@ -54,7 +54,7 @@ struct ResortMapView: UIViewRepresentable {
             ["match", ["get", "aerialway"], groundLifts, 1.0, is3D ? liftShadowOpacity : 1.0]
         }
         private let sources = ["pistes", "piste_areas", "lifts", "lift_spans", "stations", "structures", "cabins"]
-        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-unknown", "lifts-line", "lifts-cable",
+        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-sheen", "pistes-unknown", "lifts-line", "lifts-cable",
                               "structures-3d", "cabins-3d", "pistes-label", "lifts-label"]
 
         init(_ parent: ResortMapView) { self.parent = parent }
@@ -83,15 +83,41 @@ struct ResortMapView: UIViewRepresentable {
 
         private func configureStandard() {
             guard let map = mapView?.mapboxMap else { return }
-            try? map.setStyleImportConfigProperty(for: "basemap", config: "show3dObjects", value: true)
-            try? map.setStyleImportConfigProperty(for: "basemap", config: "showPointOfInterestLabels", value: true)
-            try? map.setStyleImportConfigProperty(for: "basemap", config: "showTransitLabels", value: false)
+            // Snow diorama: faded theme, snow-toned land, greenspace close to the snow so forests draw no hard edge.
+            let config: [String: Any] = [
+                "theme": "faded", "colorLand": "#f4f7fb", "colorGreenspace": "#e3ebe6", "colorWater": "#79aed6",
+                "show3dObjects": true, "showPointOfInterestLabels": false, "showTransitLabels": false, "showRoadLabels": false,
+            ]
+            for (key, value) in config { try? map.setStyleImportConfigProperty(for: "basemap", config: key, value: value) }
             applyLight()
         }
 
+        private var lastPreset: String?
+        /// The hour: Standard's preset, an Alto-style sky gradient in the atmosphere, and relief lit from the sun's side.
         func applyLight() {
-            try? mapView?.mapboxMap.setStyleImportConfigProperty(for: "basemap", config: "lightPreset",
-                                                                  value: parent.lightPreset)
+            guard let map = mapView?.mapboxMap else { return }
+            let d = Daylight(hour: parent.hour, southern: (parent.resort?.camera.lat ?? 47) < 0)
+            if d.preset != lastPreset {
+                try? map.setStyleImportConfigProperty(for: "basemap", config: "lightPreset", value: d.preset)
+                lastPreset = d.preset
+            }
+            var atmosphere = Atmosphere()
+            atmosphere.color = .constant(StyleColor(d.horizon))
+            atmosphere.highColor = .constant(StyleColor(d.zenith))
+            atmosphere.spaceColor = .constant(StyleColor(d.space))
+            atmosphere.horizonBlend = .constant(0.12)
+            atmosphere.range = .constant([0.6, 9])
+            atmosphere.starIntensity = .constant(d.stars)
+            try? map.setAtmosphere(atmosphere)
+            guard map.layerExists(withId: "relief") else { return }
+            try? map.setLayerProperties(for: "relief", properties: [
+                "hillshade-shadow-color": d.shadow.hexString, "hillshade-highlight-color": d.highlight.hexString,
+                "hillshade-accent-color": d.accent.hexString, "hillshade-illumination-direction": d.azimuth,
+                "hillshade-exaggeration": d.relief,
+            ])
+            try? map.setLayerProperties(for: "ridge-light", properties: [
+                "hillshade-illumination-direction": d.azimuth, "hillshade-exaggeration": d.altitude > 0 ? 0.55 : 0.15,
+            ])
         }
 
         // MARK: Terrain + relief
@@ -117,11 +143,17 @@ struct ResortMapView: UIViewRepresentable {
             try? map.addSource(shadeDem)
             var relief = HillshadeLayer(id: "relief", source: "mapbox-dem-shade")
             relief.slot = .bottom
-            relief.hillshadeExaggeration = .constant(0.45)
-            relief.hillshadeShadowColor = .constant(StyleColor(UIColor(red: 0.20, green: 0.25, blue: 0.35, alpha: 1)))
-            relief.hillshadeHighlightColor = .constant(StyleColor(.white))
             relief.hillshadeIlluminationAnchor = .constant(.map)
             try? map.addLayer(relief)
+            // Ridge light: a highlight-only pass from the sun's side so crests catch a crisp white edge.
+            var ridge = HillshadeLayer(id: "ridge-light", source: "mapbox-dem-shade")
+            ridge.slot = .bottom
+            ridge.hillshadeIlluminationAnchor = .constant(.map)
+            ridge.hillshadeShadowColor = .constant(StyleColor(.clear))
+            ridge.hillshadeAccentColor = .constant(StyleColor(.clear))
+            ridge.hillshadeHighlightColor = .constant(StyleColor(UIColor(white: 1, alpha: 0.9)))
+            try? map.addLayer(ridge)
+            applyLight()
         }
 
         /// 3D: tilted camera + terrain. 2D: flat top-down map (relief shading stays for orientation).
@@ -165,10 +197,25 @@ struct ResortMapView: UIViewRepresentable {
                 if layer == "lift_spans" { src.lineMetrics = true }   // needed for line-progress
                 try? map.addSource(src)
             }
-            addLayers(map)
-            mapView?.camera.fly(to: CameraOptions(center: r.center, zoom: r.camera.zoom, bearing: r.camera.bearing,
-                                                  pitch: parent.is3D ? max(r.camera.pitch, ResortMapView.pitch3D) : 0),
-                                duration: 2.5)
+            addLayers(map, country: r.country)
+            applyLight()
+            flyIn(r)
+        }
+
+        /// Cinematic fly-in: a high drone pass, then a slow descending arc onto the resort's own angle.
+        /// Reduce Motion gets a direct cut instead.
+        private func flyIn(_ r: Resort) {
+            guard let mapView else { return }
+            let target = CameraOptions(center: r.center, zoom: r.camera.zoom, bearing: r.camera.bearing,
+                                       pitch: parent.is3D ? ResortMapView.pitch3D : 0)
+            if UIAccessibility.isReduceMotionEnabled { mapView.mapboxMap.setCamera(to: target); return }
+            let pass = CameraOptions(center: r.center, zoom: r.camera.zoom - 1.4, bearing: r.camera.bearing - 55,
+                                     pitch: parent.is3D ? 44 : 0)
+            let id = r.id
+            mapView.camera.fly(to: pass, duration: 2.4) { [weak self] position in
+                guard position == .end, self?.currentId == id else { return }   // interrupted: leave the camera
+                self?.mapView?.camera.ease(to: target, duration: 3.2, curve: .easeOut)
+            }
         }
 
         private func widthByZoom(_ z11: Double, _ z16: Double) -> Value<Double> {
@@ -178,11 +225,12 @@ struct ResortMapView: UIViewRepresentable {
         private var isDownhill: Exp { Exp(.eq) { Exp(.get) { "piste:type" }; "downhill" } }
         private var isUnknown: Exp { Exp(.eq) { Exp(.get) { "piste:difficulty" }; "unknown" } }
 
-        private func addLayers(_ map: MapboxMap) {
+        private func addLayers(_ map: MapboxMap, country: String) {
+            let runColors = PisteDifficulty.colorExpression(for: country)
             // Piste areas (wide open slopes) as a faint tint under the run lines.
             var areas = FillLayer(id: "piste-areas-fill", source: "piste_areas")
             areas.slot = .middle
-            areas.fillColor = .expression(PisteDifficulty.colorExpression)
+            areas.fillColor = .expression(runColors)
             areas.fillOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 0.06; 15; 0.14 })
             try? map.addLayer(areas)
 
@@ -203,7 +251,7 @@ struct ResortMapView: UIViewRepresentable {
             var pistes = LineLayer(id: "pistes-line", source: "pistes")
             pistes.slot = .top
             pistes.filter = Exp(.all) { isDownhill; Exp(.not) { isUnknown } }
-            pistes.lineColor = .expression(PisteDifficulty.colorExpression)
+            pistes.lineColor = .expression(runColors)
             pistes.lineWidth = .expression(PisteWidth.expression(PisteWidth.line))
             pistes.lineCap = .constant(.round)
             pistes.lineJoin = .constant(.round)
@@ -212,10 +260,22 @@ struct ResortMapView: UIViewRepresentable {
             try? map.addLayer(pistes)
 
             // Runs OSM doesn't classify: dashed grey, so they never look like a real blue/red/black.
+            // Snow sheen: a thin light line down each run, like groomed corduroy catching the sun.
+            var sheen = LineLayer(id: "pistes-sheen", source: "pistes")
+            sheen.slot = .top
+            sheen.minZoom = 12
+            sheen.filter = isDownhill
+            sheen.lineColor = .constant(StyleColor(.white))
+            sheen.lineOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 0; 13.5; 0.38 })
+            sheen.lineWidth = .expression(PisteWidth.expression(PisteWidth.sheen))
+            sheen.lineCap = .constant(.round)
+            sheen.lineEmissiveStrength = .constant(1)
+            try? map.addLayer(sheen)
+
             var unknown = LineLayer(id: "pistes-unknown", source: "pistes")
             unknown.slot = .top
             unknown.filter = Exp(.all) { isDownhill; isUnknown }
-            unknown.lineColor = .constant(StyleColor(PisteDifficulty.unknown.color))
+            unknown.lineColor = .constant(StyleColor(PisteDifficulty.unknown.color(in: .eu)))
             unknown.lineWidth = .expression(PisteWidth.expression(PisteWidth.line))
             unknown.lineDasharray = .constant([1.5, 1])
             unknown.lineEmissiveStrength = .constant(1)
@@ -313,7 +373,7 @@ struct ResortMapView: UIViewRepresentable {
             runLabel.symbolSpacing = .constant(350)
             runLabel.textSize = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 11; 16; 14 })
             runLabel.textColor = .constant(StyleColor(.white))
-            runLabel.textHaloColor = .expression(PisteDifficulty.colorExpression)
+            runLabel.textHaloColor = .expression(runColors)
             runLabel.textHaloWidth = .constant(2.5)
             runLabel.textPitchAlignment = .constant(.viewport)
             runLabel.textKeepUpright = .constant(true)
