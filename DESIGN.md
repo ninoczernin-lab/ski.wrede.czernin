@@ -56,6 +56,15 @@ colors:
   tier-1: "#ff3d5f"
   tier-2: "#2b8bff"
   tier-3: "#7a7fa8"
+  track-night: "#3a4478"
+  track-dawn: "#f4b39b"
+  track-morning: "#9cc8f0"
+  track-noon: "#e9f2fb"
+  track-golden: "#ffd28f"
+  track-dusk: "#7d72b8"
+  track-late-night: "#1c2446"
+  sun-core: "#fff7e2"
+  moon-shadow: "rgba(4, 8, 24, 0.45)"
 typography:
   display:
     fontFamily: "Sora, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif"
@@ -73,6 +82,10 @@ typography:
     fontSize: "17px"
     fontWeight: 500
     letterSpacing: "-0.01em"
+  title-small:
+    fontFamily: "Sora, ui-sans-serif, system-ui, sans-serif"
+    fontSize: "15px"
+    fontWeight: 500
   body:
     fontFamily: "Sora, ui-sans-serif, system-ui, sans-serif"
     fontSize: "14px"
@@ -98,8 +111,14 @@ typography:
     fontSize: "11px"
     fontWeight: 500
 rounded:
+  hairline: "1px"
+  thread: "2px"
+  swatch: "3px"
+  focus-track: "12px"
   field: "14px"
+  play: "16px"
   row: "18px"
+  dial: "19px"
   card: "22px"
   list: "24px"
   panel: "26px"
@@ -141,6 +160,7 @@ components:
   result-row:
     backgroundColor: "transparent"
     textColor: "{colors.ink}"
+    typography: "{typography.title-small}"
     rounded: "{rounded.row}"
     padding: "11px 14px"
   details-card:
@@ -152,7 +172,7 @@ components:
   orbit-play:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.sky-horizon-noon}"
-    rounded: "{rounded.full}"
+    rounded: "{rounded.play}"
     size: "32px"
   run-badge:
     backgroundColor: "{colors.run-blue}"
@@ -163,6 +183,7 @@ components:
   primary-button:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.sky-horizon-noon}"
+    typography: "{typography.title-small}"
     rounded: "{rounded.field}"
     height: "48px"
 ---
@@ -213,6 +234,9 @@ Regional schemes: **Europe** blue / red / black plus orange freeride (France and
 
 ### Tertiary: sky and sun
 - **Noon Zenith** (sky-zenith-noon) and **Noon Horizon** (sky-horizon-noon) are the 12:30 keyframe and the HUD defaults for `--sky-top` / `--sky-bottom`. The full hour keyframes (horizon, zenith, space, sun colour, ambient, hillshade shadow/highlight/accent, stars) live in the sidecar and are identical on web (`daylight.js`) and iOS (`Daylight.swift`).
+- **Day-cycle strip** (track-night, track-dawn, track-morning, track-noon, track-golden, track-dusk, track-late-night): the hour track's gradient stops at 0, 14, 30, 50, 80, 90 and 100%, a compressed mirror of the hour keyframes so the scrubber shows the day it controls.
+- **Sun Core** (sun-core): the warm inner light of the sun glyph, a radial gradient into Low Sun at 62%.
+- **Moon Shadow** (moon-shadow): the deeper night drop shadow under the sun glyph once it has set and turned to a pale moon.
 - **Low Sun** (sun): the sun disc, the orbit needle, the text caret, selection highlight and the hovered search row (mixed at 16%).
 
 ### Neutral
@@ -245,7 +269,8 @@ Regional schemes: **Europe** blue / red / black plus orange freeride (France and
 - **Display** (300, clamp(28px, 7.4vw, 46px), 1.02, -0.03em, balanced wrap): the resort name over the sky, with a soft sky-coloured text shadow.
 - **Headline** (300, 30px, -0.03em): the token screen title.
 - **Title** (500, 17px, -0.01em): details-card name; the search field input at 400.
-- **Body** (400, 14px/1.4): base UI; result names at 500 15px.
+- **Title Small** (500, 15px): search result names and the token screen button.
+- **Body** (400, 14px/1.4): base UI.
 - **Label** (500, 12-13px, 0.01em, tabular figures): country and tier line, run and lift counts, legend, hour label, status.
 - **Compass** (600, 10px, 0.08em): cardinal letters on the orbit dial.
 - **Map labels**: run numbers in DIN Pro Bold, white on a run-coloured pill, 11-13.5px by zoom; lift names in DIN Pro Medium with the lift type below at 0.78 scale, charcoal on a white bubble; run names in DIN Pro Bold 12.5px in the run colour with a 2.4px white halo; contour heights in DIN Pro Medium 10.5px.
@@ -278,7 +303,7 @@ Depth lives in the terrain: real relief, hour-driven directional light with cast
 ### Shadow Vocabulary
 - **Glass float** (`box-shadow: 0 10px 30px -8px rgba(18, 30, 52, 0.28), 0 2px 6px rgba(18, 30, 52, 0.1)`): every glass panel and button.
 - **Glass material** (`backdrop-filter: blur(22px) saturate(1.5)` with a 1px glass-edge border): the frosted surface itself.
-- **Sun disc** (`0 0 0 1.5px rgba(255,255,255,0.95), 0 3px 8px rgba(18,30,52,0.28)`): the sun marker; a moon variant below the horizon.
+- **Sun disc** (`0 0 0 1.5px rgba(255,255,255,0.95), 0 3px 8px rgba(18,30,52,0.28)`): the sun marker. Below the horizon the moon variant uses a softer ring and Moon Shadow (`0 0 0 1.5px rgba(255,255,255,0.7), 0 3px 8px rgba(4,8,24,0.45)`).
 - **Badge lift** (canvas shadow rgba(30, 34, 80, 0.28), blur 4, offset 1.5): run-number pills on the map.
 
 ### Named Rules
@@ -288,7 +313,7 @@ Depth lives in the terrain: real relief, hour-driven directional light with cast
 
 ## Shapes
 
-Soft, continuous, pill-leaning geometry. Round buttons and pills are full circles or capsules; panels use large radii scaled to their size: field 14px, result row 18px, card and rail button 22px, results list 24px, rail, dock and token form 26px, search field 28px. Legend and card swatches are capsules (run 20 x 6px, lift 22 x 4px thread, unclassified a 4px dashed rule in run-unclassified). On the map, lines use round caps and joins; run-number badges are stretchable rounded pills (radius 12). The one sharp-edged geometry is the 3D furniture: boxy masts, stations and cabins, and octagonal pine tiers. iOS uses continuous-corner rounded rectangles at 22pt and circles.
+Soft, continuous, pill-leaning geometry. Round buttons and pills are full circles or capsules; panels use large radii scaled to their size: field 14px, result row 18px, card and rail button 22px, results list 24px, rail, dock and token form 26px, search field 28px. Pill halves are named where they recur: the orbit dial 19px (half its 38px height), the orbit play button 16px (half of 32px). Small marks round to their own half-height: the hour track and orbit needle 1px, the lift thread on the card 2px, legend swatches 3px. The hour slider's focus outline follows a 12px radius. Legend and card swatches are capsules (run 20 x 6px, lift 22 x 4px thread, unclassified a 4px dashed rule in run-unclassified). On the map, lines use round caps and joins; run-number badges are stretchable rounded pills (radius 12). The one sharp-edged geometry is the 3D furniture: boxy masts, stations and cabins, and octagonal pine tiers. iOS uses continuous-corner rounded rectangles at 22pt and circles.
 
 ## Components
 
