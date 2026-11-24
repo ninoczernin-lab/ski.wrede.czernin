@@ -714,11 +714,17 @@ input.addEventListener('keydown', (e) => {
   else if (e.key === 'Enter' && hits[active]) { e.preventDefault(); pickResort(hits[active]); }
   else if (e.key === 'Escape') { closeSearch(); }
 });
-list.addEventListener('pointerdown', (e) => {
+// Pick on a real tap only. Picking on pointerdown (as before) grabbed the first touch of every scroll
+// gesture, so the list could never be scrolled on a phone; the browser fires no click after a scroll.
+list.addEventListener('click', (e) => {
   const li = e.target.closest('[role=option]');
-  if (li) { e.preventDefault(); pickResort(hits[Number(li.dataset.i)]); }
+  if (li) pickResort(hits[Number(li.dataset.i)]);
 });
-input.addEventListener('blur', () => setTimeout(() => { if (document.activeElement !== input && !document.activeElement?.closest('#search')) closeSearch(); }, 150));
+// Keep the field focused when a row is pressed with a mouse (so the list doesn't lose the keyboard on desktop).
+list.addEventListener('mousedown', (e) => { if (e.target.closest('[role=option]')) e.preventDefault(); });
+// The list stays open when the keyboard is dismissed; it closes with ×, Escape, a pick, or touching the map.
+map.on('mousedown', () => { if (document.body.classList.contains('searching')) closeSearch(); });
+map.on('touchstart', () => { if (document.body.classList.contains('searching')) closeSearch(); });
 
 // Globe button: zoom out to every resort.
 $('#world').addEventListener('click', () => {
