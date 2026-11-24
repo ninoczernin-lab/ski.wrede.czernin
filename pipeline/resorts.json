@@ -1,26 +1,6580 @@
 [
-  {
-    "id": "ski-arlberg",
-    "name": "Ski Arlberg",
-    "country": "AT",
-    "villages": ["St. Anton", "St. Christoph", "Stuben", "Lech", "Zürs", "Oberlech", "Warth", "Schröcken"],
-    "bbox": { "south": 47.08, "west": 10.03, "north": 47.30, "east": 10.33 },
-    "camera": { "lat": 47.17, "lon": 10.19, "zoom": 11.6, "bearing": 200, "pitch": 62 }
+ {
+  "id": "kitzski",
+  "name": "KitzSki",
+  "country": "AT",
+  "tier": 1,
+  "villages": [
+   "Kitzbühel",
+   "Kirchberg",
+   "Jochberg",
+   "Pass Thurn",
+   "Mittersill",
+   "Hollersbach"
+  ],
+  "bbox": {
+   "south": 47.22,
+   "west": 12.22,
+   "north": 47.48,
+   "east": 12.52
   },
-  {
-    "id": "kitzski",
-    "name": "KitzSki",
-    "country": "AT",
-    "villages": ["Kitzbühel", "Kirchberg", "Jochberg", "Pass Thurn", "Mittersill", "Hollersbach"],
-    "bbox": { "south": 47.22, "west": 12.22, "north": 47.48, "east": 12.52 },
-    "camera": { "lat": 47.36, "lon": 12.37, "zoom": 11.3, "bearing": 170, "pitch": 62 }
-  },
-  {
-    "id": "les-3-vallees",
-    "name": "Les 3 Vallées",
-    "country": "FR",
-    "villages": ["Courchevel", "La Tania", "Méribel", "Brides-les-Bains", "Les Menuires", "Saint-Martin-de-Belleville", "Val Thorens", "Orelle"],
-    "bbox": { "south": 45.19, "west": 6.45, "north": 45.48, "east": 6.70 },
-    "camera": { "lat": 45.34, "lon": 6.58, "zoom": 11.2, "bearing": 20, "pitch": 62 }
+  "camera": {
+   "lat": 47.36,
+   "lon": 12.37,
+   "zoom": 11.3,
+   "bearing": 170,
+   "pitch": 62
   }
+ },
+ {
+  "id": "ski-arlberg",
+  "name": "Ski Arlberg",
+  "country": "AT",
+  "tier": 1,
+  "villages": [
+   "St. Anton",
+   "St. Christoph",
+   "Stuben",
+   "Lech",
+   "Zürs",
+   "Oberlech",
+   "Warth",
+   "Schröcken"
+  ],
+  "bbox": {
+   "south": 47.08,
+   "west": 10.03,
+   "north": 47.3,
+   "east": 10.33
+  },
+  "camera": {
+   "lat": 47.17,
+   "lon": 10.19,
+   "zoom": 11.6,
+   "bearing": 200,
+   "pitch": 62
+  }
+ },
+ {
+  "id": "les-3-vallees",
+  "name": "Les 3 Vallées",
+  "country": "FR",
+  "tier": 1,
+  "villages": [
+   "Courchevel",
+   "La Tania",
+   "Méribel",
+   "Brides-les-Bains",
+   "Les Menuires",
+   "Saint-Martin-de-Belleville",
+   "Val Thorens",
+   "Orelle"
+  ],
+  "bbox": {
+   "south": 45.19,
+   "west": 6.45,
+   "north": 45.48,
+   "east": 6.7
+  },
+  "camera": {
+   "lat": 45.34,
+   "lon": 6.58,
+   "zoom": 11.2,
+   "bearing": 20,
+   "pitch": 62
+  }
+ },
+ {
+  "id": "verbier-4-vallees",
+  "name": "Verbier 4 Vallées",
+  "country": "CH",
+  "tier": 1,
+  "villages": [
+   "Verbier",
+   "Nendaz",
+   "Veysonnaz",
+   "Thyon",
+   "La Tzoumaz",
+   "Quatre Vallées"
+  ],
+  "bbox": {
+   "south": 46.0122,
+   "west": 7.1345,
+   "north": 46.2278,
+   "east": 7.4455
+  },
+  "camera": {
+   "lat": 46.12,
+   "lon": 7.29,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.47
+  }
+ },
+ {
+  "id": "paradiski",
+  "name": "Paradiski",
+  "country": "FR",
+  "tier": 1,
+  "villages": [
+   "La Plagne",
+   "Les Arcs",
+   "Peisey-Vallandry",
+   "Champagny",
+   "Vanoise Express"
+  ],
+  "bbox": {
+   "south": 45.4322,
+   "west": 6.5861,
+   "north": 45.6478,
+   "east": 6.8939
+  },
+  "camera": {
+   "lat": 45.54,
+   "lon": 6.74,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.47
+  }
+ },
+ {
+  "id": "campiglio-dolomiti-di-brenta",
+  "name": "Campiglio Dolomiti di Brenta",
+  "country": "IT",
+  "tier": 1,
+  "villages": [
+   "Madonna di Campiglio",
+   "Pinzolo",
+   "Folgarida",
+   "Marilleva",
+   "Val di Sole",
+   "Val Rendena"
+  ],
+  "bbox": {
+   "south": 46.1222,
+   "west": 10.6442,
+   "north": 46.3378,
+   "east": 10.9558
+  },
+  "camera": {
+   "lat": 46.23,
+   "lon": 10.8,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.47
+  }
+ },
+ {
+  "id": "skicircus-saalbach-hinterglemm-leogang-fieberbrunn",
+  "name": "Skicircus Saalbach Hinterglemm Leogang Fieberbrunn",
+  "country": "AT",
+  "tier": 1,
+  "villages": [
+   "Saalbach",
+   "Hinterglemm",
+   "Leogang",
+   "Fieberbrunn"
+  ],
+  "bbox": {
+   "south": 47.3032,
+   "west": 12.4874,
+   "north": 47.5368,
+   "east": 12.8326
+  },
+  "camera": {
+   "lat": 47.42,
+   "lon": 12.66,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.37
+  }
+ },
+ {
+  "id": "skiwelt-wilder-kaiser-brixental",
+  "name": "SkiWelt Wilder Kaiser – Brixental",
+  "country": "AT",
+  "tier": 1,
+  "villages": [
+   "Ellmau",
+   "Going",
+   "Scheffau",
+   "Söll",
+   "Itter",
+   "Hopfgarten",
+   "Brixen im Thale",
+   "Westendorf",
+   "Kelchsau"
+  ],
+  "bbox": {
+   "south": 47.3622,
+   "west": 12.0805,
+   "north": 47.5778,
+   "east": 12.3995
+  },
+  "camera": {
+   "lat": 47.47,
+   "lon": 12.24,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.47
+  }
+ },
+ {
+  "id": "grandvalira",
+  "name": "Grandvalira",
+  "country": "AD",
+  "tier": 1,
+  "villages": [
+   "Pas de la Casa",
+   "Grau Roig",
+   "Soldeu",
+   "El Tarter",
+   "Canillo",
+   "Encamp",
+   "Andorra",
+   "Grandvalira Resorts"
+  ],
+  "bbox": {
+   "south": 42.4612,
+   "west": 1.5358,
+   "north": 42.6588,
+   "east": 1.8042
+  },
+  "camera": {
+   "lat": 42.56,
+   "lon": 1.67,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.59
+  }
+ },
+ {
+  "id": "whistler-blackcomb",
+  "name": "Whistler Blackcomb",
+  "country": "CA",
+  "tier": 1,
+  "villages": [
+   "Whistler",
+   "Blackcomb",
+   "British Columbia"
+  ],
+  "bbox": {
+   "south": 50.0221,
+   "west": -123.023,
+   "north": 50.1479,
+   "east": -122.827
+  },
+  "camera": {
+   "lat": 50.085,
+   "lon": -122.925,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "val-gardena-alpe-di-siusi",
+  "name": "Val Gardena / Alpe di Siusi",
+  "country": "IT",
+  "tier": 1,
+  "villages": [
+   "Selva",
+   "Wolkenstein",
+   "Santa Cristina",
+   "Ortisei",
+   "St. Ulrich",
+   "Seiser Alm",
+   "Dolomiti Superski"
+  ],
+  "bbox": {
+   "south": 46.4652,
+   "west": 11.5694,
+   "north": 46.6448,
+   "east": 11.8306
+  },
+  "camera": {
+   "lat": 46.555,
+   "lon": 11.7,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "silvretta-arena-ischgl-samnaun",
+  "name": "Silvretta Arena Ischgl–Samnaun",
+  "country": "AT",
+  "tier": 1,
+  "villages": [
+   "Ischgl",
+   "Samnaun",
+   "Idalp",
+   "Paznaun"
+  ],
+  "bbox": {
+   "south": 46.9031,
+   "west": 10.2147,
+   "north": 47.0469,
+   "east": 10.4253
+  },
+  "camera": {
+   "lat": 46.975,
+   "lon": 10.32,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "zillertal-arena",
+  "name": "Zillertal Arena",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Zell am Ziller",
+   "Gerlos",
+   "Königsleiten",
+   "Wald im Pinzgau",
+   "Krimml"
+  ],
+  "bbox": {
+   "south": 47.1302,
+   "west": 11.8677,
+   "north": 47.3098,
+   "east": 12.1323
+  },
+  "camera": {
+   "lat": 47.22,
+   "lon": 12,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "serfaus-fiss-ladis",
+  "name": "Serfaus-Fiss-Ladis",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Serfaus",
+   "Fiss",
+   "Ladis"
+  ],
+  "bbox": {
+   "south": 46.9771,
+   "west": 10.5277,
+   "north": 47.1029,
+   "east": 10.7123
+  },
+  "camera": {
+   "lat": 47.04,
+   "lon": 10.62,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "snow-space-salzburg",
+  "name": "Snow Space Salzburg",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Flachau",
+   "Wagrain",
+   "St. Johann im Pongau",
+   "Alpendorf",
+   "Ski Amadé"
+  ],
+  "bbox": {
+   "south": 47.2492,
+   "west": 13.2107,
+   "north": 47.4108,
+   "east": 13.4493
+  },
+  "camera": {
+   "lat": 47.33,
+   "lon": 13.33,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "schladming-dachstein",
+  "name": "Schladming-Dachstein",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Schladming",
+   "Planai",
+   "Hochwurzen",
+   "Hauser Kaibling",
+   "Reiteralm",
+   "Ski Amadé"
+  ],
+  "bbox": {
+   "south": 47.2902,
+   "west": 13.5473,
+   "north": 47.4698,
+   "east": 13.8127
+  },
+  "camera": {
+   "lat": 47.38,
+   "lon": 13.68,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "vail-mountain",
+  "name": "Vail Mountain",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Vail",
+   "Colorado",
+   "Back Bowls"
+  ],
+  "bbox": {
+   "south": 39.5521,
+   "west": -106.4416,
+   "north": 39.6779,
+   "east": -106.2784
+  },
+  "camera": {
+   "lat": 39.615,
+   "lon": -106.36,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "breckenridge-ski-resort",
+  "name": "Breckenridge Ski Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Breckenridge",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.4301,
+   "west": -106.1282,
+   "north": 39.5199,
+   "east": -106.0118
+  },
+  "camera": {
+   "lat": 39.475,
+   "lon": -106.07,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "alta-badia",
+  "name": "Alta Badia",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Corvara",
+   "La Villa",
+   "San Cassiano",
+   "Colfosco",
+   "Badia",
+   "Sellaronda"
+  ],
+  "bbox": {
+   "south": 46.4971,
+   "west": 11.7985,
+   "north": 46.6229,
+   "east": 11.9815
+  },
+  "camera": {
+   "lat": 46.56,
+   "lon": 11.89,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "kronplatz-plan-de-corones",
+  "name": "Kronplatz / Plan de Corones",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Kronplatz",
+   "Plan de Corones",
+   "Brunico",
+   "Bruneck",
+   "Olang"
+  ],
+  "bbox": {
+   "south": 46.6751,
+   "west": 11.8632,
+   "north": 46.8009,
+   "east": 12.0468
+  },
+  "camera": {
+   "lat": 46.738,
+   "lon": 11.955,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "tignes",
+  "name": "Tignes",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Tignes",
+   "Val Claret",
+   "Espace Killy",
+   "Grande Motte"
+  ],
+  "bbox": {
+   "south": 45.4061,
+   "west": 6.8332,
+   "north": 45.5139,
+   "east": 6.9868
+  },
+  "camera": {
+   "lat": 45.46,
+   "lon": 6.91,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "val-d-isere",
+  "name": "Val d'Isère",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Val d'Isere",
+   "Espace Killy",
+   "Le Fornet"
+  ],
+  "bbox": {
+   "south": 45.3861,
+   "west": 6.8932,
+   "north": 45.4939,
+   "east": 7.0468
+  },
+  "camera": {
+   "lat": 45.44,
+   "lon": 6.97,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "zermatt",
+  "name": "Zermatt",
+  "country": "CH",
+  "tier": 2,
+  "villages": [
+   "Zermatt",
+   "Matterhorn",
+   "Sunnegga",
+   "Gornergrat",
+   "Matterhorn Glacier Paradise"
+  ],
+  "bbox": {
+   "south": 45.8992,
+   "west": 7.6237,
+   "north": 46.0608,
+   "east": 7.8563
+  },
+  "camera": {
+   "lat": 45.98,
+   "lon": 7.74,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "salen",
+  "name": "Sälen",
+  "country": "SE",
+  "tier": 2,
+  "villages": [
+   "Salen",
+   "Lindvallen",
+   "Högfjället",
+   "Tandådalen",
+   "Hundfjället"
+  ],
+  "bbox": {
+   "south": 61.0842,
+   "west": 12.9324,
+   "north": 61.2458,
+   "east": 13.2676
+  },
+  "camera": {
+   "lat": 61.165,
+   "lon": 13.1,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "mayrhofen",
+  "name": "Mayrhofen",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Mayrhofen",
+   "Penken",
+   "Ahorn",
+   "Zillertal"
+  ],
+  "bbox": {
+   "south": 47.1161,
+   "west": 11.7707,
+   "north": 47.2239,
+   "east": 11.9293
+  },
+  "camera": {
+   "lat": 47.17,
+   "lon": 11.85,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "hochzillertal-hochfugen",
+  "name": "Hochzillertal–Hochfügen",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Hochzillertal",
+   "Hochfügen",
+   "Kaltenbach",
+   "Ski-Optimal"
+  ],
+  "bbox": {
+   "south": 47.2161,
+   "west": 11.7606,
+   "north": 47.3239,
+   "east": 11.9194
+  },
+  "camera": {
+   "lat": 47.27,
+   "lon": 11.84,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "silvretta-montafon",
+  "name": "Silvretta Montafon",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Schruns",
+   "Hochjoch",
+   "St. Gallenkirch",
+   "Gaschurn",
+   "Montafon"
+  ],
+  "bbox": {
+   "south": 46.9581,
+   "west": 9.8746,
+   "north": 47.1019,
+   "east": 10.0854
+  },
+  "camera": {
+   "lat": 47.03,
+   "lon": 9.98,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "arosa-lenzerheide",
+  "name": "Arosa Lenzerheide",
+  "country": "CH",
+  "tier": 2,
+  "villages": [
+   "Arosa",
+   "Lenzerheide",
+   "Valbella",
+   "Parpan"
+  ],
+  "bbox": {
+   "south": 46.6792,
+   "west": 9.492,
+   "north": 46.8408,
+   "east": 9.728
+  },
+  "camera": {
+   "lat": 46.76,
+   "lon": 9.61,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "davos-klosters",
+  "name": "Davos Klosters",
+  "country": "CH",
+  "tier": 2,
+  "villages": [
+   "Davos",
+   "Klosters",
+   "Parsenn",
+   "Jakobshorn",
+   "Pischa",
+   "Rinerhorn"
+  ],
+  "bbox": {
+   "south": 46.7392,
+   "west": 9.7219,
+   "north": 46.9008,
+   "east": 9.9581
+  },
+  "camera": {
+   "lat": 46.82,
+   "lon": 9.84,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "mammoth-mountain",
+  "name": "Mammoth Mountain",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Mammoth Lakes",
+   "California"
+  ],
+  "bbox": {
+   "south": 37.5951,
+   "west": -119.0867,
+   "north": 37.6849,
+   "east": -118.9733
+  },
+  "camera": {
+   "lat": 37.64,
+   "lon": -119.03,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "park-city-mountain",
+  "name": "Park City Mountain",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Park City",
+   "Canyons",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 40.6061,
+   "west": -111.6111,
+   "north": 40.7139,
+   "east": -111.4689
+  },
+  "camera": {
+   "lat": 40.66,
+   "lon": -111.54,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "chamonix-les-houches",
+  "name": "Chamonix / Les Houches",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Chamonix",
+   "Les Houches",
+   "Grands Montets",
+   "Brévent",
+   "Flégère",
+   "Mont Blanc"
+  ],
+  "bbox": {
+   "south": 45.8402,
+   "west": 6.7508,
+   "north": 46.0198,
+   "east": 7.0092
+  },
+  "camera": {
+   "lat": 45.93,
+   "lon": 6.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "l-alpe-d-huez",
+  "name": "L'Alpe d'Huez",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Alpe d'Huez",
+   "Oz",
+   "Vaujany",
+   "Auris",
+   "Villard-Reculas",
+   "Grandes Rousses"
+  ],
+  "bbox": {
+   "south": 45.0192,
+   "west": 5.9655,
+   "north": 45.1808,
+   "east": 6.1945
+  },
+  "camera": {
+   "lat": 45.1,
+   "lon": 6.08,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "les-deux-alpes",
+  "name": "Les Deux Alpes",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Les 2 Alpes",
+   "Deux Alpes"
+  ],
+  "bbox": {
+   "south": 44.9461,
+   "west": 6.0538,
+   "north": 45.0539,
+   "east": 6.2062
+  },
+  "camera": {
+   "lat": 45,
+   "lon": 6.13,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "serre-chevalier",
+  "name": "Serre Chevalier",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Briançon",
+   "Chantemerle",
+   "Villeneuve",
+   "Le Monêtier-les-Bains"
+  ],
+  "bbox": {
+   "south": 44.8592,
+   "west": 6.4458,
+   "north": 45.0208,
+   "east": 6.6742
+  },
+  "camera": {
+   "lat": 44.94,
+   "lon": 6.56,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "avoriaz",
+  "name": "Avoriaz",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Avoriaz",
+   "Portes du Soleil"
+  ],
+  "bbox": {
+   "south": 46.1451,
+   "west": 6.7051,
+   "north": 46.2349,
+   "east": 6.8349
+  },
+  "camera": {
+   "lat": 46.19,
+   "lon": 6.77,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "le-grand-massif",
+  "name": "Le Grand Massif",
+  "country": "FR",
+  "tier": 2,
+  "villages": [
+   "Flaine",
+   "Morillon",
+   "Samoëns",
+   "Les Carroz",
+   "Sixt"
+  ],
+  "bbox": {
+   "south": 45.9681,
+   "west": 6.5865,
+   "north": 46.1119,
+   "east": 6.7935
+  },
+  "camera": {
+   "lat": 46.04,
+   "lon": 6.69,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "stubai-glacier",
+  "name": "Stubai Glacier",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Stubaier Gletscher",
+   "Neustift",
+   "Stubaital"
+  ],
+  "bbox": {
+   "south": 46.9451,
+   "west": 11.0542,
+   "north": 47.0349,
+   "east": 11.1858
+  },
+  "camera": {
+   "lat": 46.99,
+   "lon": 11.12,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "solden",
+  "name": "Sölden",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Solden",
+   "Ötztal",
+   "Gaislachkogl",
+   "Rettenbach",
+   "Tiefenbach"
+  ],
+  "bbox": {
+   "south": 46.8871,
+   "west": 10.8779,
+   "north": 47.0129,
+   "east": 11.0621
+  },
+  "camera": {
+   "lat": 46.95,
+   "lon": 10.97,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "obertauern",
+  "name": "Obertauern",
+  "country": "AT",
+  "tier": 2,
+  "villages": [
+   "Obertauern",
+   "Ski Amadé"
+  ],
+  "bbox": {
+   "south": 47.2141,
+   "west": 13.5071,
+   "north": 47.2859,
+   "east": 13.6129
+  },
+  "camera": {
+   "lat": 47.25,
+   "lon": 13.56,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "st-moritz-engadin",
+  "name": "St. Moritz / Engadin",
+  "country": "CH",
+  "tier": 2,
+  "villages": [
+   "St. Moritz",
+   "Corviglia",
+   "Corvatsch",
+   "Diavolezza",
+   "Lagalb",
+   "Engadin"
+  ],
+  "bbox": {
+   "south": 46.3622,
+   "west": 9.6935,
+   "north": 46.5778,
+   "east": 10.0065
+  },
+  "camera": {
+   "lat": 46.47,
+   "lon": 9.85,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.47
+  }
+ },
+ {
+  "id": "adelboden-lenk",
+  "name": "Adelboden-Lenk",
+  "country": "CH",
+  "tier": 2,
+  "villages": [
+   "Adelboden",
+   "Lenk",
+   "Chuenisbärgli"
+  ],
+  "bbox": {
+   "south": 46.3981,
+   "west": 7.3957,
+   "north": 46.5419,
+   "east": 7.6043
+  },
+  "camera": {
+   "lat": 46.47,
+   "lon": 7.5,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "jungfrau-ski-region",
+  "name": "Jungfrau Ski Region",
+  "country": "CH",
+  "tier": 2,
+  "villages": [
+   "Grindelwald",
+   "Wengen",
+   "Mürren",
+   "Kleine Scheidegg",
+   "First",
+   "Männlichen",
+   "Schilthorn"
+  ],
+  "bbox": {
+   "south": 46.5102,
+   "west": 7.8393,
+   "north": 46.6898,
+   "east": 8.1007
+  },
+  "camera": {
+   "lat": 46.6,
+   "lon": 7.97,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "val-di-fassa-carezza",
+  "name": "Val di Fassa / Carezza",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Canazei",
+   "Campitello",
+   "Pozza di Fassa",
+   "Vigo di Fassa",
+   "Carezza",
+   "Karersee",
+   "Dolomiti Superski"
+  ],
+  "bbox": {
+   "south": 46.3502,
+   "west": 11.5696,
+   "north": 46.5298,
+   "east": 11.8304
+  },
+  "camera": {
+   "lat": 46.44,
+   "lon": 11.7,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "cortina-d-ampezzo",
+  "name": "Cortina d'Ampezzo",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Cortina",
+   "Tofana",
+   "Faloria",
+   "Cinque Torri",
+   "Lagazuoi",
+   "Dolomiti Superski"
+  ],
+  "bbox": {
+   "south": 46.4681,
+   "west": 12.0355,
+   "north": 46.6119,
+   "east": 12.2445
+  },
+  "camera": {
+   "lat": 46.54,
+   "lon": 12.14,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "3-zinnen-dolomites",
+  "name": "3 Zinnen Dolomites",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Tre Cime",
+   "Sexten",
+   "Sesto",
+   "Innichen",
+   "San Candido",
+   "Helm",
+   "Rotwand"
+  ],
+  "bbox": {
+   "south": 46.6281,
+   "west": 12.2252,
+   "north": 46.7719,
+   "east": 12.4348
+  },
+  "camera": {
+   "lat": 46.7,
+   "lon": 12.33,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "livigno",
+  "name": "Livigno",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Livigno",
+   "Carosello 3000",
+   "Mottolino"
+  ],
+  "bbox": {
+   "south": 46.4861,
+   "west": 10.0616,
+   "north": 46.5939,
+   "east": 10.2184
+  },
+  "camera": {
+   "lat": 46.54,
+   "lon": 10.14,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "via-lattea",
+  "name": "Via Lattea",
+  "country": "IT",
+  "tier": 2,
+  "villages": [
+   "Sestriere",
+   "Sauze d’Oulx",
+   "Sansicario",
+   "Cesana",
+   "Claviere",
+   "Pragelato",
+   "Milky Way"
+  ],
+  "bbox": {
+   "south": 44.8802,
+   "west": 6.713,
+   "north": 45.0598,
+   "east": 6.967
+  },
+  "camera": {
+   "lat": 44.97,
+   "lon": 6.84,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "shiga-kogen",
+  "name": "Shiga Kogen",
+  "country": "JP",
+  "tier": 2,
+  "villages": [
+   "Shiga Kogen",
+   "Yamanouchi",
+   "Nagano",
+   "Ichinose",
+   "Yokoteyama",
+   "Okushiga"
+  ],
+  "bbox": {
+   "south": 36.6571,
+   "west": 138.4316,
+   "north": 36.7829,
+   "east": 138.5884
+  },
+  "camera": {
+   "lat": 36.72,
+   "lon": 138.51,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "keystone-resort",
+  "name": "Keystone Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Keystone",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.5451,
+   "west": -106.0083,
+   "north": 39.6349,
+   "east": -105.8917
+  },
+  "camera": {
+   "lat": 39.59,
+   "lon": -105.95,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "winter-park-resort",
+  "name": "Winter Park Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Winter Park",
+   "Mary Jane",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.8301,
+   "west": -105.8235,
+   "north": 39.9199,
+   "east": -105.7065
+  },
+  "camera": {
+   "lat": 39.875,
+   "lon": -105.765,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "steamboat-ski-resort",
+  "name": "Steamboat Ski Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Steamboat Springs",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 40.4101,
+   "west": -106.844,
+   "north": 40.4999,
+   "east": -106.726
+  },
+  "camera": {
+   "lat": 40.455,
+   "lon": -106.785,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "copper-mountain",
+  "name": "Copper Mountain",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Copper",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.4451,
+   "west": -106.2182,
+   "north": 39.5349,
+   "east": -106.1018
+  },
+  "camera": {
+   "lat": 39.49,
+   "lon": -106.16,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "aspen-snowmass",
+  "name": "Aspen Snowmass",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Aspen",
+   "Snowmass",
+   "Aspen Highlands",
+   "Buttermilk",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.1002,
+   "west": -106.9959,
+   "north": 39.2798,
+   "east": -106.7641
+  },
+  "camera": {
+   "lat": 39.19,
+   "lon": -106.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "beaver-creek-resort",
+  "name": "Beaver Creek Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Beaver Creek",
+   "Avon",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.5551,
+   "west": -106.5883,
+   "north": 39.6449,
+   "east": -106.4717
+  },
+  "camera": {
+   "lat": 39.6,
+   "lon": -106.53,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "deer-valley-resort",
+  "name": "Deer Valley Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Deer Valley",
+   "Park City",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 40.5751,
+   "west": -111.5492,
+   "north": 40.6649,
+   "east": -111.4308
+  },
+  "camera": {
+   "lat": 40.62,
+   "lon": -111.49,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "palisades-tahoe",
+  "name": "Palisades Tahoe",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Squaw Valley",
+   "Olympic Valley",
+   "Alpine Meadows",
+   "California"
+  ],
+  "bbox": {
+   "south": 39.1351,
+   "west": -120.2979,
+   "north": 39.2249,
+   "east": -120.1821
+  },
+  "camera": {
+   "lat": 39.18,
+   "lon": -120.24,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "heavenly-mountain-resort",
+  "name": "Heavenly Mountain Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Heavenly",
+   "South Lake Tahoe",
+   "Stateline",
+   "Nevada",
+   "California"
+  ],
+  "bbox": {
+   "south": 38.8811,
+   "west": -119.9843,
+   "north": 38.9889,
+   "east": -119.8457
+  },
+  "camera": {
+   "lat": 38.935,
+   "lon": -119.915,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "killington-resort",
+  "name": "Killington Resort",
+  "country": "US",
+  "tier": 2,
+  "villages": [
+   "Killington",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 43.5751,
+   "west": -72.862,
+   "north": 43.6649,
+   "east": -72.738
+  },
+  "camera": {
+   "lat": 43.62,
+   "lon": -72.8,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "wanlong-paradise-resort",
+  "name": "Wanlong Paradise Resort",
+  "country": "CN",
+  "tier": 2,
+  "villages": [
+   "Wanlong",
+   "Chongli",
+   "Zhangjiakou",
+   "Hebei"
+  ],
+  "bbox": {
+   "south": 40.8971,
+   "west": 115.3167,
+   "north": 41.0229,
+   "east": 115.4833
+  },
+  "camera": {
+   "lat": 40.96,
+   "lon": 115.4,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "thaiwoo-ski-resort",
+  "name": "Thaiwoo Ski Resort",
+  "country": "CN",
+  "tier": 2,
+  "villages": [
+   "Taiwu",
+   "Chongli",
+   "Zhangjiakou",
+   "Hebei"
+  ],
+  "bbox": {
+   "south": 40.9071,
+   "west": 115.3567,
+   "north": 41.0329,
+   "east": 115.5233
+  },
+  "camera": {
+   "lat": 40.97,
+   "lon": 115.44,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "yongpyong-resort",
+  "name": "Yongpyong Resort",
+  "country": "KR",
+  "tier": 2,
+  "villages": [
+   "Yongpyong",
+   "Pyeongchang",
+   "Gangwon"
+  ],
+  "bbox": {
+   "south": 37.6091,
+   "west": 128.6346,
+   "north": 37.6809,
+   "east": 128.7254
+  },
+  "camera": {
+   "lat": 37.645,
+   "lon": 128.68,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "high1-resort",
+  "name": "High1 Resort",
+  "country": "KR",
+  "tier": 2,
+  "villages": [
+   "High1",
+   "Jeongseon",
+   "Gangwon"
+  ],
+  "bbox": {
+   "south": 37.1691,
+   "west": 128.7849,
+   "north": 37.2409,
+   "east": 128.8751
+  },
+  "camera": {
+   "lat": 37.205,
+   "lon": 128.83,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "are",
+  "name": "Åre",
+  "country": "SE",
+  "tier": 3,
+  "villages": [
+   "Are",
+   "Duved",
+   "Björnen",
+   "Tegefjäll"
+  ],
+  "bbox": {
+   "south": 63.3281,
+   "west": 12.8995,
+   "north": 63.4719,
+   "east": 13.2205
+  },
+  "camera": {
+   "lat": 63.4,
+   "lon": 13.06,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "trysil",
+  "name": "Trysil",
+  "country": "NO",
+  "tier": 3,
+  "villages": [
+   "Trysilfjellet"
+  ],
+  "bbox": {
+   "south": 61.2561,
+   "west": 12.0977,
+   "north": 61.3639,
+   "east": 12.3223
+  },
+  "camera": {
+   "lat": 61.31,
+   "lon": 12.21,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "hemsedal",
+  "name": "Hemsedal",
+  "country": "NO",
+  "tier": 3,
+  "villages": [
+   "Hemsedal Skisenter"
+  ],
+  "bbox": {
+   "south": 60.8341,
+   "west": 8.4262,
+   "north": 60.9059,
+   "east": 8.5738
+  },
+  "camera": {
+   "lat": 60.87,
+   "lon": 8.5,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "levi",
+  "name": "Levi",
+  "country": "FI",
+  "tier": 3,
+  "villages": [
+   "Kittilä",
+   "Lapland"
+  ],
+  "bbox": {
+   "south": 67.7641,
+   "west": 24.7149,
+   "north": 67.8359,
+   "east": 24.9051
+  },
+  "camera": {
+   "lat": 67.8,
+   "lon": 24.81,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "ruka",
+  "name": "Ruka",
+  "country": "FI",
+  "tier": 3,
+  "villages": [
+   "Kuusamo",
+   "Lapland"
+  ],
+  "bbox": {
+   "south": 66.1341,
+   "west": 29.0611,
+   "north": 66.2059,
+   "east": 29.2389
+  },
+  "camera": {
+   "lat": 66.17,
+   "lon": 29.15,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "megeve-saint-gervais",
+  "name": "Megève / Saint-Gervais",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Megeve",
+   "Saint-Gervais",
+   "Mont d’Arbois",
+   "Rochebrune",
+   "Evasion Mont-Blanc"
+  ],
+  "bbox": {
+   "south": 45.7881,
+   "west": 6.5468,
+   "north": 45.9319,
+   "east": 6.7532
+  },
+  "camera": {
+   "lat": 45.86,
+   "lon": 6.65,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "les-sybelles",
+  "name": "Les Sybelles",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "La Toussuire",
+   "Saint-Sorlin-d’Arves",
+   "Saint-Jean-d’Arves",
+   "Le Corbier",
+   "Les Bottières",
+   "Albiez"
+  ],
+  "bbox": {
+   "south": 45.1681,
+   "west": 6.1679,
+   "north": 45.3119,
+   "east": 6.3721
+  },
+  "camera": {
+   "lat": 45.24,
+   "lon": 6.27,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "la-clusaz",
+  "name": "La Clusaz",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "La Clusaz",
+   "Aravis"
+  ],
+  "bbox": {
+   "south": 45.8551,
+   "west": 6.3955,
+   "north": 45.9449,
+   "east": 6.5245
+  },
+  "camera": {
+   "lat": 45.9,
+   "lon": 6.46,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "le-grand-bornand",
+  "name": "Le Grand-Bornand",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Grand Bornand",
+   "Chinaillon",
+   "Aravis"
+  ],
+  "bbox": {
+   "south": 45.9101,
+   "west": 6.3854,
+   "north": 45.9999,
+   "east": 6.5146
+  },
+  "camera": {
+   "lat": 45.955,
+   "lon": 6.45,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "les-gets",
+  "name": "Les Gets",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Les Gets",
+   "Portes du Soleil"
+  ],
+  "bbox": {
+   "south": 46.1191,
+   "west": 6.6181,
+   "north": 46.1909,
+   "east": 6.7219
+  },
+  "camera": {
+   "lat": 46.155,
+   "lon": 6.67,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "morzine",
+  "name": "Morzine",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Morzine",
+   "Pleney",
+   "Portes du Soleil"
+  ],
+  "bbox": {
+   "south": 46.1351,
+   "west": 6.6451,
+   "north": 46.2249,
+   "east": 6.7749
+  },
+  "camera": {
+   "lat": 46.18,
+   "lon": 6.71,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "chatel",
+  "name": "Châtel",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Chatel",
+   "Linga",
+   "Portes du Soleil"
+  ],
+  "bbox": {
+   "south": 46.2201,
+   "west": 6.765,
+   "north": 46.3099,
+   "east": 6.895
+  },
+  "camera": {
+   "lat": 46.265,
+   "lon": 6.83,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "montgenevre",
+  "name": "Montgenèvre",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Montgenevre",
+   "Via Lattea"
+  ],
+  "bbox": {
+   "south": 44.8941,
+   "west": 6.6692,
+   "north": 44.9659,
+   "east": 6.7708
+  },
+  "camera": {
+   "lat": 44.93,
+   "lon": 6.72,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "vars-risoul",
+  "name": "Vars–Risoul",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Vars",
+   "Risoul",
+   "La Forêt Blanche"
+  ],
+  "bbox": {
+   "south": 44.5461,
+   "west": 6.5943,
+   "north": 44.6539,
+   "east": 6.7457
+  },
+  "camera": {
+   "lat": 44.6,
+   "lon": 6.67,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "pra-loup",
+  "name": "Pra Loup",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Pra-Loup",
+   "Espace Lumière"
+  ],
+  "bbox": {
+   "south": 44.3341,
+   "west": 6.5497,
+   "north": 44.4059,
+   "east": 6.6503
+  },
+  "camera": {
+   "lat": 44.37,
+   "lon": 6.6,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "isola-2000",
+  "name": "Isola 2000",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Isola"
+  ],
+  "bbox": {
+   "south": 44.1541,
+   "west": 7.1099,
+   "north": 44.2259,
+   "east": 7.2101
+  },
+  "camera": {
+   "lat": 44.19,
+   "lon": 7.16,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "auron",
+  "name": "Auron",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Auron",
+   "Saint-Étienne-de-Tinée"
+  ],
+  "bbox": {
+   "south": 44.1941,
+   "west": 6.8799,
+   "north": 44.2659,
+   "east": 6.9801
+  },
+  "camera": {
+   "lat": 44.23,
+   "lon": 6.93,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "les-contamines-montjoie",
+  "name": "Les Contamines-Montjoie",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Les Contamines",
+   "Hauteluce"
+  ],
+  "bbox": {
+   "south": 45.7551,
+   "west": 6.6556,
+   "north": 45.8449,
+   "east": 6.7844
+  },
+  "camera": {
+   "lat": 45.8,
+   "lon": 6.72,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "les-saisies",
+  "name": "Les Saisies",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Les Saisies",
+   "Espace Diamant"
+  ],
+  "bbox": {
+   "south": 45.7151,
+   "west": 6.4656,
+   "north": 45.8049,
+   "east": 6.5944
+  },
+  "camera": {
+   "lat": 45.76,
+   "lon": 6.53,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "valmorel",
+  "name": "Valmorel",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Valmorel",
+   "Grand Domaine"
+  ],
+  "bbox": {
+   "south": 45.4151,
+   "west": 6.376,
+   "north": 45.5049,
+   "east": 6.504
+  },
+  "camera": {
+   "lat": 45.46,
+   "lon": 6.44,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "saint-francois-longchamp",
+  "name": "Saint-François-Longchamp",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Saint Francois Longchamp",
+   "Grand Domaine"
+  ],
+  "bbox": {
+   "south": 45.3651,
+   "west": 6.296,
+   "north": 45.4549,
+   "east": 6.424
+  },
+  "camera": {
+   "lat": 45.41,
+   "lon": 6.36,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "valloire-valmeinier",
+  "name": "Valloire–Valmeinier",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Valloire",
+   "Valmeinier",
+   "Galibier-Thabor"
+  ],
+  "bbox": {
+   "south": 45.1161,
+   "west": 6.3735,
+   "north": 45.2239,
+   "east": 6.5265
+  },
+  "camera": {
+   "lat": 45.17,
+   "lon": 6.45,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "le-corbier",
+  "name": "Le Corbier",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Le Corbier",
+   "Les Sybelles"
+  ],
+  "bbox": {
+   "south": 45.2041,
+   "west": 6.219,
+   "north": 45.2759,
+   "east": 6.321
+  },
+  "camera": {
+   "lat": 45.24,
+   "lon": 6.27,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "chamrousse",
+  "name": "Chamrousse",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Chamrousse",
+   "Grenoble"
+  ],
+  "bbox": {
+   "south": 45.0841,
+   "west": 5.8291,
+   "north": 45.1559,
+   "east": 5.9309
+  },
+  "camera": {
+   "lat": 45.12,
+   "lon": 5.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "villard-de-lans-correncon",
+  "name": "Villard-de-Lans / Corrençon",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Villard de Lans",
+   "Corrençon-en-Vercors",
+   "Côte 2000",
+   "Vercors"
+  ],
+  "bbox": {
+   "south": 44.9951,
+   "west": 5.4964,
+   "north": 45.0849,
+   "east": 5.6236
+  },
+  "camera": {
+   "lat": 45.04,
+   "lon": 5.56,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "font-romeu-pyrenees-2000",
+  "name": "Font-Romeu Pyrénées 2000",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Font-Romeu",
+   "Pyrénées 2000",
+   "Bolquère"
+  ],
+  "bbox": {
+   "south": 42.4451,
+   "west": 1.9691,
+   "north": 42.5349,
+   "east": 2.0909
+  },
+  "camera": {
+   "lat": 42.49,
+   "lon": 2.03,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "les-angles",
+  "name": "Les Angles",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Les Angles",
+   "Capcir"
+  ],
+  "bbox": {
+   "south": 42.5341,
+   "west": 2.0112,
+   "north": 42.6059,
+   "east": 2.1088
+  },
+  "camera": {
+   "lat": 42.57,
+   "lon": 2.06,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "saint-lary-soulan",
+  "name": "Saint-Lary-Soulan",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Saint-Lary",
+   "Pla d’Adet",
+   "Espiaube",
+   "Vallon du Portet"
+  ],
+  "bbox": {
+   "south": 42.7461,
+   "west": 0.2365,
+   "north": 42.8539,
+   "east": 0.3835
+  },
+  "camera": {
+   "lat": 42.8,
+   "lon": 0.31,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "grand-tourmalet",
+  "name": "Grand Tourmalet",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "La Mongie",
+   "Barèges",
+   "Tourmalet"
+  ],
+  "bbox": {
+   "south": 42.8371,
+   "west": 0.0342,
+   "north": 42.9629,
+   "east": 0.2058
+  },
+  "camera": {
+   "lat": 42.9,
+   "lon": 0.12,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "peyragudes",
+  "name": "Peyragudes",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Peyresourde",
+   "Les Agudes"
+  ],
+  "bbox": {
+   "south": 42.7541,
+   "west": 0.401,
+   "north": 42.8259,
+   "east": 0.499
+  },
+  "camera": {
+   "lat": 42.79,
+   "lon": 0.45,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "ax-3-domaines",
+  "name": "Ax 3 Domaines",
+  "country": "FR",
+  "tier": 3,
+  "villages": [
+   "Ax-les-Thermes",
+   "Bonascre"
+  ],
+  "bbox": {
+   "south": 42.6541,
+   "west": 1.7511,
+   "north": 42.7259,
+   "east": 1.8489
+  },
+  "camera": {
+   "lat": 42.69,
+   "lon": 1.8,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "zell-am-see-kaprun",
+  "name": "Zell am See – Kaprun",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Zell am See",
+   "Kaprun",
+   "Schmittenhöhe",
+   "Kitzsteinhorn",
+   "Maiskogel"
+  ],
+  "bbox": {
+   "south": 47.1802,
+   "west": 12.5876,
+   "north": 47.3598,
+   "east": 12.8524
+  },
+  "camera": {
+   "lat": 47.27,
+   "lon": 12.72,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "bad-gastein-bad-hofgastein",
+  "name": "Bad Gastein / Bad Hofgastein",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Gastein",
+   "Stubnerkogel",
+   "Schlossalm",
+   "Graukogel",
+   "Sportgastein",
+   "Ski Amadé"
+  ],
+  "bbox": {
+   "south": 47.0202,
+   "west": 12.978,
+   "north": 47.1998,
+   "east": 13.242
+  },
+  "camera": {
+   "lat": 47.11,
+   "lon": 13.11,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "grossarltal-dorfgastein",
+  "name": "Grossarltal–Dorfgastein",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Großarl",
+   "Dorfgastein",
+   "Ski Amadé"
+  ],
+  "bbox": {
+   "south": 47.1761,
+   "west": 13.0906,
+   "north": 47.2839,
+   "east": 13.2494
+  },
+  "camera": {
+   "lat": 47.23,
+   "lon": 13.17,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "hochkonig",
+  "name": "Hochkönig",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Maria Alm",
+   "Dienten",
+   "Mühlbach",
+   "Hinterthal",
+   "Ski Amadé"
+  ],
+  "bbox": {
+   "south": 47.3092,
+   "west": 12.8906,
+   "north": 47.4708,
+   "east": 13.1294
+  },
+  "camera": {
+   "lat": 47.39,
+   "lon": 13.01,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "nassfeld",
+  "name": "Nassfeld",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Nassfeld",
+   "Hermagor",
+   "Tröpolach",
+   "Sonnenalpe"
+  ],
+  "bbox": {
+   "south": 46.5161,
+   "west": 13.1816,
+   "north": 46.6239,
+   "east": 13.3384
+  },
+  "camera": {
+   "lat": 46.57,
+   "lon": 13.26,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "bad-kleinkirchheim",
+  "name": "Bad Kleinkirchheim",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Bad Kleinkirchheim",
+   "St. Oswald",
+   "Kaiserburg"
+  ],
+  "bbox": {
+   "south": 46.7651,
+   "west": 13.7344,
+   "north": 46.8549,
+   "east": 13.8656
+  },
+  "camera": {
+   "lat": 46.81,
+   "lon": 13.8,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "turracher-hohe",
+  "name": "Turracher Höhe",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Turrach"
+  ],
+  "bbox": {
+   "south": 46.8741,
+   "west": 13.8274,
+   "north": 46.9459,
+   "east": 13.9326
+  },
+  "camera": {
+   "lat": 46.91,
+   "lon": 13.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "kreischberg",
+  "name": "Kreischberg",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Murau",
+   "St. Georgen am Kreischberg"
+  ],
+  "bbox": {
+   "south": 47.0541,
+   "west": 14.0672,
+   "north": 47.1259,
+   "east": 14.1728
+  },
+  "camera": {
+   "lat": 47.09,
+   "lon": 14.12,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "hauser-kaibling",
+  "name": "Hauser Kaibling",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Haus im Ennstal",
+   "Schladming-Dachstein"
+  ],
+  "bbox": {
+   "south": 47.3541,
+   "west": 13.7169,
+   "north": 47.4259,
+   "east": 13.8231
+  },
+  "camera": {
+   "lat": 47.39,
+   "lon": 13.77,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "planai-hochwurzen",
+  "name": "Planai / Hochwurzen",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Planai",
+   "Hochwurzen",
+   "Schladming"
+  ],
+  "bbox": {
+   "south": 47.3251,
+   "west": 13.6037,
+   "north": 47.4149,
+   "east": 13.7363
+  },
+  "camera": {
+   "lat": 47.37,
+   "lon": 13.67,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "reiteralm",
+  "name": "Reiteralm",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Pichl",
+   "Preunegg",
+   "Schladming-Dachstein"
+  ],
+  "bbox": {
+   "south": 47.3341,
+   "west": 13.5169,
+   "north": 47.4059,
+   "east": 13.6231
+  },
+  "camera": {
+   "lat": 47.37,
+   "lon": 13.57,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "hintertux-glacier",
+  "name": "Hintertux Glacier",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Hintertuxer Gletscher",
+   "Tux",
+   "Zillertal"
+  ],
+  "bbox": {
+   "south": 47.0351,
+   "west": 11.614,
+   "north": 47.1249,
+   "east": 11.746
+  },
+  "camera": {
+   "lat": 47.08,
+   "lon": 11.68,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "pitztal-glacier",
+  "name": "Pitztal Glacier",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Pitztaler Gletscher",
+   "Mittelberg",
+   "Rifflsee"
+  ],
+  "bbox": {
+   "south": 46.8941,
+   "west": 10.8274,
+   "north": 46.9659,
+   "east": 10.9326
+  },
+  "camera": {
+   "lat": 46.93,
+   "lon": 10.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "kaunertal-glacier",
+  "name": "Kaunertal Glacier",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Kaunertaler Gletscher",
+   "Kaunertal"
+  ],
+  "bbox": {
+   "south": 46.8241,
+   "west": 10.6575,
+   "north": 46.8959,
+   "east": 10.7625
+  },
+  "camera": {
+   "lat": 46.86,
+   "lon": 10.71,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "obergurgl-hochgurgl",
+  "name": "Obergurgl-Hochgurgl",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Obergurgl",
+   "Hochgurgl",
+   "Ötztal"
+  ],
+  "bbox": {
+   "south": 46.8151,
+   "west": 10.9643,
+   "north": 46.9049,
+   "east": 11.0957
+  },
+  "camera": {
+   "lat": 46.86,
+   "lon": 11.03,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "kuhtai",
+  "name": "Kühtai",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Kuhtai"
+  ],
+  "bbox": {
+   "south": 47.1741,
+   "west": 10.9671,
+   "north": 47.2459,
+   "east": 11.0729
+  },
+  "camera": {
+   "lat": 47.21,
+   "lon": 11.02,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "axamer-lizum",
+  "name": "Axamer Lizum",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Axams",
+   "Innsbruck"
+  ],
+  "bbox": {
+   "south": 47.1641,
+   "west": 11.2471,
+   "north": 47.2359,
+   "east": 11.3529
+  },
+  "camera": {
+   "lat": 47.2,
+   "lon": 11.3,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "st-johann-in-tirol",
+  "name": "St. Johann in Tirol",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "St. Johann",
+   "Oberndorf",
+   "Harschbichl"
+  ],
+  "bbox": {
+   "south": 47.4651,
+   "west": 12.3735,
+   "north": 47.5549,
+   "east": 12.5065
+  },
+  "camera": {
+   "lat": 47.51,
+   "lon": 12.44,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "steinplatte-winklmoosalm",
+  "name": "Steinplatte Winklmoosalm",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Waidring",
+   "Reit im Winkl",
+   "Steinplatte",
+   "Winklmoosalm"
+  ],
+  "bbox": {
+   "south": 47.6041,
+   "west": 12.5167,
+   "north": 47.6759,
+   "east": 12.6233
+  },
+  "camera": {
+   "lat": 47.64,
+   "lon": 12.57,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "lofer",
+  "name": "Lofer",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Loferer Alm",
+   "Almenwelt Lofer"
+  ],
+  "bbox": {
+   "south": 47.5441,
+   "west": 12.6267,
+   "north": 47.6159,
+   "east": 12.7333
+  },
+  "camera": {
+   "lat": 47.58,
+   "lon": 12.68,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "damuls-mellau",
+  "name": "Damüls-Mellau",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Damüls",
+   "Mellau",
+   "Faschina",
+   "Bregenzerwald"
+  ],
+  "bbox": {
+   "south": 47.2651,
+   "west": 9.8338,
+   "north": 47.3549,
+   "east": 9.9662
+  },
+  "camera": {
+   "lat": 47.31,
+   "lon": 9.9,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "brandnertal",
+  "name": "Brandnertal",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Brand",
+   "Bürserberg"
+  ],
+  "bbox": {
+   "south": 47.0641,
+   "west": 9.6872,
+   "north": 47.1359,
+   "east": 9.7928
+  },
+  "camera": {
+   "lat": 47.1,
+   "lon": 9.74,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "golm",
+  "name": "Golm",
+  "country": "AT",
+  "tier": 3,
+  "villages": [
+   "Montafon",
+   "Vandans",
+   "Tschagguns",
+   "Latschau"
+  ],
+  "bbox": {
+   "south": 47.0141,
+   "west": 9.8073,
+   "north": 47.0859,
+   "east": 9.9127
+  },
+  "camera": {
+   "lat": 47.05,
+   "lon": 9.86,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "flims-laax-falera",
+  "name": "Flims Laax Falera",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Flims",
+   "Laax",
+   "Falera",
+   "Crap Sogn Gion",
+   "Vorab"
+  ],
+  "bbox": {
+   "south": 46.7771,
+   "west": 9.1481,
+   "north": 46.9029,
+   "east": 9.3319
+  },
+  "camera": {
+   "lat": 46.84,
+   "lon": 9.24,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "engelberg-titlis",
+  "name": "Engelberg-Titlis",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Engelberg",
+   "Titlis",
+   "Trübsee",
+   "Jochpass"
+  ],
+  "bbox": {
+   "south": 46.7461,
+   "west": 8.3413,
+   "north": 46.8539,
+   "east": 8.4987
+  },
+  "camera": {
+   "lat": 46.8,
+   "lon": 8.42,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "andermatt-sedrun-disentis",
+  "name": "Andermatt-Sedrun-Disentis",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Andermatt",
+   "Sedrun",
+   "Disentis",
+   "Oberalp",
+   "Gemsstock",
+   "Nätschen"
+  ],
+  "bbox": {
+   "south": 46.5522,
+   "west": 8.5629,
+   "north": 46.7678,
+   "east": 8.8771
+  },
+  "camera": {
+   "lat": 46.66,
+   "lon": 8.72,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.47
+  }
+ },
+ {
+  "id": "crans-montana",
+  "name": "Crans-Montana",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Crans",
+   "Montana",
+   "Plaine Morte"
+  ],
+  "bbox": {
+   "south": 46.2661,
+   "west": 7.402,
+   "north": 46.3739,
+   "east": 7.558
+  },
+  "camera": {
+   "lat": 46.32,
+   "lon": 7.48,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "saas-fee",
+  "name": "Saas-Fee",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Saas Fee",
+   "Allalin",
+   "Längfluh"
+  ],
+  "bbox": {
+   "south": 46.0551,
+   "west": 7.8552,
+   "north": 46.1449,
+   "east": 7.9848
+  },
+  "camera": {
+   "lat": 46.1,
+   "lon": 7.92,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "gstaad-mountain-rides",
+  "name": "Gstaad Mountain Rides",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Gstaad",
+   "Saanenmöser",
+   "Schönried",
+   "Zweisimmen",
+   "Rougemont",
+   "Saanen",
+   "Wispile",
+   "Eggli"
+  ],
+  "bbox": {
+   "south": 46.4002,
+   "west": 7.1695,
+   "north": 46.5798,
+   "east": 7.4305
+  },
+  "camera": {
+   "lat": 46.49,
+   "lon": 7.3,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "villars-gryon-les-diablerets",
+  "name": "Villars-Gryon-Les Diablerets",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Villars-sur-Ollon",
+   "Gryon",
+   "Les Diablerets",
+   "Glacier 3000"
+  ],
+  "bbox": {
+   "south": 46.2571,
+   "west": 7.009,
+   "north": 46.3829,
+   "east": 7.191
+  },
+  "camera": {
+   "lat": 46.32,
+   "lon": 7.1,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "leysin-les-mosses",
+  "name": "Leysin–Les Mosses",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Leysin",
+   "Les Mosses",
+   "La Lécherette"
+  ],
+  "bbox": {
+   "south": 46.2971,
+   "west": 6.9589,
+   "north": 46.4229,
+   "east": 7.1411
+  },
+  "camera": {
+   "lat": 46.36,
+   "lon": 7.05,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "morgins-champery",
+  "name": "Morgins / Champéry",
+  "country": "CH",
+  "tier": 3,
+  "villages": [
+   "Morgins",
+   "Champéry",
+   "Champoussin",
+   "Les Crosets",
+   "Portes du Soleil"
+  ],
+  "bbox": {
+   "south": 46.1561,
+   "west": 6.7821,
+   "north": 46.2639,
+   "east": 6.9379
+  },
+  "camera": {
+   "lat": 46.21,
+   "lon": 6.86,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "cervinia-valtournenche",
+  "name": "Cervinia / Valtournenche",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Breuil-Cervinia",
+   "Valtournenche",
+   "Plateau Rosa",
+   "Matterhorn Ski Paradise"
+  ],
+  "bbox": {
+   "south": 45.8481,
+   "west": 7.5567,
+   "north": 45.9919,
+   "east": 7.7633
+  },
+  "camera": {
+   "lat": 45.92,
+   "lon": 7.66,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "monterosa-ski",
+  "name": "Monterosa Ski",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Champoluc",
+   "Gressoney",
+   "Alagna",
+   "Monte Rosa"
+  ],
+  "bbox": {
+   "south": 45.7502,
+   "west": 7.6911,
+   "north": 45.9298,
+   "east": 7.9489
+  },
+  "camera": {
+   "lat": 45.84,
+   "lon": 7.82,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.71
+  }
+ },
+ {
+  "id": "courmayeur",
+  "name": "Courmayeur",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Courmayeur",
+   "Checrouit",
+   "Mont Blanc"
+  ],
+  "bbox": {
+   "south": 45.7451,
+   "west": 6.8856,
+   "north": 45.8349,
+   "east": 7.0144
+  },
+  "camera": {
+   "lat": 45.79,
+   "lon": 6.95,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "la-thuile",
+  "name": "La Thuile",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "La Thuile",
+   "La Rosière",
+   "Espace San Bernardo"
+  ],
+  "bbox": {
+   "south": 45.6271,
+   "west": 6.82,
+   "north": 45.7529,
+   "east": 7
+  },
+  "camera": {
+   "lat": 45.69,
+   "lon": 6.91,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "pila",
+  "name": "Pila",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Pila",
+   "Aosta"
+  ],
+  "bbox": {
+   "south": 45.6541,
+   "west": 7.2686,
+   "north": 45.7259,
+   "east": 7.3714
+  },
+  "camera": {
+   "lat": 45.69,
+   "lon": 7.32,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "bormio",
+  "name": "Bormio",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Bormio",
+   "Bormio 3000",
+   "Stelvio"
+  ],
+  "bbox": {
+   "south": 46.4051,
+   "west": 10.3148,
+   "north": 46.4949,
+   "east": 10.4452
+  },
+  "camera": {
+   "lat": 46.45,
+   "lon": 10.38,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "santa-caterina-valfurva",
+  "name": "Santa Caterina Valfurva",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Santa Caterina",
+   "Valfurva"
+  ],
+  "bbox": {
+   "south": 46.3741,
+   "west": 10.4379,
+   "north": 46.4459,
+   "east": 10.5421
+  },
+  "camera": {
+   "lat": 46.41,
+   "lon": 10.49,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "ponte-di-legno-tonale",
+  "name": "Ponte di Legno – Tonale",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Passo Tonale",
+   "Ponte di Legno",
+   "Presena",
+   "Adamello Ski"
+  ],
+  "bbox": {
+   "south": 46.1871,
+   "west": 10.4691,
+   "north": 46.3129,
+   "east": 10.6509
+  },
+  "camera": {
+   "lat": 46.25,
+   "lon": 10.56,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "paganella-ski",
+  "name": "Paganella Ski",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Andalo",
+   "Fai della Paganella",
+   "Molveno"
+  ],
+  "bbox": {
+   "south": 46.1251,
+   "west": 10.9651,
+   "north": 46.2149,
+   "east": 11.0949
+  },
+  "camera": {
+   "lat": 46.17,
+   "lon": 11.03,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "san-martino-di-castrozza",
+  "name": "San Martino di Castrozza",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "San Martino",
+   "Passo Rolle"
+  ],
+  "bbox": {
+   "south": 46.2151,
+   "west": 11.735,
+   "north": 46.3049,
+   "east": 11.865
+  },
+  "camera": {
+   "lat": 46.26,
+   "lon": 11.8,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "arabba-marmolada",
+  "name": "Arabba / Marmolada",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Arabba",
+   "Marmolada",
+   "Porta Vescovo",
+   "Malga Ciapela",
+   "Sellaronda"
+  ],
+  "bbox": {
+   "south": 46.4261,
+   "west": 11.7917,
+   "north": 46.5339,
+   "east": 11.9483
+  },
+  "camera": {
+   "lat": 46.48,
+   "lon": 11.87,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "obereggen-latemar",
+  "name": "Obereggen / Latemar",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Obereggen",
+   "Latemar",
+   "Pampeago",
+   "Predazzo"
+  ],
+  "bbox": {
+   "south": 46.3061,
+   "west": 11.4719,
+   "north": 46.4139,
+   "east": 11.6281
+  },
+  "camera": {
+   "lat": 46.36,
+   "lon": 11.55,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "alpe-cermis",
+  "name": "Alpe Cermis",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Cavalese",
+   "Cermis",
+   "Val di Fiemme"
+  ],
+  "bbox": {
+   "south": 46.2341,
+   "west": 11.428,
+   "north": 46.3059,
+   "east": 11.532
+  },
+  "camera": {
+   "lat": 46.27,
+   "lon": 11.48,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "cimone",
+  "name": "Cimone",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Monte Cimone",
+   "Sestola",
+   "Fanano",
+   "Montecreto"
+  ],
+  "bbox": {
+   "south": 44.1361,
+   "west": 10.6248,
+   "north": 44.2439,
+   "east": 10.7752
+  },
+  "camera": {
+   "lat": 44.19,
+   "lon": 10.7,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "abetone",
+  "name": "Abetone",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Abetone",
+   "Val di Luce"
+  ],
+  "bbox": {
+   "south": 44.0951,
+   "west": 10.5974,
+   "north": 44.1849,
+   "east": 10.7226
+  },
+  "camera": {
+   "lat": 44.14,
+   "lon": 10.66,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "roccaraso",
+  "name": "Roccaraso",
+  "country": "IT",
+  "tier": 3,
+  "villages": [
+   "Roccaraso",
+   "Aremogna",
+   "Pescocostanzo",
+   "Rivisondoli",
+   "Alto Sangro"
+  ],
+  "bbox": {
+   "south": 41.7761,
+   "west": 13.9777,
+   "north": 41.8839,
+   "east": 14.1223
+  },
+  "camera": {
+   "lat": 41.83,
+   "lon": 14.05,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "sierra-nevada",
+  "name": "Sierra Nevada",
+  "country": "ES",
+  "tier": 3,
+  "villages": [
+   "Pradollano",
+   "Granada"
+  ],
+  "bbox": {
+   "south": 37.0451,
+   "west": -3.4463,
+   "north": 37.1349,
+   "east": -3.3337
+  },
+  "camera": {
+   "lat": 37.09,
+   "lon": -3.39,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "baqueira-beret",
+  "name": "Baqueira-Beret",
+  "country": "ES",
+  "tier": 3,
+  "villages": [
+   "Baqueira",
+   "Beret",
+   "Bonaigua",
+   "Val d’Aran"
+  ],
+  "bbox": {
+   "south": 42.6371,
+   "west": 0.8644,
+   "north": 42.7629,
+   "east": 1.0356
+  },
+  "camera": {
+   "lat": 42.7,
+   "lon": 0.95,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "formigal-panticosa",
+  "name": "Formigal-Panticosa",
+  "country": "ES",
+  "tier": 3,
+  "villages": [
+   "Formigal",
+   "Panticosa",
+   "Aramón"
+  ],
+  "bbox": {
+   "south": 42.6881,
+   "west": -0.4279,
+   "north": 42.8319,
+   "east": -0.2321
+  },
+  "camera": {
+   "lat": 42.76,
+   "lon": -0.33,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "masella",
+  "name": "Masella",
+  "country": "ES",
+  "tier": 3,
+  "villages": [
+   "Alp 2500"
+  ],
+  "bbox": {
+   "south": 42.3141,
+   "west": 1.8514,
+   "north": 42.3859,
+   "east": 1.9486
+  },
+  "camera": {
+   "lat": 42.35,
+   "lon": 1.9,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "la-molina",
+  "name": "La Molina",
+  "country": "ES",
+  "tier": 3,
+  "villages": [
+   "Alp 2500"
+  ],
+  "bbox": {
+   "south": 42.3041,
+   "west": 1.9014,
+   "north": 42.3759,
+   "east": 1.9986
+  },
+  "camera": {
+   "lat": 42.34,
+   "lon": 1.95,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "cerler",
+  "name": "Cerler",
+  "country": "ES",
+  "tier": 3,
+  "villages": [
+   "Benasque",
+   "Aramón"
+  ],
+  "bbox": {
+   "south": 42.5341,
+   "west": 0.5012,
+   "north": 42.6059,
+   "east": 0.5988
+  },
+  "camera": {
+   "lat": 42.57,
+   "lon": 0.55,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "jasna-nizke-tatry",
+  "name": "Jasná Nízke Tatry",
+  "country": "SK",
+  "tier": 3,
+  "villages": [
+   "Jasna",
+   "Chopok",
+   "Low Tatras"
+  ],
+  "bbox": {
+   "south": 48.9051,
+   "west": 19.5216,
+   "north": 48.9949,
+   "east": 19.6584
+  },
+  "camera": {
+   "lat": 48.95,
+   "lon": 19.59,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "tatranska-lomnica",
+  "name": "Tatranská Lomnica",
+  "country": "SK",
+  "tier": 3,
+  "villages": [
+   "Lomnický štít",
+   "High Tatras"
+  ],
+  "bbox": {
+   "south": 49.1441,
+   "west": 20.215,
+   "north": 49.2159,
+   "east": 20.325
+  },
+  "camera": {
+   "lat": 49.18,
+   "lon": 20.27,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "spindleruv-mlyn",
+  "name": "Špindlerův Mlýn",
+  "country": "CZ",
+  "tier": 3,
+  "villages": [
+   "Spindleruv Mlyn",
+   "Krkonoše"
+  ],
+  "bbox": {
+   "south": 50.6941,
+   "west": 15.5532,
+   "north": 50.7659,
+   "east": 15.6668
+  },
+  "camera": {
+   "lat": 50.73,
+   "lon": 15.61,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "klinovec",
+  "name": "Klínovec",
+  "country": "CZ",
+  "tier": 3,
+  "villages": [
+   "Klinovec",
+   "Keilberg",
+   "Boží Dar"
+  ],
+  "bbox": {
+   "south": 50.3641,
+   "west": 12.9136,
+   "north": 50.4359,
+   "east": 13.0264
+  },
+  "camera": {
+   "lat": 50.4,
+   "lon": 12.97,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "bia-ka-tatrzanska",
+  "name": "Białka Tatrzańska",
+  "country": "PL",
+  "tier": 3,
+  "villages": [
+   "Bialka",
+   "Kotelnica"
+  ],
+  "bbox": {
+   "south": 49.3631,
+   "west": 20.0686,
+   "north": 49.4169,
+   "east": 20.1514
+  },
+  "camera": {
+   "lat": 49.39,
+   "lon": 20.11,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "bansko",
+  "name": "Bansko",
+  "country": "BG",
+  "tier": 3,
+  "villages": [
+   "Bansko",
+   "Pirin",
+   "Shiligarnika"
+  ],
+  "bbox": {
+   "south": 41.7561,
+   "west": 23.3977,
+   "north": 41.8639,
+   "east": 23.5423
+  },
+  "camera": {
+   "lat": 41.81,
+   "lon": 23.47,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "borovets",
+  "name": "Borovets",
+  "country": "BG",
+  "tier": 3,
+  "villages": [
+   "Borovets",
+   "Rila",
+   "Yastrebets"
+  ],
+  "bbox": {
+   "south": 42.2051,
+   "west": 23.5293,
+   "north": 42.2949,
+   "east": 23.6507
+  },
+  "camera": {
+   "lat": 42.25,
+   "lon": 23.59,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "kranjska-gora",
+  "name": "Kranjska Gora",
+  "country": "SI",
+  "tier": 3,
+  "villages": [
+   "Kranjska Gora",
+   "Podkoren"
+  ],
+  "bbox": {
+   "south": 46.4441,
+   "west": 13.7278,
+   "north": 46.5159,
+   "east": 13.8322
+  },
+  "camera": {
+   "lat": 46.48,
+   "lon": 13.78,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "poiana-brasov",
+  "name": "Poiana Brașov",
+  "country": "RO",
+  "tier": 3,
+  "villages": [
+   "Poiana Brasov",
+   "Postăvarul"
+  ],
+  "bbox": {
+   "south": 45.5541,
+   "west": 25.4987,
+   "north": 45.6259,
+   "east": 25.6013
+  },
+  "camera": {
+   "lat": 45.59,
+   "lon": 25.55,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "rosa-khutor",
+  "name": "Rosa Khutor",
+  "country": "RU",
+  "tier": 3,
+  "villages": [
+   "Sochi",
+   "Krasnaya Polyana",
+   "Esto-Sadok"
+  ],
+  "bbox": {
+   "south": 43.5961,
+   "west": 40.2255,
+   "north": 43.7039,
+   "east": 40.3745
+  },
+  "camera": {
+   "lat": 43.65,
+   "lon": 40.3,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "sheregesh",
+  "name": "Sheregesh",
+  "country": "RU",
+  "tier": 3,
+  "villages": [
+   "Zelenaya",
+   "Gornaya Shoria"
+  ],
+  "bbox": {
+   "south": 52.8761,
+   "west": 87.8906,
+   "north": 52.9839,
+   "east": 88.0694
+  },
+  "camera": {
+   "lat": 52.93,
+   "lon": 87.98,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "krasnaya-polyana",
+  "name": "Krasnaya Polyana",
+  "country": "RU",
+  "tier": 3,
+  "villages": [
+   "Gornaya Karusel",
+   "Mountain Carousel",
+   "Sochi"
+  ],
+  "bbox": {
+   "south": 43.6261,
+   "west": 40.1555,
+   "north": 43.7339,
+   "east": 40.3045
+  },
+  "camera": {
+   "lat": 43.68,
+   "lon": 40.23,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "gazprom-mountain-resort",
+  "name": "Gazprom Mountain Resort",
+  "country": "RU",
+  "tier": 3,
+  "villages": [
+   "Laura",
+   "Alpika",
+   "Sochi",
+   "Krasnaya Polyana"
+  ],
+  "bbox": {
+   "south": 43.6311,
+   "west": 40.2055,
+   "north": 43.7389,
+   "east": 40.3545
+  },
+  "camera": {
+   "lat": 43.685,
+   "lon": 40.28,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "skiliftkarussell-winterberg",
+  "name": "Skiliftkarussell Winterberg",
+  "country": "DE",
+  "tier": 3,
+  "villages": [
+   "Winterberg",
+   "Sauerland"
+  ],
+  "bbox": {
+   "south": 51.1451,
+   "west": 8.4583,
+   "north": 51.2349,
+   "east": 8.6017
+  },
+  "camera": {
+   "lat": 51.19,
+   "lon": 8.53,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "garmisch-partenkirchen",
+  "name": "Garmisch-Partenkirchen",
+  "country": "DE",
+  "tier": 3,
+  "villages": [
+   "Garmisch-Classic",
+   "Zugspitze",
+   "Hausberg",
+   "Kreuzeck",
+   "Alpspitze"
+  ],
+  "bbox": {
+   "south": 47.3781,
+   "west": 10.9337,
+   "north": 47.5219,
+   "east": 11.1463
+  },
+  "camera": {
+   "lat": 47.45,
+   "lon": 11.04,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12
+  }
+ },
+ {
+  "id": "oberstdorf-kleinwalsertal",
+  "name": "Oberstdorf-Kleinwalsertal",
+  "country": "DE",
+  "tier": 3,
+  "villages": [
+   "Oberstdorf",
+   "Kleinwalsertal",
+   "Nebelhorn",
+   "Fellhorn",
+   "Kanzelwand",
+   "Ifen",
+   "Riezlern"
+  ],
+  "bbox": {
+   "south": 47.2892,
+   "west": 10.1206,
+   "north": 47.4508,
+   "east": 10.3594
+  },
+  "camera": {
+   "lat": 47.37,
+   "lon": 10.24,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "feldberg",
+  "name": "Feldberg",
+  "country": "DE",
+  "tier": 3,
+  "villages": [
+   "Feldberg",
+   "Black Forest",
+   "Schwarzwald"
+  ],
+  "bbox": {
+   "south": 47.8241,
+   "west": 7.9464,
+   "north": 47.8959,
+   "east": 8.0536
+  },
+  "camera": {
+   "lat": 47.86,
+   "lon": 8,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "mont-tremblant",
+  "name": "Mont-Tremblant",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Tremblant",
+   "Quebec"
+  ],
+  "bbox": {
+   "south": 46.1741,
+   "west": -74.6419,
+   "north": 46.2459,
+   "east": -74.5381
+  },
+  "camera": {
+   "lat": 46.21,
+   "lon": -74.59,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "lake-louise-ski-resort",
+  "name": "Lake Louise Ski Resort",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Lake Louise",
+   "Banff",
+   "Alberta"
+  ],
+  "bbox": {
+   "south": 51.3951,
+   "west": -116.2221,
+   "north": 51.4849,
+   "east": -116.0779
+  },
+  "camera": {
+   "lat": 51.44,
+   "lon": -116.15,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "banff-sunshine-village",
+  "name": "Banff Sunshine Village",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Sunshine Village",
+   "Banff",
+   "Alberta"
+  ],
+  "bbox": {
+   "south": 51.0441,
+   "west": -115.8272,
+   "north": 51.1159,
+   "east": -115.7128
+  },
+  "camera": {
+   "lat": 51.08,
+   "lon": -115.77,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "big-white-ski-resort",
+  "name": "Big White Ski Resort",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Big White",
+   "Kelowna",
+   "British Columbia"
+  ],
+  "bbox": {
+   "south": 49.6841,
+   "west": -118.9856,
+   "north": 49.7559,
+   "east": -118.8744
+  },
+  "camera": {
+   "lat": 49.72,
+   "lon": -118.93,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "sun-peaks-resort",
+  "name": "Sun Peaks Resort",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Sun Peaks",
+   "Kamloops",
+   "British Columbia"
+  ],
+  "bbox": {
+   "south": 50.8351,
+   "west": -119.9612,
+   "north": 50.9249,
+   "east": -119.8188
+  },
+  "camera": {
+   "lat": 50.88,
+   "lon": -119.89,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "cypress-mountain",
+  "name": "Cypress Mountain",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Cypress",
+   "West Vancouver",
+   "British Columbia"
+  ],
+  "bbox": {
+   "south": 49.3641,
+   "west": -123.2552,
+   "north": 49.4359,
+   "east": -123.1448
+  },
+  "camera": {
+   "lat": 49.4,
+   "lon": -123.2,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "blue-mountain-ontario",
+  "name": "Blue Mountain (Ontario)",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Blue Mountain",
+   "Collingwood",
+   "Ontario"
+  ],
+  "bbox": {
+   "south": 44.4731,
+   "west": -80.3478,
+   "north": 44.5269,
+   "east": -80.2722
+  },
+  "camera": {
+   "lat": 44.5,
+   "lon": -80.31,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "le-massif-de-charlevoix",
+  "name": "Le Massif de Charlevoix",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Le Massif",
+   "Petite-Rivière-Saint-François",
+   "Quebec"
+  ],
+  "bbox": {
+   "south": 47.2441,
+   "west": -70.653,
+   "north": 47.3159,
+   "east": -70.547
+  },
+  "camera": {
+   "lat": 47.28,
+   "lon": -70.6,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "stoneham-mountain-resort",
+  "name": "Stoneham Mountain Resort",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Stoneham",
+   "Quebec"
+  ],
+  "bbox": {
+   "south": 47.0031,
+   "west": -71.4195,
+   "north": 47.0569,
+   "east": -71.3405
+  },
+  "camera": {
+   "lat": 47.03,
+   "lon": -71.38,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "mont-sainte-anne",
+  "name": "Mont-Sainte-Anne",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Mont Sainte Anne",
+   "Beaupré",
+   "Quebec"
+  ],
+  "bbox": {
+   "south": 47.0341,
+   "west": -70.9528,
+   "north": 47.1059,
+   "east": -70.8472
+  },
+  "camera": {
+   "lat": 47.07,
+   "lon": -70.9,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "bromont",
+  "name": "Bromont",
+  "country": "CA",
+  "tier": 3,
+  "villages": [
+   "Bromont",
+   "Quebec"
+  ],
+  "bbox": {
+   "south": 45.2531,
+   "west": -72.6983,
+   "north": 45.3069,
+   "east": -72.6217
+  },
+  "camera": {
+   "lat": 45.28,
+   "lon": -72.66,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "big-sky-resort",
+  "name": "Big Sky Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Big Sky",
+   "Lone Peak",
+   "Montana"
+  ],
+  "bbox": {
+   "south": 45.2171,
+   "west": -111.5094,
+   "north": 45.3429,
+   "east": -111.3306
+  },
+  "camera": {
+   "lat": 45.28,
+   "lon": -111.42,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.17
+  }
+ },
+ {
+  "id": "jackson-hole-mountain-resort",
+  "name": "Jackson Hole Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Jackson Hole",
+   "Teton Village",
+   "Wyoming"
+  ],
+  "bbox": {
+   "south": 43.5451,
+   "west": -110.912,
+   "north": 43.6349,
+   "east": -110.788
+  },
+  "camera": {
+   "lat": 43.59,
+   "lon": -110.85,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "sun-valley",
+  "name": "Sun Valley",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Sun Valley",
+   "Bald Mountain",
+   "Ketchum",
+   "Idaho"
+  ],
+  "bbox": {
+   "south": 43.6251,
+   "west": -114.4621,
+   "north": 43.7149,
+   "east": -114.3379
+  },
+  "camera": {
+   "lat": 43.67,
+   "lon": -114.4,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "snowbird",
+  "name": "Snowbird",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Snowbird",
+   "Little Cottonwood",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 40.5441,
+   "west": -111.7073,
+   "north": 40.6159,
+   "east": -111.6127
+  },
+  "camera": {
+   "lat": 40.58,
+   "lon": -111.66,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "alta-ski-area",
+  "name": "Alta Ski Area",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Alta",
+   "Little Cottonwood",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 40.5541,
+   "west": -111.6773,
+   "north": 40.6259,
+   "east": -111.5827
+  },
+  "camera": {
+   "lat": 40.59,
+   "lon": -111.63,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "solitude-mountain-resort",
+  "name": "Solitude Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Solitude",
+   "Big Cottonwood",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 40.5841,
+   "west": -111.6373,
+   "north": 40.6559,
+   "east": -111.5427
+  },
+  "camera": {
+   "lat": 40.62,
+   "lon": -111.59,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "brighton-resort",
+  "name": "Brighton Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Brighton",
+   "Big Cottonwood",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 40.5731,
+   "west": -111.6155,
+   "north": 40.6269,
+   "east": -111.5445
+  },
+  "camera": {
+   "lat": 40.6,
+   "lon": -111.58,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "snowbasin-resort",
+  "name": "Snowbasin Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Snowbasin",
+   "Ogden",
+   "Utah"
+  ],
+  "bbox": {
+   "south": 41.1741,
+   "west": -111.9078,
+   "north": 41.2459,
+   "east": -111.8122
+  },
+  "camera": {
+   "lat": 41.21,
+   "lon": -111.86,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "eldora-mountain-resort",
+  "name": "Eldora Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Eldora",
+   "Nederland",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.9131,
+   "west": -105.6151,
+   "north": 39.9669,
+   "east": -105.5449
+  },
+  "camera": {
+   "lat": 39.94,
+   "lon": -105.58,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "arapahoe-basin",
+  "name": "Arapahoe Basin",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "A-Basin",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.6131,
+   "west": -105.905,
+   "north": 39.6669,
+   "east": -105.835
+  },
+  "camera": {
+   "lat": 39.64,
+   "lon": -105.87,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "loveland-ski-area",
+  "name": "Loveland Ski Area",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Loveland",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 39.6531,
+   "west": -105.935,
+   "north": 39.7069,
+   "east": -105.865
+  },
+  "camera": {
+   "lat": 39.68,
+   "lon": -105.9,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "telluride-ski-resort",
+  "name": "Telluride Ski Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Telluride",
+   "Mountain Village",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 37.8851,
+   "west": -107.8969,
+   "north": 37.9749,
+   "east": -107.7831
+  },
+  "camera": {
+   "lat": 37.93,
+   "lon": -107.84,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "crested-butte-mountain-resort",
+  "name": "Crested Butte Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Crested Butte",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 38.8641,
+   "west": -107.0062,
+   "north": 38.9359,
+   "east": -106.9138
+  },
+  "camera": {
+   "lat": 38.9,
+   "lon": -106.96,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "purgatory-resort",
+  "name": "Purgatory Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Purgatory",
+   "Durango",
+   "Colorado"
+  ],
+  "bbox": {
+   "south": 37.5941,
+   "west": -107.8754,
+   "north": 37.6659,
+   "east": -107.7846
+  },
+  "camera": {
+   "lat": 37.63,
+   "lon": -107.83,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "northstar-california",
+  "name": "Northstar California",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Northstar",
+   "Truckee",
+   "Lake Tahoe"
+  ],
+  "bbox": {
+   "south": 39.2241,
+   "west": -120.1664,
+   "north": 39.2959,
+   "east": -120.0736
+  },
+  "camera": {
+   "lat": 39.26,
+   "lon": -120.12,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "kirkwood-mountain-resort",
+  "name": "Kirkwood Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Kirkwood",
+   "Lake Tahoe",
+   "California"
+  ],
+  "bbox": {
+   "south": 38.6441,
+   "west": -120.116,
+   "north": 38.7159,
+   "east": -120.024
+  },
+  "camera": {
+   "lat": 38.68,
+   "lon": -120.07,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "sugar-bowl-resort",
+  "name": "Sugar Bowl Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Sugar Bowl",
+   "Donner",
+   "California"
+  ],
+  "bbox": {
+   "south": 39.2641,
+   "west": -120.3864,
+   "north": 39.3359,
+   "east": -120.2936
+  },
+  "camera": {
+   "lat": 39.3,
+   "lon": -120.34,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "sierra-at-tahoe",
+  "name": "Sierra-at-Tahoe",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Sierra at Tahoe",
+   "Twin Bridges",
+   "California"
+  ],
+  "bbox": {
+   "south": 38.7731,
+   "west": -120.1146,
+   "north": 38.8269,
+   "east": -120.0454
+  },
+  "camera": {
+   "lat": 38.8,
+   "lon": -120.08,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "big-bear-mountain-resort",
+  "name": "Big Bear Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Big Bear",
+   "Snow Summit",
+   "Bear Mountain",
+   "California"
+  ],
+  "bbox": {
+   "south": 34.1941,
+   "west": -116.9235,
+   "north": 34.2659,
+   "east": -116.8365
+  },
+  "camera": {
+   "lat": 34.23,
+   "lon": -116.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "mountain-high",
+  "name": "Mountain High",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Wrightwood",
+   "California"
+  ],
+  "bbox": {
+   "south": 34.3441,
+   "west": -117.7335,
+   "north": 34.4159,
+   "east": -117.6465
+  },
+  "camera": {
+   "lat": 34.38,
+   "lon": -117.69,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "mt-bachelor",
+  "name": "Mt. Bachelor",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Mount Bachelor",
+   "Bend",
+   "Oregon"
+  ],
+  "bbox": {
+   "south": 43.9351,
+   "west": -121.7524,
+   "north": 44.0249,
+   "east": -121.6276
+  },
+  "camera": {
+   "lat": 43.98,
+   "lon": -121.69,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "mt-hood-meadows",
+  "name": "Mt. Hood Meadows",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Mount Hood",
+   "Oregon"
+  ],
+  "bbox": {
+   "south": 45.2941,
+   "west": -121.7111,
+   "north": 45.3659,
+   "east": -121.6089
+  },
+  "camera": {
+   "lat": 45.33,
+   "lon": -121.66,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "timberline-lodge",
+  "name": "Timberline Lodge",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Timberline",
+   "Mount Hood",
+   "Oregon"
+  ],
+  "bbox": {
+   "south": 45.3031,
+   "west": -121.7483,
+   "north": 45.3569,
+   "east": -121.6717
+  },
+  "camera": {
+   "lat": 45.33,
+   "lon": -121.71,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "crystal-mountain-washington",
+  "name": "Crystal Mountain (Washington)",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Crystal Mountain",
+   "Washington"
+  ],
+  "bbox": {
+   "south": 46.8941,
+   "west": -121.5526,
+   "north": 46.9659,
+   "east": -121.4474
+  },
+  "camera": {
+   "lat": 46.93,
+   "lon": -121.5,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "the-summit-at-snoqualmie",
+  "name": "The Summit at Snoqualmie",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Snoqualmie Pass",
+   "Washington"
+  ],
+  "bbox": {
+   "south": 47.3841,
+   "west": -121.4731,
+   "north": 47.4559,
+   "east": -121.3669
+  },
+  "camera": {
+   "lat": 47.42,
+   "lon": -121.42,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "stevens-pass",
+  "name": "Stevens Pass",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Stevens Pass",
+   "Washington"
+  ],
+  "bbox": {
+   "south": 47.7131,
+   "west": -121.1301,
+   "north": 47.7669,
+   "east": -121.0499
+  },
+  "camera": {
+   "lat": 47.74,
+   "lon": -121.09,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "schweitzer",
+  "name": "Schweitzer",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Schweitzer Mountain",
+   "Sandpoint",
+   "Idaho"
+  ],
+  "bbox": {
+   "south": 48.3341,
+   "west": -116.6741,
+   "north": 48.4059,
+   "east": -116.5659
+  },
+  "camera": {
+   "lat": 48.37,
+   "lon": -116.62,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "bogus-basin",
+  "name": "Bogus Basin",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Boise",
+   "Idaho"
+  ],
+  "bbox": {
+   "south": 43.7341,
+   "west": -116.1498,
+   "north": 43.8059,
+   "east": -116.0502
+  },
+  "camera": {
+   "lat": 43.77,
+   "lon": -116.1,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "taos-ski-valley",
+  "name": "Taos Ski Valley",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Taos",
+   "New Mexico"
+  ],
+  "bbox": {
+   "south": 36.5541,
+   "west": -105.4948,
+   "north": 36.6259,
+   "east": -105.4052
+  },
+  "camera": {
+   "lat": 36.59,
+   "lon": -105.45,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "arizona-snowbowl",
+  "name": "Arizona Snowbowl",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Snowbowl",
+   "Flagstaff",
+   "Arizona"
+  ],
+  "bbox": {
+   "south": 35.3031,
+   "west": -111.743,
+   "north": 35.3569,
+   "east": -111.677
+  },
+  "camera": {
+   "lat": 35.33,
+   "lon": -111.71,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "stowe-mountain-resort",
+  "name": "Stowe Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Stowe",
+   "Mount Mansfield",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 44.4941,
+   "west": -72.8304,
+   "north": 44.5659,
+   "east": -72.7296
+  },
+  "camera": {
+   "lat": 44.53,
+   "lon": -72.78,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "okemo-mountain-resort",
+  "name": "Okemo Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Okemo",
+   "Ludlow",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 43.3641,
+   "west": -72.7695,
+   "north": 43.4359,
+   "east": -72.6705
+  },
+  "camera": {
+   "lat": 43.4,
+   "lon": -72.72,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "mount-snow",
+  "name": "Mount Snow",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "West Dover",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 42.9331,
+   "west": -72.9568,
+   "north": 42.9869,
+   "east": -72.8832
+  },
+  "camera": {
+   "lat": 42.96,
+   "lon": -72.92,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "stratton-mountain-resort",
+  "name": "Stratton Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Stratton",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 43.0831,
+   "west": -72.9469,
+   "north": 43.1369,
+   "east": -72.8731
+  },
+  "camera": {
+   "lat": 43.11,
+   "lon": -72.91,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "sugarbush-resort",
+  "name": "Sugarbush Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Sugarbush",
+   "Warren",
+   "Mount Ellen",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 44.1041,
+   "west": -72.9601,
+   "north": 44.1759,
+   "east": -72.8599
+  },
+  "camera": {
+   "lat": 44.14,
+   "lon": -72.91,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "jay-peak-resort",
+  "name": "Jay Peak Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Jay Peak",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 44.9131,
+   "west": -72.5381,
+   "north": 44.9669,
+   "east": -72.4619
+  },
+  "camera": {
+   "lat": 44.94,
+   "lon": -72.5,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "smugglers-notch-resort",
+  "name": "Smugglers' Notch Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Smuggs",
+   "Jeffersonville",
+   "Vermont"
+  ],
+  "bbox": {
+   "south": 44.5431,
+   "west": -72.8278,
+   "north": 44.5969,
+   "east": -72.7522
+  },
+  "camera": {
+   "lat": 44.57,
+   "lon": -72.79,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "loon-mountain",
+  "name": "Loon Mountain",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Loon",
+   "Lincoln",
+   "New Hampshire"
+  ],
+  "bbox": {
+   "south": 44.0131,
+   "west": -71.6575,
+   "north": 44.0669,
+   "east": -71.5825
+  },
+  "camera": {
+   "lat": 44.04,
+   "lon": -71.62,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "bretton-woods",
+  "name": "Bretton Woods",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Bretton Woods",
+   "New Hampshire"
+  ],
+  "bbox": {
+   "south": 44.2331,
+   "west": -71.4776,
+   "north": 44.2869,
+   "east": -71.4024
+  },
+  "camera": {
+   "lat": 44.26,
+   "lon": -71.44,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "sunday-river",
+  "name": "Sunday River",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Newry",
+   "Bethel",
+   "Maine"
+  ],
+  "bbox": {
+   "south": 44.4341,
+   "west": -70.9104,
+   "north": 44.5059,
+   "east": -70.8096
+  },
+  "camera": {
+   "lat": 44.47,
+   "lon": -70.86,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "sugarloaf",
+  "name": "Sugarloaf",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Sugarloaf",
+   "Carrabassett Valley",
+   "Maine"
+  ],
+  "bbox": {
+   "south": 44.9941,
+   "west": -70.3608,
+   "north": 45.0659,
+   "east": -70.2592
+  },
+  "camera": {
+   "lat": 45.03,
+   "lon": -70.31,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "wachusett-mountain",
+  "name": "Wachusett Mountain",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Princeton",
+   "Massachusetts"
+  ],
+  "bbox": {
+   "south": 42.482,
+   "west": -71.9144,
+   "north": 42.518,
+   "east": -71.8656
+  },
+  "camera": {
+   "lat": 42.5,
+   "lon": -71.89,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.4
+  }
+ },
+ {
+  "id": "jiminy-peak",
+  "name": "Jiminy Peak",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Hancock",
+   "Massachusetts"
+  ],
+  "bbox": {
+   "south": 42.542,
+   "west": -73.3144,
+   "north": 42.578,
+   "east": -73.2656
+  },
+  "camera": {
+   "lat": 42.56,
+   "lon": -73.29,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.4
+  }
+ },
+ {
+  "id": "hunter-mountain",
+  "name": "Hunter Mountain",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Hunter",
+   "Catskills",
+   "New York"
+  ],
+  "bbox": {
+   "south": 42.1731,
+   "west": -74.2664,
+   "north": 42.2269,
+   "east": -74.1936
+  },
+  "camera": {
+   "lat": 42.2,
+   "lon": -74.23,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "windham-mountain-club",
+  "name": "Windham Mountain Club",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Windham",
+   "Catskills",
+   "New York"
+  ],
+  "bbox": {
+   "south": 42.2631,
+   "west": -74.2964,
+   "north": 42.3169,
+   "east": -74.2236
+  },
+  "camera": {
+   "lat": 42.29,
+   "lon": -74.26,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "holiday-valley",
+  "name": "Holiday Valley",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Ellicottville",
+   "New York"
+  ],
+  "bbox": {
+   "south": 42.2331,
+   "west": -78.7064,
+   "north": 42.2869,
+   "east": -78.6336
+  },
+  "camera": {
+   "lat": 42.26,
+   "lon": -78.67,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "camelback-resort",
+  "name": "Camelback Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Camelback",
+   "Poconos",
+   "Pennsylvania"
+  ],
+  "bbox": {
+   "south": 41.0231,
+   "west": -75.3957,
+   "north": 41.0769,
+   "east": -75.3243
+  },
+  "camera": {
+   "lat": 41.05,
+   "lon": -75.36,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "blue-mountain-resort-pennsylvania",
+  "name": "Blue Mountain Resort (Pennsylvania)",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Blue Mountain",
+   "Palmerton",
+   "Pennsylvania"
+  ],
+  "bbox": {
+   "south": 40.7831,
+   "west": -75.5456,
+   "north": 40.8369,
+   "east": -75.4744
+  },
+  "camera": {
+   "lat": 40.81,
+   "lon": -75.51,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "seven-springs-mountain-resort",
+  "name": "Seven Springs Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Seven Springs",
+   "Pennsylvania"
+  ],
+  "bbox": {
+   "south": 39.9931,
+   "west": -79.3352,
+   "north": 40.0469,
+   "east": -79.2648
+  },
+  "camera": {
+   "lat": 40.02,
+   "lon": -79.3,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "snowshoe-mountain",
+  "name": "Snowshoe Mountain",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Snowshoe",
+   "West Virginia"
+  ],
+  "bbox": {
+   "south": 38.3741,
+   "west": -80.0359,
+   "north": 38.4459,
+   "east": -79.9441
+  },
+  "camera": {
+   "lat": 38.41,
+   "lon": -79.99,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "beech-mountain-resort",
+  "name": "Beech Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Beech Mountain",
+   "North Carolina"
+  ],
+  "bbox": {
+   "south": 36.1631,
+   "west": -81.9134,
+   "north": 36.2169,
+   "east": -81.8466
+  },
+  "camera": {
+   "lat": 36.19,
+   "lon": -81.88,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "sugar-mountain-resort",
+  "name": "Sugar Mountain Resort",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Sugar Mountain",
+   "Banner Elk",
+   "North Carolina"
+  ],
+  "bbox": {
+   "south": 36.1031,
+   "west": -81.8934,
+   "north": 36.1569,
+   "east": -81.8266
+  },
+  "camera": {
+   "lat": 36.13,
+   "lon": -81.86,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "boyne-mountain",
+  "name": "Boyne Mountain",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Boyne Falls",
+   "Michigan"
+  ],
+  "bbox": {
+   "south": 45.1331,
+   "west": -84.9682,
+   "north": 45.1869,
+   "east": -84.8918
+  },
+  "camera": {
+   "lat": 45.16,
+   "lon": -84.93,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "the-highlands-at-harbor-springs",
+  "name": "The Highlands at Harbor Springs",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Highlands",
+   "Harbor Springs",
+   "Michigan"
+  ],
+  "bbox": {
+   "south": 45.4431,
+   "west": -84.9584,
+   "north": 45.4969,
+   "east": -84.8816
+  },
+  "camera": {
+   "lat": 45.47,
+   "lon": -84.92,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "lutsen-mountains",
+  "name": "Lutsen Mountains",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Lutsen",
+   "Minnesota"
+  ],
+  "bbox": {
+   "south": 47.6241,
+   "west": -90.7733,
+   "north": 47.6959,
+   "east": -90.6667
+  },
+  "camera": {
+   "lat": 47.66,
+   "lon": -90.72,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "afton-alps",
+  "name": "Afton Alps",
+  "country": "US",
+  "tier": 3,
+  "villages": [
+   "Afton",
+   "Hastings",
+   "Minnesota"
+  ],
+  "bbox": {
+   "south": 44.842,
+   "west": -92.8153,
+   "north": 44.878,
+   "east": -92.7647
+  },
+  "camera": {
+   "lat": 44.86,
+   "lon": -92.79,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.4
+  }
+ },
+ {
+  "id": "yuzawa-snow-link",
+  "name": "Yuzawa Snow Link",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Yuzawa",
+   "Gala Yuzawa",
+   "Ishiuchi Maruyama",
+   "Yuzawa Kogen",
+   "Niigata"
+  ],
+  "bbox": {
+   "south": 36.8961,
+   "west": 138.7526,
+   "north": 37.0039,
+   "east": 138.8874
+  },
+  "camera": {
+   "lat": 36.95,
+   "lon": 138.82,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "mt-naeba",
+  "name": "Mt. Naeba",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Naeba",
+   "Kagura",
+   "Mitsumata",
+   "Yuzawa",
+   "Niigata"
+  ],
+  "bbox": {
+   "south": 36.7451,
+   "west": 138.7289,
+   "north": 36.8349,
+   "east": 138.8411
+  },
+  "camera": {
+   "lat": 36.79,
+   "lon": 138.785,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "hakuba-goryu-and-hakuba47",
+  "name": "Hakuba Goryu & Hakuba47",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Goryu",
+   "Hakuba 47",
+   "Nagano"
+  ],
+  "bbox": {
+   "south": 36.6381,
+   "west": 137.7864,
+   "north": 36.6919,
+   "east": 137.8536
+  },
+  "camera": {
+   "lat": 36.665,
+   "lon": 137.82,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "happo-one",
+  "name": "Happo-One",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Happo One",
+   "Hakuba",
+   "Nagano"
+  ],
+  "bbox": {
+   "south": 36.6731,
+   "west": 137.7864,
+   "north": 36.7269,
+   "east": 137.8536
+  },
+  "camera": {
+   "lat": 36.7,
+   "lon": 137.82,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "nozawa-onsen",
+  "name": "Nozawa Onsen",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Nozawa",
+   "Nagano"
+  ],
+  "bbox": {
+   "south": 36.8841,
+   "west": 138.4151,
+   "north": 36.9559,
+   "east": 138.5049
+  },
+  "camera": {
+   "lat": 36.92,
+   "lon": 138.46,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "myoko-suginohara-akakura",
+  "name": "Myoko Suginohara / Akakura",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Myoko",
+   "Suginohara",
+   "Akakura Onsen",
+   "Akakura Kanko",
+   "Niigata"
+  ],
+  "bbox": {
+   "south": 36.8251,
+   "west": 138.1139,
+   "north": 36.9149,
+   "east": 138.2261
+  },
+  "camera": {
+   "lat": 36.87,
+   "lon": 138.17,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "niseko-united",
+  "name": "Niseko United",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Niseko",
+   "Grand Hirafu",
+   "Hanazono",
+   "Niseko Village",
+   "Annupuri",
+   "Hokkaido"
+  ],
+  "bbox": {
+   "south": 42.8061,
+   "west": 140.6065,
+   "north": 42.9139,
+   "east": 140.7535
+  },
+  "camera": {
+   "lat": 42.86,
+   "lon": 140.68,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "rusutsu-resort",
+  "name": "Rusutsu Resort",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Rusutsu",
+   "Hokkaido"
+  ],
+  "bbox": {
+   "south": 42.7141,
+   "west": 140.8411,
+   "north": 42.7859,
+   "east": 140.9389
+  },
+  "camera": {
+   "lat": 42.75,
+   "lon": 140.89,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "furano-ski-resort",
+  "name": "Furano Ski Resort",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Furano",
+   "Hokkaido"
+  ],
+  "bbox": {
+   "south": 43.2841,
+   "west": 142.3106,
+   "north": 43.3559,
+   "east": 142.4094
+  },
+  "camera": {
+   "lat": 43.32,
+   "lon": 142.36,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "zao-onsen",
+  "name": "Zao Onsen",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Zao",
+   "Yamagata"
+  ],
+  "bbox": {
+   "south": 38.1151,
+   "west": 140.3629,
+   "north": 38.2049,
+   "east": 140.4771
+  },
+  "camera": {
+   "lat": 38.16,
+   "lon": 140.42,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "appi-kogen",
+  "name": "Appi Kogen",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "APPI",
+   "Hachimantai",
+   "Iwate"
+  ],
+  "bbox": {
+   "south": 39.9641,
+   "west": 140.9231,
+   "north": 40.0359,
+   "east": 141.0169
+  },
+  "camera": {
+   "lat": 40,
+   "lon": 140.97,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "alts-bandai-nekoma-mountain",
+  "name": "Alts Bandai / Nekoma Mountain",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Alts Bandai",
+   "Nekoma",
+   "Fukushima"
+  ],
+  "bbox": {
+   "south": 37.5941,
+   "west": 140.0246,
+   "north": 37.6659,
+   "east": 140.1154
+  },
+  "camera": {
+   "lat": 37.63,
+   "lon": 140.07,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "karuizawa-prince-hotel-ski-resort",
+  "name": "Karuizawa Prince Hotel Ski Resort",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Karuizawa",
+   "Nagano"
+  ],
+  "bbox": {
+   "south": 36.3031,
+   "west": 138.5965,
+   "north": 36.3569,
+   "east": 138.6635
+  },
+  "camera": {
+   "lat": 36.33,
+   "lon": 138.63,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "takasu-snow-park-and-dynaland",
+  "name": "Takasu Snow Park & Dynaland",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Takasu",
+   "Dynaland",
+   "Gifu"
+  ],
+  "bbox": {
+   "south": 35.9341,
+   "west": 136.8456,
+   "north": 36.0059,
+   "east": 136.9344
+  },
+  "camera": {
+   "lat": 35.97,
+   "lon": 136.89,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "biwako-valley",
+  "name": "Biwako Valley",
+  "country": "JP",
+  "tier": 3,
+  "villages": [
+   "Biwako",
+   "Shiga"
+  ],
+  "bbox": {
+   "south": 35.2231,
+   "west": 135.887,
+   "north": 35.2769,
+   "east": 135.953
+  },
+  "camera": {
+   "lat": 35.25,
+   "lon": 135.92,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "phoenix-snow-park",
+  "name": "Phoenix Snow Park",
+  "country": "KR",
+  "tier": 3,
+  "villages": [
+   "Phoenix Pyeongchang",
+   "Bongpyeong",
+   "Gangwon"
+  ],
+  "bbox": {
+   "south": 37.5531,
+   "west": 128.286,
+   "north": 37.6069,
+   "east": 128.354
+  },
+  "camera": {
+   "lat": 37.58,
+   "lon": 128.32,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "vivaldi-park",
+  "name": "Vivaldi Park",
+  "country": "KR",
+  "tier": 3,
+  "villages": [
+   "Vivaldi",
+   "Hongcheon",
+   "Daemyung"
+  ],
+  "bbox": {
+   "south": 37.6231,
+   "west": 127.646,
+   "north": 37.6769,
+   "east": 127.714
+  },
+  "camera": {
+   "lat": 37.65,
+   "lon": 127.68,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "elysian-gangchon",
+  "name": "Elysian Gangchon",
+  "country": "KR",
+  "tier": 3,
+  "villages": [
+   "Gangchon",
+   "Chuncheon"
+  ],
+  "bbox": {
+   "south": 37.7931,
+   "west": 127.5559,
+   "north": 37.8469,
+   "east": 127.6241
+  },
+  "camera": {
+   "lat": 37.82,
+   "lon": 127.59,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "muju-deogyusan-resort",
+  "name": "Muju Deogyusan Resort",
+  "country": "KR",
+  "tier": 3,
+  "villages": [
+   "Muju",
+   "Deogyusan"
+  ],
+  "bbox": {
+   "south": 35.8541,
+   "west": 127.6956,
+   "north": 35.9259,
+   "east": 127.7844
+  },
+  "camera": {
+   "lat": 35.89,
+   "lon": 127.74,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "genting-resort-secret-garden",
+  "name": "Genting Resort Secret Garden",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Genting",
+   "Yunding",
+   "Chongli",
+   "Zhangjiakou"
+  ],
+  "bbox": {
+   "south": 40.9121,
+   "west": 115.3804,
+   "north": 40.9839,
+   "east": 115.4756
+  },
+  "camera": {
+   "lat": 40.948,
+   "lon": 115.428,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "fulong-ski-resort",
+  "name": "Fulong Ski Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Fulong",
+   "Chongli",
+   "Zhangjiakou"
+  ],
+  "bbox": {
+   "south": 40.9261,
+   "west": 115.2286,
+   "north": 41.0339,
+   "east": 115.3714
+  },
+  "camera": {
+   "lat": 40.98,
+   "lon": 115.3,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "lake-songhua-resort",
+  "name": "Lake Songhua Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Songhua Lake",
+   "Wanke",
+   "Jilin"
+  ],
+  "bbox": {
+   "south": 43.5992,
+   "west": 126.6582,
+   "north": 43.7608,
+   "east": 126.8818
+  },
+  "camera": {
+   "lat": 43.68,
+   "lon": 126.77,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 11.85
+  }
+ },
+ {
+  "id": "beidahu-ski-resort",
+  "name": "Beidahu Ski Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Beidahu",
+   "Jilin"
+  ],
+  "bbox": {
+   "south": 43.3821,
+   "west": 126.5645,
+   "north": 43.4539,
+   "east": 126.6635
+  },
+  "camera": {
+   "lat": 43.418,
+   "lon": 126.614,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "yabuli-sun-mountain",
+  "name": "Yabuli Sun Mountain",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Yabuli",
+   "Harbin",
+   "Heilongjiang"
+  ],
+  "bbox": {
+   "south": 44.7261,
+   "west": 128.3741,
+   "north": 44.8339,
+   "east": 128.5259
+  },
+  "camera": {
+   "lat": 44.78,
+   "lon": 128.45,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "nanshan-ski-village",
+  "name": "Nanshan Ski Village",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Nanshan",
+   "Miyun",
+   "Beijing"
+  ],
+  "bbox": {
+   "south": 40.2931,
+   "west": 116.8347,
+   "north": 40.3469,
+   "east": 116.9053
+  },
+  "camera": {
+   "lat": 40.32,
+   "lon": 116.87,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "huaibei-international-ski-resort",
+  "name": "Huaibei International Ski Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Huaibei",
+   "Huairou",
+   "Beijing"
+  ],
+  "bbox": {
+   "south": 40.4431,
+   "west": 116.4946,
+   "north": 40.4969,
+   "east": 116.5654
+  },
+  "camera": {
+   "lat": 40.47,
+   "lon": 116.53,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "silk-road-mountain-resort",
+  "name": "Silk Road Mountain Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Silk Road",
+   "Urumqi",
+   "Xinjiang"
+  ],
+  "bbox": {
+   "south": 43.4141,
+   "west": 87.1505,
+   "north": 43.4859,
+   "east": 87.2495
+  },
+  "camera": {
+   "lat": 43.45,
+   "lon": 87.2,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "jiangjunshan-ski-resort",
+  "name": "Jiangjunshan Ski Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Jiangjunshan",
+   "Altay",
+   "Xinjiang"
+  ],
+  "bbox": {
+   "south": 47.8231,
+   "west": 88.0798,
+   "north": 47.8769,
+   "east": 88.1602
+  },
+  "camera": {
+   "lat": 47.85,
+   "lon": 88.12,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "koktokay-international-ski-resort",
+  "name": "Koktokay International Ski Resort",
+  "country": "CN",
+  "tier": 3,
+  "villages": [
+   "Koktokay",
+   "Keketuohai",
+   "Fuyun",
+   "Altay",
+   "Xinjiang"
+  ],
+  "bbox": {
+   "south": 47.2941,
+   "west": 89.677,
+   "north": 47.3659,
+   "east": 89.783
+  },
+  "camera": {
+   "lat": 47.33,
+   "lon": 89.73,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "perisher-ski-resort",
+  "name": "Perisher Ski Resort",
+  "country": "AU",
+  "tier": 3,
+  "villages": [
+   "Perisher",
+   "Smiggin Holes",
+   "Guthega",
+   "Blue Cow",
+   "New South Wales"
+  ],
+  "bbox": {
+   "south": -36.4549,
+   "west": 148.3542,
+   "north": -36.3651,
+   "east": 148.4658
+  },
+  "camera": {
+   "lat": -36.41,
+   "lon": 148.41,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.61
+  }
+ },
+ {
+  "id": "thredbo-alpine-village",
+  "name": "Thredbo Alpine Village",
+  "country": "AU",
+  "tier": 3,
+  "villages": [
+   "Thredbo",
+   "New South Wales"
+  ],
+  "bbox": {
+   "south": -36.5359,
+   "west": 148.2553,
+   "north": -36.4641,
+   "east": 148.3447
+  },
+  "camera": {
+   "lat": -36.5,
+   "lon": 148.3,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "falls-creek",
+  "name": "Falls Creek",
+  "country": "AU",
+  "tier": 3,
+  "villages": [
+   "Falls Creek",
+   "Victoria"
+  ],
+  "bbox": {
+   "south": -36.8959,
+   "west": 147.2351,
+   "north": -36.8241,
+   "east": 147.3249
+  },
+  "camera": {
+   "lat": -36.86,
+   "lon": 147.28,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "mt-buller",
+  "name": "Mt. Buller",
+  "country": "AU",
+  "tier": 3,
+  "villages": [
+   "Mount Buller",
+   "Victoria"
+  ],
+  "bbox": {
+   "south": -37.1859,
+   "west": 146.3949,
+   "north": -37.1141,
+   "east": 146.4851
+  },
+  "camera": {
+   "lat": -37.15,
+   "lon": 146.44,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "mt-hotham",
+  "name": "Mt. Hotham",
+  "country": "AU",
+  "tier": 3,
+  "villages": [
+   "Mount Hotham",
+   "Victoria"
+  ],
+  "bbox": {
+   "south": -37.0159,
+   "west": 147.095,
+   "north": -36.9441,
+   "east": 147.185
+  },
+  "camera": {
+   "lat": -36.98,
+   "lon": 147.14,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ },
+ {
+  "id": "whakapapa-turoa",
+  "name": "Whakapapa / Tūroa",
+  "country": "NZ",
+  "tier": 3,
+  "villages": [
+   "Whakapapa",
+   "Turoa",
+   "Ruapehu"
+  ],
+  "bbox": {
+   "south": -39.3139,
+   "west": 175.4904,
+   "north": -39.2061,
+   "east": 175.6296
+  },
+  "camera": {
+   "lat": -39.26,
+   "lon": 175.56,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.37
+  }
+ },
+ {
+  "id": "the-remarkables",
+  "name": "The Remarkables",
+  "country": "NZ",
+  "tier": 3,
+  "villages": [
+   "Remarkables",
+   "Queenstown"
+  ],
+  "bbox": {
+   "south": -45.0769,
+   "west": 168.7719,
+   "north": -45.0231,
+   "east": 168.8481
+  },
+  "camera": {
+   "lat": -45.05,
+   "lon": 168.81,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "coronet-peak",
+  "name": "Coronet Peak",
+  "country": "NZ",
+  "tier": 3,
+  "villages": [
+   "Coronet Peak",
+   "Queenstown"
+  ],
+  "bbox": {
+   "south": -44.9469,
+   "west": 168.6919,
+   "north": -44.8931,
+   "east": 168.7681
+  },
+  "camera": {
+   "lat": -44.92,
+   "lon": 168.73,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "cardrona-alpine-resort",
+  "name": "Cardrona Alpine Resort",
+  "country": "NZ",
+  "tier": 3,
+  "villages": [
+   "Cardrona",
+   "Wanaka"
+  ],
+  "bbox": {
+   "south": -44.8969,
+   "west": 168.912,
+   "north": -44.8431,
+   "east": 168.988
+  },
+  "camera": {
+   "lat": -44.87,
+   "lon": 168.95,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 13.27
+  }
+ },
+ {
+  "id": "cerro-catedral",
+  "name": "Cerro Catedral",
+  "country": "AR",
+  "tier": 3,
+  "villages": [
+   "Catedral",
+   "Bariloche",
+   "Patagonia"
+  ],
+  "bbox": {
+   "south": -41.2059,
+   "west": -71.4877,
+   "north": -41.1341,
+   "east": -71.3923
+  },
+  "camera": {
+   "lat": -41.17,
+   "lon": -71.44,
+   "bearing": 0,
+   "pitch": 62,
+   "zoom": 12.9
+  }
+ }
 ]

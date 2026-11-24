@@ -20,11 +20,37 @@ const DIFF = {
   advanced: ['#0d0d0d', 'Difficult'], expert: ['#0d0d0d', 'Expert'], freeride: ['#fa8c00', 'Freeride'],
   unknown: ['#737380', 'Not classified'],
 };
-const legendFor = (country) => country === 'FR'
-  ? ['novice', 'easy', 'intermediate', 'advanced'] : ['easy', 'intermediate', 'advanced', 'freeride'];
-// Run colours of the current look (a look can brighten them; the meaning never changes).
+// Regional run-colour conventions. Each scheme maps an OSM difficulty to a colour name and gives
+// the legend in the order and words skiers there know.
+const SCHEMES = {
+  // Europe: blue easy, red intermediate, black difficult (France and Spain add green for beginners).
+  eu: { colors: { novice: 'green', easy: 'blue', intermediate: 'red', advanced: 'black', expert: 'black', freeride: 'orange' },
+    legend: [['easy', 'Easy'], ['intermediate', 'Intermediate'], ['advanced', 'Difficult'], ['freeride', 'Freeride']],
+    legendGreen: [['novice', 'Beginner'], ['easy', 'Easy'], ['intermediate', 'Intermediate'], ['advanced', 'Difficult']] },
+  // North America and Oceania: green circle, blue square, black diamond, double black.
+  na: { colors: { novice: 'green', easy: 'green', intermediate: 'blue', advanced: 'black', expert: 'black', freeride: 'orange' },
+    legend: [['easy', 'Easiest'], ['intermediate', 'More difficult'], ['advanced', 'Most difficult'], ['expert', 'Experts only']] },
+  // Japan, Korea, China: green beginner, red intermediate, black advanced.
+  asia: { colors: { novice: 'green', easy: 'green', intermediate: 'red', advanced: 'black', expert: 'black', freeride: 'orange' },
+    legend: [['easy', 'Beginner'], ['intermediate', 'Intermediate'], ['advanced', 'Advanced']] },
+};
+const schemeFor = (country) => (['US', 'CA', 'AU', 'NZ'].includes(country) ? 'na'
+  : ['JP', 'KR', 'CN'].includes(country) ? 'asia' : 'eu');
+const legendFor = (country) => {
+  const sc = SCHEMES[schemeFor(country)];
+  return (['FR', 'ES'].includes(country) && sc.legendGreen) || sc.legend;
+};
+const runLabel = (country, difficulty) =>
+  legendFor(country).find(([k]) => k === difficulty)?.[1] ?? DIFF[difficulty]?.[1] ?? 'Run';
+// Run colours: the look's palette (a look can brighten it) mapped through the resort's regional scheme.
 const RUN_BASE = Object.fromEntries(Object.entries(DIFF).map(([k, [c]]) => [k, c]));
 let RUN = RUN_BASE;
+function computeRun(L, country) {
+  const base = { ...RUN_BASE, ...(L.runs ?? {}) };
+  const named = { green: base.novice, blue: base.easy, red: base.intermediate, black: base.advanced, orange: base.freeride };
+  const scheme = SCHEMES[schemeFor(country)].colors;
+  return { ...Object.fromEntries(Object.entries(scheme).map(([k, c]) => [k, named[c]])), unknown: base.unknown };
+}
 const runColor = () => ['match', ['get', 'piste:difficulty'],
   ...Object.entries(RUN).filter(([k]) => k !== 'unknown').flat(), RUN.unknown];
 const widthExpr = (stops) => ['interpolate', ['exponential', 1.4], ['zoom'], ...stops.flat()];
@@ -160,9 +186,9 @@ if (!token) {
 }
 
 const resorts = await (await fetch('../pipeline/resorts.json')).json();
-for (const r of resorts) $('#resort').add(new Option(r.name, r.id));
 let current = resorts.find((r) => r.id === params.get('resort')) ?? resorts[0];
-$('#resort').value = current.id;
+$('#resort-q').value = current.name;
+$('#resort-q').placeholder = `Search ${resorts.length} ski resorts`;
 
 // --- Map ------------------------------------------------------------------------------------------
 mapboxgl.accessToken = token;
@@ -195,7 +221,7 @@ let cablesOK = false;
 /** Everything we add on top of Mapbox's style. Runs again after every style switch. */
 function setup() {
   const L = LOOKS[look];
-  RUN = { ...RUN_BASE, ...(L.runs ?? {}) };
+  RUN = computeRun(L, current.country);
   LIFT = { ...LIFT_BASE, ...(L.lift ?? {}) };
   addLabelImages();
   const lw = L.chunky ? LINE_W_CHUNKY : LINE_W, cw = L.chunky ? CASING_W_CHUNKY : CASING_W;
@@ -264,6 +290,26 @@ function setup() {
     map.addSource(id, { type: 'geojson', data: cache.get(current.id)?.[id] ?? empty, ...(id === 'lift_spans' && { lineMetrics: true }) });
   }
   map.addSource('lift_terminals', { type: 'geojson', data: terminalsFrom(cache.get(current.id)?.lifts) });
+
+  // Every resort as a dot when zoomed out: big coral = tier 1 (2 M+ skier visits), blue = tier 2, grey = tier 3.
+  map.addSource('all-resorts', { type: 'geojson', data: resortPoints });
+  const fadeOut = (v) => ['interpolate', ['linear'], ['zoom'], 9, v, 10.5, 0];
+  map.addLayer({ id: 'resort-dots', type: 'circle', source: 'all-resorts', slot: 'top', maxzoom: 10.5,
+    layout: { 'circle-sort-key': ['-', 4, ['get', 'tier']] },
+    paint: { 'circle-color': ['match', ['get', 'tier'], 1, TIER[1].color, 2, TIER[2].color, TIER[3].color],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, ['match', ['get', 'tier'], 1, 4.5, 2, 3.5, 2.5],
+        8, ['match', ['get', 'tier'], 1, 9, 2, 7.5, 6]],
+      'circle-stroke-color': '#ffffff', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 1, 1, 8, 2.5],
+      'circle-opacity': fadeOut(1), 'circle-stroke-opacity': fadeOut(1), 'circle-emissive-strength': 1,
+      'circle-pitch-alignment': 'viewport' } });
+  map.addLayer({ id: 'resort-dot-labels', type: 'symbol', source: 'all-resorts', slot: 'top', maxzoom: 10.5,
+    // Tier 1 names from zoom 3, tier 2 from 5, tier 3 from 6.5; the rest appear as space allows.
+    filter: ['>=', ['zoom'], ['match', ['get', 'tier'], 1, 3, 2, 5, 6.5]],
+    layout: { 'text-field': ['get', 'name'], 'text-font': FONT.bold, 'text-size': ['match', ['get', 'tier'], 1, 13, 2, 12, 11],
+      'text-anchor': 'left', 'text-offset': [0.9, 0], 'text-padding': 4, 'text-optional': true,
+      'symbol-sort-key': ['get', 'tier'], ...bubble('bubble') },
+    paint: { 'text-color': L.labels.text, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.2),
+      'text-opacity': fadeOut(1), 'icon-opacity': fadeOut(1), 'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
 
   // Runs.
   map.addLayer({ id: 'piste-areas-fill', type: 'fill', source: 'piste_areas', slot: 'middle',
@@ -370,6 +416,17 @@ function pillImage(fill, rim, rimWidth, shadow) {
     content: [(pad + r * 0.55) * pr, (pad + 2) * pr, (w - pad - r * 0.55) * pr, (h - pad - 2) * pr],
   }];
 }
+/** Re-colour runs when moving to a resort in another region (e.g. Europe → North America). */
+function applyRunColors() {
+  const next = computeRun(LOOKS[look], current.country);
+  if (JSON.stringify(next) === JSON.stringify(RUN)) return;
+  RUN = next;
+  addLabelImages();
+  if (map.getLayer('piste-areas-fill')) map.setPaintProperty('piste-areas-fill', 'fill-color', runColor());
+  if (map.getLayer('pistes-line')) map.setPaintProperty('pistes-line', 'line-color', runColor());
+  if (map.getLayer('pistes-name')) map.setPaintProperty('pistes-name', 'text-color', runColor());
+}
+
 function addLabelImages() {
   const put = (id, args) => { if (map.hasImage(id)) map.removeImage(id); map.addImage(id, ...args); };
   for (const [k, color] of Object.entries(RUN)) put(`badge-${k}`, pillImage(color, '#ffffff', 2.5, true));
@@ -450,6 +507,8 @@ async function loadResortData(r) {
 
 async function showResort(r, fly = true) {
   current = r;
+  $('#resort-q').value = r.name;
+  applyRunColors();
   renderLegend(r);
   $('#card').classList.remove('show');
   if (fly) map.flyTo({ center: [r.camera.lon, r.camera.lat], zoom: r.camera.zoom, bearing: r.camera.bearing,
@@ -468,10 +527,90 @@ async function showResort(r, fly = true) {
 }
 
 function renderLegend(r) {
-  const runs = legendFor(r.country).map((k) => `<span><i style="background:${RUN[k]}"></i>${DIFF[k][1]}</span>`).join('');
+  const runs = legendFor(r.country).map(([k, label]) => `<span><i style="background:${RUN[k]}"></i>${label}</span>`).join('');
+  $('#legend').hidden = false;
   $('#legend').innerHTML = `<div>${runs}</div><div class="lifts"><span><i class="cable"></i>Lift</span>`
     + `<span><b style="background:${LIFT.cabin}"></b>Gondola</span><span><b style="background:${LIFT.chair}"></b>Chair</span></div>`;
 }
+
+// --- All resorts: tiers, overview dots, search -------------------------------------------------
+const TIER = {
+  1: { color: '#ff3d5f', label: 'Over 2 M skier visits' },
+  2: { color: '#2b8bff', label: '1–2 M skier visits' },
+  3: { color: '#7a7fa8', label: '0.5–1 M skier visits' },
+};
+const COUNTRY = { AT: 'Austria', CH: 'Switzerland', FR: 'France', IT: 'Italy', DE: 'Germany', AD: 'Andorra', ES: 'Spain',
+  SE: 'Sweden', NO: 'Norway', FI: 'Finland', SK: 'Slovakia', CZ: 'Czechia', PL: 'Poland', BG: 'Bulgaria', SI: 'Slovenia',
+  RO: 'Romania', RU: 'Russia', US: 'United States', CA: 'Canada', JP: 'Japan', KR: 'South Korea', CN: 'China',
+  AU: 'Australia', NZ: 'New Zealand', AR: 'Argentina' };
+const resortPoints = { type: 'FeatureCollection', features: resorts.map((r) => ({ type: 'Feature', id: r.id,
+  geometry: { type: 'Point', coordinates: [r.camera.lon, r.camera.lat] }, properties: { id: r.id, name: r.name, tier: r.tier ?? 3 } })) };
+
+const fold = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const searchIndex = resorts.map((r) => ({ r, name: fold(r.name), words: fold([...(r.villages ?? []), COUNTRY[r.country] ?? '', r.country].join(' | ')) }));
+function findResorts(q) {
+  const f = fold(q.trim());
+  if (!f) return resorts.filter((r) => r.tier === 1);
+  return searchIndex.map(({ r, name, words }) => {
+    const score = name.startsWith(f) ? 0 : name.split(/[^a-z0-9]+/).some((w) => w.startsWith(f)) ? 1
+      : name.includes(f) ? 2 : words.split(/[^a-z0-9]+/).some((w) => w.startsWith(f)) || words.includes(f) ? 3 : 9;
+    return { r, score };
+  }).filter((x) => x.score < 9).sort((a, b) => a.score - b.score || (a.r.tier ?? 3) - (b.r.tier ?? 3) || a.r.name.localeCompare(b.r.name))
+    .slice(0, 40).map((x) => x.r);
+}
+
+const input = $('#resort-q'), list = $('#results');
+let hits = [], active = -1;
+function renderResults() {
+  hits = findResorts(input.value);
+  active = hits.length ? 0 : -1;
+  list.innerHTML = (input.value.trim() ? '' : '<li class="hint" role="presentation">Biggest resorts · type to search all</li>')
+    + (hits.length ? hits.map((r, i) => `<li role="option" id="opt-${i}" data-i="${i}" aria-selected="${i === active}">
+        <i style="background:${TIER[r.tier ?? 3].color}"></i>
+        <span><b>${r.name}</b><small>${COUNTRY[r.country] ?? r.country} · ${TIER[r.tier ?? 3].label}</small></span></li>`).join('')
+      : '<li class="hint" role="presentation">No resort found. Try a village or country.</li>');
+  list.hidden = false;
+  $('#search').setAttribute('aria-expanded', 'true');
+  input.setAttribute('aria-activedescendant', active >= 0 ? 'opt-0' : '');
+}
+function closeResults() {
+  list.hidden = true;
+  $('#search').setAttribute('aria-expanded', 'false');
+}
+function moveActive(d) {
+  if (!hits.length) return;
+  active = (active + d + hits.length) % hits.length;
+  for (const li of list.querySelectorAll('[role=option]')) li.setAttribute('aria-selected', String(Number(li.dataset.i) === active));
+  list.querySelector(`#opt-${active}`)?.scrollIntoView({ block: 'nearest' });
+  input.setAttribute('aria-activedescendant', `opt-${active}`);
+}
+function pickResort(r) {
+  closeResults();
+  input.blur();
+  history.replaceState(null, '', `?resort=${r.id}`);
+  stopMotion();
+  showResort(r);
+}
+input.addEventListener('focus', () => { input.select(); renderResults(); });
+input.addEventListener('input', renderResults);
+input.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); moveActive(1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); moveActive(-1); }
+  else if (e.key === 'Enter' && hits[active]) { e.preventDefault(); pickResort(hits[active]); }
+  else if (e.key === 'Escape') { closeResults(); input.value = current.name; input.blur(); }
+});
+list.addEventListener('pointerdown', (e) => {
+  const li = e.target.closest('[role=option]');
+  if (li) { e.preventDefault(); pickResort(hits[Number(li.dataset.i)]); }
+});
+input.addEventListener('blur', () => setTimeout(() => { closeResults(); if (!input.value.trim()) input.value = current.name; }, 120));
+
+// Globe button: zoom out to every resort.
+$('#world').addEventListener('click', () => {
+  stopMotion();
+  $('#card').classList.remove('show');
+  map.flyTo({ center: [10, 35], zoom: 1.4, pitch: 0, bearing: 0, duration: 2200, essential: true });
+});
 
 // --- Orbit: drag the dial (or scroll sideways) to turn the mountain ------------------------------
 const PX_PER_DEG = 3;
@@ -551,14 +690,15 @@ $('#orbit-play').addEventListener('click', () => {
 });
 map.on('dragstart', stopMotion);
 map.on('touchstart', () => { if (spin) stopMotion(); });
+// The run legend only makes sense inside a resort, not over the world view.
+map.on('zoom', () => { $('#legend').classList.toggle('far', map.getZoom() < 9); });
+map.on('mousemove', (e) => {
+  const over = map.getLayer('resort-dots') && map.getZoom() < 10.5
+    && map.queryRenderedFeatures(e.point, { layers: ['resort-dots', 'resort-dot-labels'] }).length;
+  map.getCanvas().style.cursor = over ? 'pointer' : '';
+});
 
 // --- Controls -----------------------------------------------------------------------------------
-$('#resort').addEventListener('change', (e) => {
-  const r = resorts.find((x) => x.id === e.target.value);
-  history.replaceState(null, '', `?resort=${r.id}`);
-  stopMotion();
-  showResort(r);
-});
 $('#toggle3d').addEventListener('click', () => { is3D = !is3D; if (!is3D) stopMotion(); apply3D(true); syncDial(); });
 $('#light').addEventListener('click', () => {
   preset = (preset + 1) % presets.length;
@@ -580,6 +720,9 @@ map.on('style.load', () => { setup(); renderLegend(current); syncDial(); markRea
 
 // Tap a run, lift, cabin or station → card (mirrors featureCard in ResortBrowserView.swift).
 map.on('click', (e) => {
+  const dot = map.getLayer('resort-dots') && map.getZoom() < 10.5
+    && map.queryRenderedFeatures([[e.point.x - 8, e.point.y - 8], [e.point.x + 8, e.point.y + 8]], { layers: ['resort-dots', 'resort-dot-labels'] })[0];
+  if (dot) { pickResort(resorts.find((r) => r.id === dot.properties.id)); return; }
   const layers = ['pistes-line', 'pistes-unknown', 'lifts-cable', 'lifts-line', 'lift-cabins', 'lift-structures'].filter((l) => map.getLayer(l));
   const pad = 10;
   const f = map.queryRenderedFeatures([[e.point.x - pad, e.point.y - pad], [e.point.x + pad, e.point.y + pad]], { layers })[0];
@@ -589,7 +732,7 @@ map.on('click', (e) => {
   const liftType = LIFT_NAMES[p.aerialway ?? p.lift];
   const seats = p['aerialway:occupancy'] ? `${p['aerialway:occupancy']} seats` : '';
   const title = p.name ?? p.ref ?? { pylon: 'Lift tower', cabin: liftType ?? 'Cabin', station: 'Lift station' }[p.kind] ?? 'Unnamed';
-  const detail = d ? `${d[1]} run${p.ref ? ` · No. ${p.ref}` : ''}`
+  const detail = d ? `${runLabel(current.country, p['piste:difficulty'])}${p.ref ? ` · No. ${p.ref}` : ''}`
     : [p.kind === 'station' ? 'Station' : null, liftType, seats].filter(Boolean).join(' · ');
   $('#card b').textContent = title;
   $('#card small').textContent = detail;
@@ -608,4 +751,5 @@ showResort(current, false);
 window.__preview = {                                    // handy in the console
   map, resorts, get cablesOK() { return cablesOK; },
   selectLift(name) { selectedLift = name; applySelection(); },
+  findResorts, pickResort: (id) => pickResort(resorts.find((r) => r.id === id)),
 };

@@ -31,8 +31,19 @@ The map is then at `https://ninoczernin-lab.github.io/ski.wrede.czernin/`, which
 GitHub Pages on a private repo needs a paid GitHub plan.
 Visitors paste a token once, or you share a link ending in `?token=pk.…`. GitHub's secret scanning blocks committing a Mapbox token to this repo. If you share a token, restrict it to the site's URL in your Mapbox account.
 
+Resorts: **271**, from `pipeline/catalog.mjs`:
+- **Tier 1:** 12 resorts with over 2 M skier visits.
+- **Tier 2:** 51 resorts with 1–2 M visits.
+- **Tier 3:** 208 resorts with 0.5–1 M visits.
+
+Each entry has the ski area's centre, a radius covering its lifts, and search words (villages, alternative names). After editing the catalogue, run `npm run catalog` in `pipeline/` to rebuild `resorts.json`. Runs and lifts load from OpenStreetMap the first time a resort is opened.
+
 Controls:
-- Pick a resort at the top.
+- Search at the top by resort, village or country. With the field empty, it lists the tier 1 resorts. The globe button zooms out to every resort as a dot coloured by tier: coral = tier 1, blue = tier 2, grey = tier 3. Tap a dot to open that resort.
+- Run colours follow each region's convention:
+  - **Europe:** blue / red / black.
+  - **North America, Australia and New Zealand:** green / blue / black / double black.
+  - **Japan, Korea and China:** green / red / black.
 - The round buttons on the right switch **2D/3D**, the **map style** (Playful, Winter map or Satellite) and the **lighting**.
 - In 3D, drag the **compass dial** at the bottom left or right to turn the view around the mountain. Sideways scrolling on a trackpad does the same, and ▶ flies around automatically.
 - Tap a run, lift, cabin or station for details. Tapping a lift highlights it and dims the others; × on its card clears the highlight.
