@@ -101,7 +101,7 @@ const LOOKS = {
     contour: { minor: 'rgba(64, 86, 120, 0.22)', major: 'rgba(64, 86, 120, 0.48)', text: '#33445c', halo: '#ffffff' },
     labels: { text: '#16202c', halo: '#ffffff', peak: '#2c3b52' },
     runs: { novice: '#14a85a', easy: '#1f6fe5', intermediate: '#e2203a', advanced: '#141820', expert: '#141820',
-      freeride: '#f08a12', unknown: '#8a93a6' },
+      freeride: '#f08a12', unknown: '#6b7386' },
     pines: true,
   },
   satellite: {
@@ -307,7 +307,7 @@ function setup() {
       'line-width': SHEEN_W, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-unknown', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, unknown],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': DIFF.unknown[0], 'line-width': lw, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
+    paint: { 'line-color': RUN.unknown, 'line-width': lw, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
 
   // Lifts: thin charcoal on the ground and in the air; the selected lift gets a bright glow
   // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
@@ -625,7 +625,7 @@ function renderTitle(r) {
 function renderLegend(r) {
   const hasUnknown = cache.get(r.id)?.pistes.features.some((f) => f.properties['piste:difficulty'] === 'unknown');
   $('#legend').innerHTML = legendFor(r.country).map(([k, label]) => `<li><i style="background:${RUN[k]}"></i>${label}</li>`).join('')
-    + (hasUnknown ? `<li class="unknown"><i></i>Not classified</li>` : '')
+    + (hasUnknown ? `<li class="unknown"><i style="border-top-color:${RUN.unknown}"></i>Not classified</li>` : '')
     + `<li class="lift"><i></i>Lift</li>`;
 }
 

@@ -96,7 +96,7 @@ enum RunColor {
         case .red: UIColor(hex: 0xE2203A)
         case .black: UIColor(hex: 0x141820)
         case .orange: UIColor(hex: 0xF08A12)
-        case .grey: UIColor(hex: 0x8A93A6)
+        case .grey: UIColor(hex: 0x6B7386)
         }
     }
 }
