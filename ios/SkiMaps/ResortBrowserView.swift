@@ -158,20 +158,26 @@ struct ResortBrowserView: View {
         NavigationStack {
             List(ResortCatalog.all.filter { $0.matches(query) }) { r in
                 HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(r.name).font(.headline)
-                        Text([Locale.current.localizedString(forRegionCode: r.country) ?? r.country, tierLabel(r.tier)]
-                            .compactMap { $0 }.joined(separator: " · "))
-                            .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    // A real button: VoiceOver reads it as one, and the row highlights on press.
+                    Button { select(r); showPicker = false } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(r.name).font(.headline)
+                            Text([Locale.current.localizedString(forRegionCode: r.country) ?? r.country, tierLabel(r.tier)]
+                                .compactMap { $0 }.joined(separator: " · "))
+                                .font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
                     }
-                    Spacer()
+                    .buttonStyle(.plain)
                     offlineButton(r)
                 }
-                .contentShape(Rectangle())
-                .onTapGesture { select(r); showPicker = false }
             }
             .searchable(text: $query, prompt: "Resort, village or country")
             .navigationTitle("Ski resorts")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { showPicker = false } }
+            }
         }
     }
 
@@ -197,9 +203,14 @@ struct ResortBrowserView: View {
         let difficulty = (p["piste:difficulty"] as? String).flatMap(PisteDifficulty.init(rawValue:))
         let country = resort?.country ?? ""
         let detail = difficulty.map { $0.label(for: country) } ?? (p["aerialway"] as? String)?.replacingOccurrences(of: "_", with: " ").capitalized ?? ""
-        let dot = difficulty.map { Color($0.color(in: RunRegion.of(country))) } ?? Color(UIColor(hex: 0xD8352F))
         return HStack(spacing: 14) {
-            Circle().fill(dot).frame(width: 14, height: 14).overlay(Circle().stroke(.white, lineWidth: 2.5))
+            // Runs get their colour dot; lifts get a cable-car symbol, never a run colour.
+            if let difficulty {
+                Circle().fill(Color(difficulty.color(in: RunRegion.of(country)))).frame(width: 14, height: 14)
+                    .overlay(Circle().stroke(.white, lineWidth: 2.5))
+            } else {
+                Image(systemName: "cablecar.fill").font(.body).foregroundStyle(.primary).frame(width: 20)
+            }
             VStack(alignment: .leading, spacing: 2) {
                 Text(name).font(.headline).lineLimit(1)
                 Text(detail).font(.subheadline).foregroundStyle(.secondary)

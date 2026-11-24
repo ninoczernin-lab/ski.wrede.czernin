@@ -73,7 +73,7 @@ const LIFT_NAMES = {
 };
 const LIFT_BASE = {
   cable: '#232a33', shadow: '#4a5361',                 // thin charcoal threads for every unselected lift
-  select: '#ffc65a', selectCore: '#ffffff',             // sun-gold glow + white core of the selected lift
+  select: '#ffffff', selectCore: '#141a22',             // selection: white halo + heavier charcoal core, no hue
   terminal: '#ffffff',
   mast: '#6f7a88', arm: '#353d49', wall: '#f1ece2', roof: '#b0362e',
   cabin: '#d8352f', chair: '#2a313b',
@@ -311,17 +311,26 @@ function setup() {
 
   // Lifts: thin charcoal on the ground and in the air; the selected lift gets a bright glow
   // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
+  // Selection carries no hue (the run palette owns colour): a wide white halo under a heavier charcoal core.
   map.addLayer({ id: 'lift-selected-glow', type: 'line', source: 'lifts', slot: 'top', filter: NO_MATCH,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': LIFT.select, 'line-width': byZoom(8, 16), 'line-blur': byZoom(3, 6), 'line-opacity': 0.9,
+    paint: { 'line-color': LIFT.select, 'line-width': byZoom(7, 12), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
       'line-emissive-strength': 1 } });
+  // Lifts on the ground: a solid charcoal thread with a white hairline, like the runs (2D, and ground lifts in 3D).
+  map.addLayer({ id: 'lifts-line-casing', type: 'line', source: 'lifts', slot: 'top',
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: { 'line-color': '#ffffff', 'line-width': byZoom(3.4, 5.4), 'line-opacity': 0.9, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-line', type: 'line', source: 'lifts', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': LIFT.shadow, 'line-dasharray': [2, 1.2], 'line-emissive-strength': 1 } });
+    paint: { 'line-color': LIFT.cable, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-cable-glow', type: 'line', source: 'lift_spans', slot: 'top', filter: NO_MATCH,
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
-    paint: { 'line-color': LIFT.select, 'line-width': byZoom(8, 16), 'line-blur': byZoom(3, 6), 'line-opacity': 0.9,
+    paint: { 'line-color': LIFT.select, 'line-width': byZoom(7, 12), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
       'line-emissive-strength': 1 } });
+  // Every cable gets a white hairline so the charcoal thread reads against rock and shadowed snow.
+  map.addLayer({ id: 'lifts-cable-halo', type: 'line', source: 'lift_spans', slot: 'top',
+    layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
+    paint: { 'line-color': '#ffffff', 'line-width': byZoom(3.4, 5.2), 'line-opacity': 0.85, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-cable', type: 'line', source: 'lift_spans', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
     paint: { 'line-emissive-strength': 1 } });
@@ -334,12 +343,21 @@ function setup() {
 
   // Pylons (mast + crossarm), stations (walls + roof) and cabins: 3D boxes on the terrain.
   const ex = (prop) => ['*', EXAGGERATION, ['get', prop]];
-  map.addLayer({ id: 'lift-structures', type: 'fill-extrusion', source: 'structures', slot: 'top', minzoom: 12.5,
+  map.addLayer({ id: 'lift-structures', type: 'fill-extrusion', source: 'structures', slot: 'top', minzoom: 11.5,
     paint: { 'fill-extrusion-base': ex('base'), 'fill-extrusion-height': ex('height'),
       'fill-extrusion-color': ['match', ['get', 'part'], 'mast', LIFT.mast, 'arm', LIFT.arm, 'roof', LIFT.roof, LIFT.wall],
       'fill-extrusion-vertical-gradient': true, 'fill-extrusion-ambient-occlusion-intensity': 0.35,
       'fill-extrusion-opacity': 1 } });
-  map.addLayer({ id: 'lift-cabins', type: 'fill-extrusion', source: 'cabins', slot: 'top', minzoom: 13,
+  // From afar a cabin is smaller than a pixel: draw it as a travelling dot that hands over to the 3D cabin up close.
+  map.addSource('cabin-dots', { type: 'geojson', data: empty });
+  map.addLayer({ id: 'lift-cabin-dots', type: 'circle', source: 'cabin-dots', slot: 'top', minzoom: 10.5, maxzoom: 14,
+    // Charcoal with a white edge: the lift's own colour, never a run colour.
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, 1.6, 13, 2.4],
+      'circle-color': LIFT.cable, 'circle-stroke-color': '#ffffff', 'circle-stroke-width': 1,
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 1, 13.6, 0],
+      'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 1, 13.6, 0],
+      'circle-pitch-alignment': 'viewport', 'circle-emissive-strength': 1 } });
+  map.addLayer({ id: 'lift-cabins', type: 'fill-extrusion', source: 'cabins', slot: 'top', minzoom: 11.5,
     paint: { 'fill-extrusion-base': ex('base'), 'fill-extrusion-height': ex('height'),
       'fill-extrusion-color': ['match', ['get', 'lift'], 'chair_lift', LIFT.chair, LIFT.cabin],
       'fill-extrusion-emissive-strength': 0.4, 'fill-extrusion-opacity': 1 } });
@@ -349,12 +367,12 @@ function setup() {
   if (L.pines) {
     map.addSource('pines', { type: 'geojson', data: empty });
     const exP = (prop) => ['*', EXAGGERATION, ['get', prop]];
-    map.addLayer({ id: 'pines', type: 'fill-extrusion', source: 'pines', slot: 'middle', minzoom: 12.8,
+    map.addLayer({ id: 'pines', type: 'fill-extrusion', source: 'pines', slot: 'middle', minzoom: 11.5,
       paint: { 'fill-extrusion-base': exP('base'), 'fill-extrusion-height': exP('height'),
         'fill-extrusion-color': ['match', ['get', 'part'], 'trunk', PINE.trunk, 'low', PINE.low, 'mid', PINE.mid, PINE.snow],
         'fill-extrusion-vertical-gradient': true, 'fill-extrusion-ambient-occlusion-intensity': 0.45,
         'fill-extrusion-ambient-occlusion-radius': 6,
-        'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 0, 13.4, 1] } });
+        'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 11.5, 0, 12, 1] } });
     pinesOK = Boolean(map.getLayer('pines'));
   }
 
@@ -500,22 +518,27 @@ function applySelection() {
   const groundBase = ['match', ['get', 'aerialway'], GROUND_LIFTS, 1, is3D && cablesOK ? SHADOW : 1];
   map.setFilter('lift-selected-glow', active && (!is3D || !cablesOK) ? sel : NO_MATCH);
   map.setFilter('lifts-cable-glow', active ? sel : NO_MATCH);
+  const shadowLine = is3D && cablesOK;                    // in 3D the ground line is only the cable's shadow
   map.setPaintProperty('lifts-cable', 'line-color', pick(LIFT.selectCore, LIFT.cable));
-  map.setPaintProperty('lifts-cable', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.2, 0.9), 16, pick(4, 2)]);
+  map.setPaintProperty('lifts-cable', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.6, 1.5), 16, pick(4.2, 2.6)]);
   map.setPaintProperty('lifts-cable', 'line-opacity', pick(1, active ? DIM : 1));
-  map.setPaintProperty('lifts-line', 'line-color', pick(LIFT.selectCore, LIFT.shadow));
-  map.setPaintProperty('lifts-line', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.4, 0.9), 16, pick(4.5, 2)]);
-  map.setPaintProperty('lifts-line', 'line-opacity', active ? ['case', sel, is3D && cablesOK ? 0.5 : 1, ['*', DIM, groundBase]] : groundBase);
+  map.setPaintProperty('lifts-cable-halo', 'line-opacity', pick(0.85, active ? DIM * 0.85 : 0.85));
+  map.setPaintProperty('lifts-line', 'line-color', pick(LIFT.selectCore, shadowLine ? LIFT.shadow : LIFT.cable));
+  map.setPaintProperty('lifts-line', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.6, 1.6), 16, pick(4.2, 2.6)]);
+  map.setPaintProperty('lifts-line', 'line-opacity', active ? ['case', sel, shadowLine ? 0.5 : 1, ['*', DIM, groundBase]] : groundBase);
+  map.setPaintProperty('lifts-line-casing', 'line-opacity', ['*', active ? ['case', sel, 1, DIM] : 1,
+    ['match', ['get', 'aerialway'], GROUND_LIFTS, 0.9, shadowLine ? 0 : 0.9]]);
   map.setPaintProperty('lift-terminals', 'circle-opacity', pick(1, active ? DIM : 1));
   map.setPaintProperty('lift-terminals', 'circle-stroke-opacity', pick(1, active ? DIM : 1));
-  map.setPaintProperty('lift-terminals', 'circle-stroke-color', pick(LIFT.select, LIFT.cable));
+  map.setPaintProperty('lift-terminals', 'circle-stroke-color', LIFT.cable);
+  map.setPaintProperty('lift-terminals', 'circle-stroke-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.2, 1.2), 16, pick(2.8, 1.8)]);
   map.setPaintProperty('lifts-label', 'text-opacity', pick(1, active ? 0.55 : 1));
 }
 
 function apply3D(animate) {
   map.setTerrain(is3D ? { source: 'mapbox-dem', exaggeration: EXAGGERATION } : null);
   setBasemap('show3dObjects', is3D);
-  for (const id of ['lift-structures', 'lift-cabins', 'lifts-cable', 'lifts-cable-glow', 'pines']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
+  for (const id of ['lift-structures', 'lift-cabins', 'lift-cabin-dots', 'lifts-cable', 'lifts-cable-glow', 'lifts-cable-halo', 'pines']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
   applySelection();
   $('#orbit').hidden = !is3D;
   $('#toggle3d').textContent = is3D ? '2D' : '3D';
@@ -566,6 +589,7 @@ async function showResort(r) {
     applySelection();
     const runs = layers.pistes.features.filter((f) => f.properties['piste:type'] === 'downhill').length;
     $('#resort-counts').textContent = `${runs} runs · ${layers.lifts.features.length} lifts`;
+    renderLegend(r);
     status();
     schedulePines();
     updateEffects();
@@ -599,7 +623,9 @@ function renderTitle(r) {
 }
 
 function renderLegend(r) {
+  const hasUnknown = cache.get(r.id)?.pistes.features.some((f) => f.properties['piste:difficulty'] === 'unknown');
   $('#legend').innerHTML = legendFor(r.country).map(([k, label]) => `<li><i style="background:${RUN[k]}"></i>${label}</li>`).join('')
+    + (hasUnknown ? `<li class="unknown"><i></i>Not classified</li>` : '')
     + `<li class="lift"><i></i>Lift</li>`;
 }
 
@@ -822,7 +848,9 @@ map.on('click', (e) => {
     : [p.kind === 'station' ? 'Station' : null, liftType, seats].filter(Boolean).join(' · ');
   $('#card b').textContent = title;
   $('#card small').textContent = detail;
-  $('#card .dot').style.background = d ? RUN[p['piste:difficulty']] : (p.lift === 'chair_lift' ? LIFT.chair : LIFT.cabin);
+  // Runs get their colour dot; lifts get a charcoal thread mark, never a run colour.
+  $('#card .dot').classList.toggle('lift', !d);
+  $('#card .dot').style.background = d ? RUN[p['piste:difficulty']] : '';
   $('#card').classList.add('show');
   if (liftType && p.name) { selectedLift = p.name; applySelection(); }
 });
@@ -843,17 +871,29 @@ function carsLoop(now) {
   carsLast = now;
   const b = map.getBounds();
   const view = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
-  map.getSource('cabins')?.setData(carsAt(tracks, (now - sceneT0) / 1000, view, quality >= 2 ? 600 : 300));
+  setCabins(carsAt(tracks, (now - sceneT0) / 1000, view, quality >= 2 ? 600 : 300, cabinScale()));
 }
+/** Same cabins twice: 3D boxes, and their centres as dots for the far view. */
+function setCabins(fc) {
+  map.getSource('cabins')?.setData(fc);
+  // Thin the far-view dots so they read as a few travelling cabins, not a beaded line.
+  const z = map.getZoom(), every = z < 12 ? 6 : z < 12.8 ? 3 : 1;
+  map.getSource('cabin-dots')?.setData({ type: 'FeatureCollection', features: fc.features.filter((_, i) => i % every === 0).map((f) => {
+    const ring = f.geometry.coordinates[0].slice(0, 4);
+    return { type: 'Feature', geometry: { type: 'Point', coordinates: [ring.reduce((a, p) => a + p[0], 0) / 4, ring.reduce((a, p) => a + p[1], 0) / 4] },
+      properties: { lift: f.properties.lift } };
+  }) });
+}
+/** Miniature level of detail: cabins drawn larger when zoomed out so the lifts read as lifts on arrival. */
+const cabinScale = () => { const z = map.getZoom(); return z >= 14 ? 1 : z >= 13 ? 1.6 : z >= 12 ? 2.3 : 3; };
 function carsWanted() {
-  return is3D && quality >= 1 && !reduceMotion && tracks.length && map.getZoom() >= 13 && !document.hidden;
+  return is3D && quality >= 1 && !reduceMotion && tracks.length && map.getZoom() >= 10.5 && !document.hidden;
 }
 function updateCars() {
   if (carsWanted()) { if (!carsTimer) carsTimer = requestAnimationFrame(carsLoop); return; }
-  if (carsTimer) {
-    cancelAnimationFrame(carsTimer); carsTimer = 0;
-    map.getSource('cabins')?.setData(cache.get(current.id)?.cabins ?? empty);   // park the cabins
-  }
+  if (carsTimer) { cancelAnimationFrame(carsTimer); carsTimer = 0; }
+  // Parked (reduced motion, low quality, hidden tab): same miniature scale, standing still.
+  setCabins(tracks.length ? carsAt(tracks, 0, null, 1500, cabinScale()) : empty);
 }
 
 const snow = createSnow($('#snow'), {
@@ -875,21 +915,22 @@ function schedulePines() {
   pines.timer = setTimeout(placePines, 350);
 }
 function placePines() {
-  if (!pinesOK || !is3D || quality < 1 || map.getZoom() < 12.8) { pines.clear(); return; }
+  if (!pinesOK || !is3D || quality < 1 || map.getZoom() < 11.5) { pines.clear(); return; }
   const layers = cache.get(current.id);
   const forests = map.querySourceFeatures('streets', { sourceLayer: 'landcover', filter: ['==', ['get', 'class'], 'wood'] });
   const b = map.getBounds();
   const avoid = layers ? avoidGrid([...layers.pistes.features, ...layers.piste_areas.features, ...layers.lifts.features]) : null;
   const pts = scatterPines({
     forests, avoid, bounds: [[b.getWest(), b.getSouth()], [b.getEast(), b.getNorth()]],
-    spacingM: map.getZoom() >= 14.5 ? 26 : map.getZoom() >= 13.5 ? 34 : 46,
+    // Miniature level of detail: fewer, bigger trees zoomed out; a denser true-scale forest up close.
+    spacingM: map.getZoom() >= 14.5 ? 26 : map.getZoom() >= 13.5 ? 36 : map.getZoom() >= 12.5 ? 60 : 95,
     treeline: TREELINE[schemeFor(current.country)] ?? 2050,
     elevationAt: ([lon, lat]) => map.queryTerrainElevation([lon, lat], { exaggerated: false }),
     max: quality >= 2 ? 1800 : 800,
   });
   // Diorama sizing: taller trees when zoomed out so they still read; near true size up close.
   const z = map.getZoom();
-  map.getSource('pines')?.setData(pineShapes(pts, z < 14 ? 30 : z < 15 ? 24 : 19));
+  map.getSource('pines')?.setData(pineShapes(pts, z < 12.5 ? 54 : z < 13.5 ? 36 : z < 14.5 ? 26 : 19));
 }
 map.on('moveend', () => { schedulePines(); updateEffects(); });
 

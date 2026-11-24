@@ -177,26 +177,28 @@ function pointAt(track, d) {
  * Cabin boxes at time `seconds`: up the right-hand cable, down the left-hand one, for tracks whose
  * bbox meets `view` ([w, s, e, n], optional). Returns at most `limit` features.
  */
-export function carsAt(tracks, seconds, view = null, limit = 600) {
+export function carsAt(tracks, seconds, view = null, limit = 600, scale = 1) {
   const out = [];
   for (const tr of tracks) {
     if (view && (tr.bbox[2] < view[0] || tr.bbox[0] > view[2] || tr.bbox[3] < view[1] || tr.bbox[1] > view[3])) continue;
     const c = CABIN[tr.type];
     const every = c.every ?? tr.total / 2;               // cable car: two cabins shuttling
     const shift = ((seconds * (SPEED[tr.type] ?? 6)) % every + every) % every;
-    const lane = LANE[tr.type] ?? 2.5;
+    const lane = (LANE[tr.type] ?? 2.5) * scale;
+    const along = c.along * scale, across = c.across * scale, tall = c.tall * scale, drop = c.drop * Math.min(scale, 1.5);
     for (const dir of [1, -1]) {
       for (let d0 = shift; d0 < tr.total; d0 += every) {
         const d = dir === 1 ? d0 : tr.total - d0;
         const at = pointAt(tr, d);
-        const top = at.z - c.drop;
-        if (top - c.tall < 0.5) continue;
+        // Miniature scale (zoomed out) may hang a big cabin close to the snow: it rests at least 0.5 m up.
+        const top = Math.max(at.z - drop, tall + 0.5);
+        if (scale === 1 && at.z - drop - tall < 0.5) continue;
         // Offset sideways from the line: right of travel uphill, left coming down.
         const side = rad(at.brg + 90), mLon = M_PER_DEG_LAT * Math.cos(rad(at.p[1]));
         const p = [at.p[0] + (Math.sin(side) * lane * dir) / mLon, at.p[1] + (Math.cos(side) * lane * dir) / M_PER_DEG_LAT];
-        out.push({ type: 'Feature', geometry: orientedRect(p, at.brg, c.along, c.across),
+        out.push({ type: 'Feature', geometry: orientedRect(p, at.brg, along, across),
           properties: { kind: 'cabin', lift: tr.type, name: tr.name ?? null,
-            base: Math.round((top - c.tall) * 10) / 10, height: Math.round(top * 10) / 10 } });
+            base: Math.round((top - tall) * 10) / 10, height: Math.round(top * 10) / 10 } });
         if (out.length >= limit) return { type: 'FeatureCollection', features: out };
       }
     }
