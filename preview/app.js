@@ -77,7 +77,7 @@ const LIFT_NAMES = {
 // run) with sunny-yellow cabins, roofs and station badges.
 const LIFT_BASE = {
   cable: LIFT_VIOLET, shadow: '#8d7fd6',
-  select: '#ffffff', selectCore: '#3a17a6',             // selection: white halo + deeper violet core
+  select: '#ffe680', selectCore: LIFT_VIOLET,           // selection: a sunny halo round the same bright violet, never darker
   terminal: '#ffffff',
   mast: '#5b6688', arm: INK, wall: '#ffffff', roof: LIFT_YELLOW,
   cabin: LIFT_YELLOW, chair: INK,
@@ -99,10 +99,11 @@ const LOOKS = {
     config: { theme: 'faded', colorLand: '#f4f7fb', colorGreenspace: '#e3ebe6', colorWater: '#79aed6',
       show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
       showPlaceLabels: false, showPedestrianRoads: false },
-    relief: 0.8,                                         // softer shading: bright toy snow, not a survey model
-    valleyTint: [500, 'rgba(40, 84, 64, 0.42)', 1000, 'rgba(52, 96, 74, 0.34)', 1400, 'rgba(86, 122, 102, 0.2)',
-      1800, 'rgba(196, 214, 208, 0.07)', 2100, 'rgba(255, 255, 255, 0)'],
-    contour: { minor: 'rgba(64, 86, 120, 0.22)', major: 'rgba(64, 86, 120, 0.48)', text: '#33445c', halo: '#ffffff' },
+    relief: 0.5,                                         // soft shading: bright toy snow, not a survey model
+    valleyTint: [500, 'rgba(40, 84, 64, 0.26)', 1000, 'rgba(52, 96, 74, 0.2)', 1400, 'rgba(86, 122, 102, 0.1)',
+      1800, 'rgba(196, 214, 208, 0.03)', 2100, 'rgba(255, 255, 255, 0)'],
+    // Trail-map ground, not a survey sheet: no 50 m lines, faint 200 m lines, sparse height labels.
+    contour: { minor: false, major: 'rgba(64, 86, 120, 0.22)', text: '#5a6a82', halo: '#ffffff', labelZoom: 14.5 },
     labels: { text: '#16202c', halo: '#ffffff', peak: '#2c3b52' },
     runs: { novice: '#16c45e', easy: '#1e7bff', intermediate: '#ff2e4d', advanced: '#1b1d2b', expert: '#1b1d2b',
       freeride: '#ff9a1a', unknown: '#8a90a6' },
@@ -235,16 +236,16 @@ function setup() {
   // Elevation contours: thin every 50 m, stronger every 200 m with height labels.
   map.addSource('contours', { type: 'vector', url: 'mapbox://mapbox.mapbox-terrain-v2' });
   const major = ['==', ['%', ['get', 'ele'], 200], 0];
-  map.addLayer({ id: 'contours-minor', type: 'line', source: 'contours', 'source-layer': 'contour', slot: 'bottom', minzoom: 12,
+  if (L.contour.minor) map.addLayer({ id: 'contours-minor', type: 'line', source: 'contours', 'source-layer': 'contour', slot: 'bottom', minzoom: 12,
     filter: ['all', ['==', ['%', ['get', 'ele'], 50], 0], ['!', major]],
     paint: { 'line-color': L.contour.minor, 'line-width': 0.6 } });
   map.addLayer({ id: 'contours-major', type: 'line', source: 'contours', 'source-layer': 'contour', slot: 'bottom', minzoom: 11,
     filter: major, paint: { 'line-color': L.contour.major, 'line-width': byZoom(0.7, 1.3) } });
-  map.addLayer({ id: 'contours-label', type: 'symbol', source: 'contours', 'source-layer': 'contour', slot: 'middle', minzoom: 13,
+  map.addLayer({ id: 'contours-label', type: 'symbol', source: 'contours', 'source-layer': 'contour', slot: 'middle', minzoom: L.contour.labelZoom ?? 13,
     filter: major,
     layout: { 'symbol-placement': 'line', 'text-field': ['concat', ['to-string', ['get', 'ele']], ' m'],
       'text-size': 10.5, 'text-font': FONT.medium, 'text-pitch-alignment': 'map', 'text-rotation-alignment': 'map',
-      'symbol-spacing': 500, 'text-padding': 4 },
+      'symbol-spacing': L.contour.labelZoom ? 900 : 500, 'text-padding': 4 },
     paint: { 'text-color': L.contour.text, 'text-halo-color': L.contour.halo, 'text-halo-width': 2, 'text-halo-blur': 0.2 } });
 
   // Peaks and villages, redrawn from Mapbox Streets with strong halos (the basemap's own place
@@ -345,7 +346,7 @@ function setup() {
     paint: { 'line-emissive-strength': 1 } });
   // Stations: sunny-yellow cable-car badges at both ends of every lift (upright, always facing you).
   map.addLayer({ id: 'lift-terminals', type: 'symbol', source: 'lift_terminals', slot: 'top', minzoom: 11.5,
-    layout: { 'icon-image': 'station', 'icon-size': byZoom(0.62, 1), 'icon-anchor': 'center', 'icon-padding': 1,
+    layout: { 'icon-image': 'station', 'icon-size': byZoom(0.85, 1.2), 'icon-anchor': 'center', 'icon-padding': 1,
       'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport', 'symbol-z-order': 'source' },
     paint: { 'icon-emissive-strength': 1 } });
   // Mapbox GL skips (doesn't throw on) a layer it can't validate, so check it really exists.
@@ -392,16 +393,16 @@ function setup() {
   const figure = { 'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport', 'icon-anchor': 'bottom',
     'icon-allow-overlap': true, 'icon-ignore-placement': true };
   map.addSource('snowmen', { type: 'geojson', data: empty });
-  map.addLayer({ id: 'snowmen', type: 'symbol', source: 'snowmen', slot: 'top', minzoom: 13,
-    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(0.9, 1.25) },
-    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 13.4, 1], 'icon-emissive-strength': 1 } });
+  map.addLayer({ id: 'snowmen', type: 'symbol', source: 'snowmen', slot: 'top', minzoom: 12.5,
+    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(1.05, 1.4) },
+    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } });
   map.addSource('skiers', { type: 'geojson', data: empty });
   map.addLayer({ id: 'skiers', type: 'symbol', source: 'skiers', slot: 'top', minzoom: 12.5,
     layout: { ...figure, 'icon-image': ['concat', 'skier-', ['to-string', ['get', 'jacket']], '-', ['get', 'face']],
       'icon-size': byZoom(0.9, 1.25) },
     paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } });
   map.addLayer({ id: 'huts', type: 'symbol', source: 'huts', slot: 'top', minzoom: 12,
-    layout: { 'icon-image': 'hut', 'icon-size': byZoom(0.7, 1.05), 'icon-anchor': 'center', 'icon-padding': 2,
+    layout: { 'icon-image': 'hut', 'icon-size': byZoom(1.1, 1.5), 'icon-anchor': 'center', 'icon-padding': 2,
       'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport',
       'text-field': ['step', ['zoom'], '', 14, ['coalesce', ['get', 'name'], '']], 'text-font': FONT.bold, 'text-size': 12,
       'text-anchor': 'top', 'text-offset': [0, 1.3], 'text-optional': true, 'text-padding': 4,

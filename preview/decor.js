@@ -79,7 +79,7 @@ export function skiersAt(tracks, seconds, view = null, limit = 60, scale = 1) {
 }
 
 /**
- * Snowmen, a light sprinkle: beside about every other hut and every third lift station, standing
+ * Snowmen, a light sprinkle: beside most huts and about every third lift station, standing
  * 18–30 m off to one side and never on a run or lift line (`avoid.has(lon, lat)` from avoidGrid).
  */
 export function snowmenNear(anchors, avoid = null, max = 40) {
@@ -88,7 +88,7 @@ export function snowmenNear(anchors, avoid = null, max = 40) {
     if (out.length >= max) return;
     const [lon, lat] = a.coordinates;
     const seed = Math.round(lon * 1e4) * 0.37 + Math.round(lat * 1e4) * 0.71 + i * 0.01;
-    if (hash(seed) > (a.kind === 'hut' ? 0.5 : 0.34)) return;
+    if (hash(seed) > (a.kind === 'hut' ? 0.8 : 0.3)) return;
     for (let attempt = 0; attempt < 6; attempt++) {
       const ang = hash(seed + attempt) * 2 * Math.PI, dist = 18 + 12 * hash(seed + attempt + 0.5);
       const p = [lon + (Math.cos(ang) * dist) / mPerLon(lat), lat + (Math.sin(ang) * dist) / M_LAT];

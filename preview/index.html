@@ -71,10 +71,15 @@
       right: calc(var(--gutter-r) + 64px); pointer-events: none; transition: opacity 400ms var(--ease), transform 400ms var(--ease); }
     #resort-name { margin: 0; font-weight: 300; font-size: clamp(28px, 7.4vw, 46px); line-height: 1.02;
       letter-spacing: -0.03em; text-wrap: balance; text-shadow: 0 1px 18px color-mix(in srgb, var(--sky-bottom) 70%, transparent); }
-    #resort-meta, #resort-counts { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: 0.01em; }
+    #resort-meta, #resort-counts { margin: 6px 0 0; color: var(--ink-soft); font-size: 13px; font-weight: 500; letter-spacing: 0.01em;
+      /* a soft halo in the sky's own colour keeps the small lines readable when a run passes under them */
+      text-shadow: 0 0 2px var(--sky-bottom), 0 0 6px var(--sky-bottom), 0 0 12px var(--sky-bottom); }
     #resort-counts { margin-top: 2px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
-    #legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; padding: 0; list-style: none;
-      font-size: 12px; font-weight: 500; color: var(--ink-soft); }
+    /* The legend is a sticker plate in the map's marker language (white, ink outline), so runs and
+       labels passing under it never cut through its words. */
+    #legend { display: inline-flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; padding: 8px 12px; list-style: none;
+      font-size: 12px; font-weight: 600; color: var(--ink-line); background: rgba(255, 255, 255, 0.95);
+      border: 1.5px solid var(--ink-line); border-radius: 14px; box-shadow: 0 4px 12px -4px rgba(18, 30, 52, 0.3); }
     #legend li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
     /* Swatches are little stickers like the runs: colour, white rim, ink outline. */
     #legend i { width: 20px; height: 8px; border-radius: 4px; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.7px var(--ink-line); }

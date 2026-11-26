@@ -157,7 +157,7 @@ struct ResortMapView: UIViewRepresentable {
             try? map.setLayerProperties(for: "relief", properties: [
                 "hillshade-shadow-color": d.shadow.hexString, "hillshade-highlight-color": d.highlight.hexString,
                 "hillshade-accent-color": d.accent.hexString, "hillshade-illumination-direction": d.azimuth,
-                "hillshade-exaggeration": d.relief * 0.8,       // softer: bright toy snow
+                "hillshade-exaggeration": d.relief * 0.5,       // soft: bright toy snow
             ])
             try? map.setLayerProperties(for: "ridge-light", properties: [
                 // Fades with the sun's height (−1° → 6°) instead of snapping at sunset.
@@ -577,7 +577,7 @@ struct ResortMapView: UIViewRepresentable {
             stations.slot = .top
             stations.minZoom = 11.5
             stations.iconImage = .constant(.name("station"))
-            stations.iconSize = widthByZoom(0.62, 1)
+            stations.iconSize = widthByZoom(0.85, 1.2)
             stations.iconPitchAlignment = .constant(.viewport)
             stations.iconRotationAlignment = .constant(.viewport)
             stations.iconPadding = .constant(1)
@@ -585,12 +585,12 @@ struct ResortMapView: UIViewRepresentable {
             try? map.addLayer(stations)
 
             // Little figures standing on the mountain: billboards that always face you.
-            func figure(_ id: String, minZoom: Double, image: Value<ResolvedImage>) {
+            func figure(_ id: String, minZoom: Double, image: Value<ResolvedImage>, size: (Double, Double) = (0.9, 1.25)) {
                 var l = SymbolLayer(id: id, source: id)
                 l.slot = .top
                 l.minZoom = minZoom
                 l.iconImage = image
-                l.iconSize = widthByZoom(0.9, 1.25)
+                l.iconSize = widthByZoom(size.0, size.1)
                 l.iconAnchor = .constant(.bottom)
                 l.iconPitchAlignment = .constant(.viewport)
                 l.iconRotationAlignment = .constant(.viewport)
@@ -600,7 +600,7 @@ struct ResortMapView: UIViewRepresentable {
                 l.iconEmissiveStrength = .constant(1)
                 try? map.addLayer(l)
             }
-            figure("snowmen", minZoom: 13, image: .constant(.name("snowman")))
+            figure("snowmen", minZoom: 12.5, image: .constant(.name("snowman")), size: (1.05, 1.4))
             figure("skiers", minZoom: 12.5, image: .expression(Exp(.concat) {
                 "skier-"; Exp(.toString) { Exp(.get) { "jacket" } }; "-"; Exp(.get) { "face" }
             }))
@@ -610,7 +610,7 @@ struct ResortMapView: UIViewRepresentable {
             huts.slot = .top
             huts.minZoom = 12
             huts.iconImage = .constant(.name("hut"))
-            huts.iconSize = widthByZoom(0.7, 1.05)
+            huts.iconSize = widthByZoom(1.1, 1.5)
             huts.iconPitchAlignment = .constant(.viewport)
             huts.iconRotationAlignment = .constant(.viewport)
             huts.iconPadding = .constant(2)

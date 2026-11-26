@@ -207,11 +207,11 @@ enum Decor {
         }
     }
 
-    /// A light sprinkle of snowmen: beside about every other hut and every third station, 18–30 m off
+    /// A light sprinkle of snowmen: beside most huts and about every third station, 18–30 m off
     /// to one side and never within ~16 m of a run or lift line.
     static func snowmen(huts: [CLLocationCoordinate2D], stations: [CLLocationCoordinate2D], avoid: [[CLLocationCoordinate2D]], limit: Int = 40) -> [Feature] {
         var out: [Feature] = []
-        let anchors = huts.map { ($0, 0.5) } + stations.map { ($0, 0.34) }
+        let anchors = huts.map { ($0, 0.8) } + stations.map { ($0, 0.3) }
         for (i, (p, chance)) in anchors.enumerated() where out.count < limit {
             let seed = (p.longitude * 1e4).rounded() * 0.37 + (p.latitude * 1e4).rounded() * 0.71 + Double(i) * 0.01
             guard hash(seed) <= chance else { continue }
