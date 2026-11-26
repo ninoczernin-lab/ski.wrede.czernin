@@ -174,10 +174,14 @@ const map = new mapboxgl.Map({
   bearing: current.camera.bearing - 60, pitch: 30, maxPitch: 85, hash: false, attributionControl: true,
   config: { basemap: { lightPreset: light.preset, ...LOOKS[look].config } },
 });
+// Only a refused style means a bad token. One tile source answering 401 (a tileset this token can't
+// read, a blip on the network) is logged and skipped: it must never wipe a working token or show an
+// error over a map that rendered.
 map.on('error', (e) => {
   const msg = e.error?.message ?? String(e.error);
   console.warn(msg);
-  if (/401|access token/i.test(msg)) {
+  const fromSource = Boolean(e.sourceId || e.tile || e.source);
+  if (!fromSource && !map.isStyleLoaded() && /401|access token/i.test(msg)) {
     store.del(TOKEN_KEY);
     status('Mapbox rejected the token. Reload the page and paste a valid pk. token.');
   }
