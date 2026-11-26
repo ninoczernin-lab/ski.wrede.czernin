@@ -96,12 +96,11 @@ const LOOKS = {
   cartoon: {
     label: 'Cartoon', style: 'mapbox://styles/mapbox/standard',
     // Greenspace close to the snow so forest polygons draw no hard edge; valley-tint and pines add the green.
-    config: { theme: 'faded', colorLand: '#f4f7fb', colorGreenspace: '#e3ebe6', colorWater: '#79aed6',
+    config: { theme: 'default', colorLand: '#f7fafd', colorGreenspace: '#edf2ee', colorWater: '#79aed6',
       show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
       showPlaceLabels: false, showPedestrianRoads: false },
     relief: 0.5,                                         // soft shading: bright toy snow, not a survey model
-    valleyTint: [500, 'rgba(40, 84, 64, 0.26)', 1000, 'rgba(52, 96, 74, 0.2)', 1400, 'rgba(86, 122, 102, 0.1)',
-      1800, 'rgba(196, 214, 208, 0.03)', 2100, 'rgba(255, 255, 255, 0)'],
+    valleyTint: false,                                  // measured: the tint was what greyed the snow; landcover keeps valleys green
     // Trail-map ground, not a survey sheet: no 50 m lines, faint 200 m lines, sparse height labels.
     contour: { minor: false, major: 'rgba(64, 86, 120, 0.22)', text: '#5a6a82', halo: '#ffffff', labelZoom: 14.5 },
     labels: { text: '#16202c', halo: '#ffffff', peak: '#2c3b52' },
@@ -395,12 +394,13 @@ function setup() {
   map.addSource('snowmen', { type: 'geojson', data: empty });
   map.addLayer({ id: 'snowmen', type: 'symbol', source: 'snowmen', slot: 'top', minzoom: 12.5,
     layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(1.05, 1.4) },
-    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } });
+    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } }, 'lift-terminals');
   map.addSource('skiers', { type: 'geojson', data: empty });
   map.addLayer({ id: 'skiers', type: 'symbol', source: 'skiers', slot: 'top', minzoom: 12.5,
     layout: { ...figure, 'icon-image': ['concat', 'skier-', ['to-string', ['get', 'jacket']], '-', ['get', 'face']],
       'icon-size': byZoom(0.9, 1.25) },
-    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } });
+    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } }, 'lift-terminals');
+  // Figures go under the station badges: a decoration never covers a primary marker.
   map.addLayer({ id: 'huts', type: 'symbol', source: 'huts', slot: 'top', minzoom: 12,
     layout: { 'icon-image': 'hut', 'icon-size': byZoom(1.1, 1.5), 'icon-anchor': 'center', 'icon-padding': 2,
       'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport',
