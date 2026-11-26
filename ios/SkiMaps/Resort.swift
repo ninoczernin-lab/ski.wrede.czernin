@@ -1,7 +1,7 @@
 import Foundation
 import CoreLocation
 
-/// One entry from data/manifest.json (bundled in the app).
+/// One entry from pipeline/resorts.json (bundled with the web map in the app's Web folder).
 struct Resort: Codable, Identifiable, Hashable {
     struct BBox: Codable, Hashable { let south, west, north, east: Double }
     struct Camera: Codable, Hashable { let lat, lon, zoom, bearing, pitch: Double }
@@ -29,15 +29,11 @@ struct Resort: Codable, Identifiable, Hashable {
         }
     }
 
-    /// Bundled GeoJSON layer, e.g. "pistes", "lifts" (copied from data/<id>/ into the app bundle).
-    func layerURL(_ layer: String) -> URL? {
-        Bundle.main.url(forResource: layer, withExtension: "geojson", subdirectory: "ResortData/\(id)")
-    }
 }
 
 enum ResortCatalog {
     static let all: [Resort] = {
-        guard let url = Bundle.main.url(forResource: "manifest", withExtension: "json", subdirectory: "ResortData"),
+        guard let url = Bundle.main.url(forResource: "resorts", withExtension: "json", subdirectory: "Web/pipeline"),
               let data = try? Data(contentsOf: url),
               let resorts = try? JSONDecoder().decode([Resort].self, from: data) else { return [] }
         return resorts

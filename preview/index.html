@@ -102,6 +102,7 @@
       transition: opacity 220ms var(--ease), transform 320ms var(--ease); }
     body.searching #search { opacity: 1; transform: none; pointer-events: auto; }
     body.searching #search-open, body.searching #title { opacity: 0; pointer-events: none; }
+    body.in-app #search-open { display: none; }   /* the iPhone app shows its own search button here */
     #search input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); outline: none; padding: 0;
       font: 400 17px/1 var(--font); letter-spacing: -0.01em; }
     #search input::placeholder { color: var(--ink-faint); }

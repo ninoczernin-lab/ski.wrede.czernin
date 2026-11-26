@@ -1,4 +1,5 @@
 // Browser version of pipeline/elevation.mjs: same tiles, same maths, decoded with a canvas.
+import { net } from './net.js';
 const URL_TEMPLATE = 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
 const Z = 14;
 const SIZE = 256;
@@ -9,7 +10,7 @@ function loadTile(x, y) {
   if (!tiles.has(key)) {
     tiles.set(key, (async () => {
       const url = URL_TEMPLATE.replace('{z}', Z).replace('{x}', x).replace('{y}', y);
-      const res = await fetch(url);
+      const res = await fetch(net(url));
       if (!res.ok) throw new Error(`terrain tile ${Z}/${key}: HTTP ${res.status}`);
       const bmp = await createImageBitmap(await res.blob(), { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
       const canvas = new OffscreenCanvas(SIZE, SIZE);

@@ -1,13 +1,15 @@
 # Ski resort maps: prototype
 
 3D, offline-capable resort maps for **Ski Arlberg**, **KitzSki** and **Les 3 Vallées**.
-Piste and lift data comes from OpenStreetMap. Base map, terrain and offline tiles come from the Mapbox Maps SDK for iOS (v11).
+Piste and lift data comes from OpenStreetMap. The map runs on MapLibre with free sources that need no
+account or token: OpenFreeMap tiles, AWS Terrain Tiles and Esri World Imagery. The iPhone app shows the
+same web map inside the app and caches everything it loads for offline use.
 
 ```
 preview/    Browser preview of the map (same style, layers and data code as the app)
 pipeline/   Node script: OSM (Overpass) → slim GeoJSON per resort
-data/       output of the pipeline (bundle this into the app as "ResortData")
-ios/SkiMaps SwiftUI + Mapbox code: map view, resort search, offline downloads
+data/       output of the pipeline (bundled into the app by ios/bundle-web.sh)
+ios/SkiMaps SwiftUI app: the web map in a WKWebView, native resort search, offline cache and downloads
 ```
 
 ## Preview in the browser (no Xcode needed)
@@ -72,24 +74,36 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 
 ## 2. iOS app
 
-1. In Xcode, use File → Add Package Dependencies → `https://github.com/mapbox/mapbox-maps-ios` (v11.x).
-2. Put your public token (`pk.…`) in Info.plist as `MBXAccessToken`.
-3. Drag the `data/` folder into the project as a **folder reference** named `ResortData`.
+No Mapbox, no token, no Swift packages: the app is SwiftUI plus WebKit.
+
+1. Run `sh ios/bundle-web.sh` (needs Node). It copies the web map, the resort list, any `data/` from
+   `npm run fetch`, and MapLibre itself into `ios/SkiMaps/Web`.
+2. In Xcode, add the Swift files in `ios/SkiMaps/` and drag `ios/SkiMaps/Web` into the project as a
+   **folder reference** (blue folder) named `Web`.
+3. Optional: add a "Run Script" build phase `sh "$SRCROOT/../ios/bundle-web.sh"` (adjust the path) before
+   "Copy Bundle Resources", so every build picks up web map changes.
 4. Add `NSLocationWhenInUseUsageDescription` to Info.plist.
-5. Add the Swift files in `ios/SkiMaps/` and use `ResortBrowserView()` as the root view.
+5. Use `ResortBrowserView()` as the root view (iOS 17 or later).
+
+The map, its title, legend, hour slider, compass and buttons are the web map, so the app and the website
+always look the same. The app adds the native resort search with ⬇ Save offline, and opens on the
+resort you're standing in. In a Debug build you can inspect the page from Safari → Develop → your iPhone.
 
 ## 3D
 
-- **Mapbox Standard style**: 3D buildings, trees and landmarks, with dynamic lighting (dawn, day, dusk, night menu).
-- **Real terrain**: Mapbox DEM at 1.5× exaggeration, camera tilted to 65° (up to 85° by hand).
-- **Relief shading**: slope steepness stays readable, even in 2D.
+- **Real terrain**: AWS Terrain Tiles at 1.5× exaggeration under MapLibre, camera tilted to 62° (up to 85° by hand).
+- **Relief shading** from the same terrain, lit from the hour's sun: slope steepness stays readable, even in 2D.
+- **Light by the hour**: sky, haze, the light on 3D shapes and the colour of the snow follow one hour slider.
 - **3D lifts** (`pipeline/lift3d.mjs`):
   - Towers are a mast with a crossarm turned across the lift line.
   - Stations have walls and a roof.
   - Cabins and chairs hang under the cable: gondola cabins about every 70 m, chairs every 28 m.
-- **Hanging cables** (`pipeline/cables.mjs`): heights come from real ground elevation (AWS Terrain Tiles). The cable sags between towers, capped at half the tower height.
+- **Hanging cables** (`pipeline/cables.mjs`, `preview/cable-ribbons.js`): heights come from real ground
+  elevation. The cable sags between towers, capped at half the tower height, and is drawn as a thin 3D
+  ribbon about 5 px wide at any zoom.
+- **Pines**: cartoon trees in the OpenStreetMap forests, below the tree line and away from runs.
 
-### Map looks (web map)
+### Map looks
 
 | Look | What it's like |
 |---|---|
@@ -99,7 +113,6 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 Huts are every OSM `tourism=alpine_hut`/`wilderness_hut`, plus restaurants, cafés and bars that sit on a run (within 60 m) and away from a lift's valley station, so village restaurants stay off the map. Skiers and cabins stop moving with Reduce Motion, in Low Power Mode, in a background tab, or when the frame rate drops.
 
 In every look:
-- A valley tint blends the green valleys into the snow line, except on Satellite.
 - Run-number badges keep extra spacing at medium zoom so they don't overlap.
 - The selected lift glows and the other lifts dim.
 - **2D/3D button** on the right edge. Two fingers tilt, twist to rotate.
@@ -120,18 +133,23 @@ The app (`PisteStyle.swift`) keeps colours and widths in one place, shared by th
 
 
 
-## How offline works
+## How offline works (iPhone app)
+
+Every request the map makes goes through the app's own cache (`ios/SkiMaps/MapCache.swift`), so a
+resort that was opened once keeps working with no signal.
 
 | Piece | Where it lives | Offline? |
 |---|---|---|
-| Pistes, lifts, stations, 3D pylons (OSM GeoJSON) | app bundle | always |
-| Style, fonts, icons | Mapbox style pack (`OfflineManager`) | after download |
-| Base map + terrain DEM tiles z10–16 | Mapbox tile region per resort (`TileStore`) | after download |
+| The map page, MapLibre, fonts for the HUD | app bundle (`Web/`) | always |
+| Runs, lifts, huts, 3D lift parts of resorts fetched with `npm run fetch` | app bundle (`Web/data/`) | always |
+| Map tiles (OpenFreeMap, zoom 6–14), terrain (AWS), label fonts | `MapCache` on disk | once opened, or after ⬇ Save offline |
+| Runs, lifts and huts of any other resort (OpenStreetMap query) | `MapCache` on disk | once opened, or after ⬇ Save offline |
+| Satellite imagery (Esri) | `MapCache` on disk | only what was viewed; not saved in bulk |
 
-Users tap ⬇ next to a resort to download it. Check the tile-count and offline limits in your Mapbox plan
-and terms before raising `zoomRange`.
+⬇ next to a resort in the search list saves it ahead of time. The cache keeps up to about 1.5 GB and
+trims the oldest files first, never those of a saved resort.
 
 ## Attribution (required)
 
-Show "© OpenStreetMap contributors" in the app. OSM data is under the ODbL licence.
-Mapbox shows its own attribution automatically.
+The map shows its sources in the corner (ⓘ): © OpenStreetMap contributors (ODbL), OpenFreeMap and
+OpenMapTiles, Terrain Tiles (Mapzen, AWS), and Esri for satellite imagery. Keep it visible.

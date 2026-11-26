@@ -1,6 +1,7 @@
 // Overpass query for one resort's ski data (runs, lifts, ski area, and huts / mountain restaurants). Shared by fetch.mjs (Node) and preview/ (browser).
 // `forests: true` (offline data step only) also fetches wooded areas for the pine scatter; the
-// browser leaves it off and uses Mapbox's landcover instead, which keeps live loads small.
+// browser leaves it off and uses the OpenFreeMap landcover instead, which keeps live loads small.
+// ios/SkiMaps/OfflineResortStore.swift builds the same text (it must match byte for byte).
 export const overpassQuery = ({ south, west, north, east }, { forests = false } = {}) => {
   const b = `${south},${west},${north},${east}`;
   const woods = forests ? `\n  way["landuse"="forest"](${b});\n  way["natural"="wood"](${b});` : '';

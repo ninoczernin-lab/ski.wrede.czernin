@@ -12,6 +12,7 @@ import { pineShapes, scatterPines, avoidGrid } from './pines.js';
 import { createSnow } from './snow.js';
 import { skierTracks, skiersAt, snowmenNear, stationIcon, hutIcon, snowmanIcon, skierIcon, JACKETS, INK, LIFT_YELLOW, LIFT_VIOLET } from './decor.js';
 import { cableRibbons, metresPerPixel } from './cable-ribbons.js';
+import { net, inApp } from './net.js';
 
 const EXAGGERATION = 1.5;
 const PITCH_3D = 62;                                    // tilted-diorama angle
@@ -191,6 +192,18 @@ let hour = (() => { const h = localHour(current); return h >= 7.5 && h <= 19 ? h
 let light = lightAt(hour, { south: current.camera.lat < 0 });
 
 // --- Map ------------------------------------------------------------------------------------------
+// In the iPhone app, MapLibre's tile requests (normally made from its worker threads) are answered on
+// the page's main thread, where the app's skimap-net:// cache scheme is reliably available.
+if (inApp) {
+  maplibregl.addProtocol('skimap-net', async (params, abort) => {
+    const res = await fetch(params.url, { signal: abort.signal, ...(params.method && { method: params.method }) });
+    if (!res.ok) throw new Error(`${res.status} ${params.url}`);
+    const cache = { cacheControl: res.headers.get('Cache-Control'), expires: res.headers.get('Expires') };
+    if (params.type === 'json') return { data: await res.json(), ...cache };
+    if (params.type === 'string') return { data: await res.text(), ...cache };
+    return { data: await res.arrayBuffer(), ...cache };
+  });
+}
 // Camera moves pass freezeElevation: MapLibre then re-measures the ground under the camera when the
 // move ends (or is interrupted). Without it the ground height stays frozen after an animation, and
 // panning to higher terrain can put the camera inside the mountain.
@@ -199,7 +212,11 @@ const map = new maplibregl.Map({
   // Opens high above the resort; the fly-in brings the camera down once the scene is ready.
   center: [current.camera.lon, current.camera.lat], zoom: Math.max(7, current.camera.zoom - 3.2),
   bearing: current.camera.bearing - 60, pitch: 30, maxPitch: 85, hash: false, attributionControl: { compact: true },
+  // In the iPhone app, tiles and fonts go through its offline cache (see net.js).
+  transformRequest: (url) => ({ url: net(url) }),
 });
+// The iPhone app brings its own search button (native sheet with offline downloads).
+if (inApp) document.body.classList.add('in-app');
 // A tile that fails (a server blip, a missing tile) is logged and skipped; the map keeps going.
 map.on('error', (e) => console.warn(e.error?.message ?? String(e.error)));
 // MapLibre skips (with a warning) any paint/layout property it doesn't know: these are layer options
@@ -614,7 +631,7 @@ async function loadResortData(r) {
     if (!bundled[5] && layers.lift_spans.features.length) layers.cabins = buildCabins(layers.lift_spans);
   } else {
     status(`Loading ${r.name} runs and lifts from OpenStreetMap… (20–60 s)`);
-    const res = await fetch(OVERPASS, { method: 'POST', body: new URLSearchParams({ data: overpassQuery(r.bbox) }) });
+    const res = await fetch(net(OVERPASS), { method: 'POST', body: new URLSearchParams({ data: overpassQuery(r.bbox) }) });
     if (!res.ok) throw new Error(`OpenStreetMap is busy (error ${res.status}). Pick the resort again in a minute.`);
     Object.assign(layers, convert(await res.json()));
     status(`Measuring the ground under ${layers.lifts.features.length} lifts…`);

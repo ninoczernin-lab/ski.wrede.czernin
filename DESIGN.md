@@ -114,11 +114,11 @@ typography:
     fontWeight: 600
     letterSpacing: "0.08em"
   map-label:
-    fontFamily: "DIN Pro Bold, Arial Unicode MS Bold"
+    fontFamily: "Noto Sans Bold"
     fontSize: "13.5px"
     fontWeight: 700
   map-label-medium:
-    fontFamily: "DIN Pro Medium, Arial Unicode MS Regular"
+    fontFamily: "Noto Sans Regular"
     fontSize: "11px"
     fontWeight: 500
 rounded:
@@ -300,7 +300,7 @@ Regional schemes: **Europe** blue / red / black plus orange freeride (France and
 
 **Display Font:** Sora (variable 100-800, self-hosted woff2, `font-display: swap`), falling back to ui-sans-serif, system-ui, -apple-system, Segoe UI.
 **Body Font:** Sora.
-**Map Font:** DIN Pro Bold / DIN Pro Medium (Mapbox glyphs), falling back to Arial Unicode MS.
+**Map Font:** Noto Sans Bold / Noto Sans Regular (OpenFreeMap glyphs).
 
 **Character:** A light, open geometric face that reads as air over the mountain, paired on the map with a compact signage grotesk that reads like piste markers.
 
@@ -313,12 +313,12 @@ Regional schemes: **Europe** blue / red / black plus orange freeride (France and
 - **Label** (500, 12-13px, 0.01em, tabular figures): country line and counts (with a sky-coloured halo), hour label, status.
 - **Legend** (600, 12px): legend entries in Ink Line on the sticker plate.
 - **Compass** (600, 10px, 0.08em): cardinal letters on the orbit dial.
-- **Map labels**: run numbers in DIN Pro Bold, white on a run-coloured sticker pill, 11-13.5px by zoom; run names in DIN Pro Bold 12.5px in the run colour with a 2.4px white halo; lift names in DIN Pro Medium in Lift Violet with the lift type below at 0.78 scale, white halo; hut names in DIN Pro Bold 12px Ink Line from zoom 14; contour heights in DIN Pro Medium 10.5px.
+- **Map labels**: run numbers in Noto Sans Bold, white on a run-coloured sticker pill, 11-13.5px by zoom; run names in Noto Sans Bold 12.5px in the run colour with a 2.4px white halo; lift names in Noto Sans Regular in Lift Violet with the lift type below at 0.78 scale, white halo; hut names in Noto Sans Bold 12px Ink Line from zoom 14.
 
 ### Named Rules
 **The Light Title Rule.** The resort name is the one display moment: weight 300, tight tracking, set directly over the sky wash with no panel behind it.
 
-**The Signage Rule.** Map text is DIN Pro, haloed in white; HUD text is Sora. The two never swap.
+**The Signage Rule.** Map text is Noto Sans, haloed in white; HUD text is Sora. The two never swap.
 
 On iOS the same roles map to Dynamic Type: largeTitle light for the resort name, subheadline medium for meta, caption medium for the legend, headline for card names.
 
@@ -378,7 +378,7 @@ A sticker plate in the marker language: near-opaque white, 1.5px Ink Line border
 ### Map Markers
 - **Station badge:** Lift Yellow badge with an ink cable car hanging from a violet cable, at both ends of every lift from zoom 11.5, always upright (0.85-1.2x).
 - **Hut badge:** white badge with a chalet (wood walls, red roof with snow, lit window), from zoom 12, larger than any figure (1.1-1.5x). Never filled with a run colour.
-- **Run-number pill:** white DIN Pro Bold number on the run colour, white rim, ink line, sticker drop.
+- **Run-number pill:** white Noto Sans Bold number on the run colour, white rim, ink line, sticker drop.
 - **Cabin bead:** far-view Lift Yellow dot with a 1.4px violet ring, handing over to 3D cabins by 13.6.
 
 ### Run Ribbon
