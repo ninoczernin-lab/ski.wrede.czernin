@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "fetch": "node fetch.mjs",
-    "test": "node convert.test.mjs && node clean.test.mjs && node cables.test.mjs && node lift3d.test.mjs && node ../preview/test/pines.test.mjs && node ../preview/test/decor.test.mjs",
+    "test": "node convert.test.mjs && node clean.test.mjs && node cables.test.mjs && node lift3d.test.mjs && node ../preview/test/pines.test.mjs && node ../preview/test/decor.test.mjs && node ../preview/test/cable-ribbons.test.mjs",
     "catalog": "node build-resorts.mjs"
   },
   "keywords": [],

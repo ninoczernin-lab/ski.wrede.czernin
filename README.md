@@ -12,8 +12,10 @@ ios/SkiMaps SwiftUI + Mapbox code: map view, resort search, offline downloads
 
 ## Preview in the browser (no Xcode needed)
 
-`preview/` is a web version of the iOS map: the same Mapbox Standard style, terrain, run colours, hanging
-cables and 2D/3D toggle, built with Mapbox GL JS. It runs the same `pipeline/` code in the browser.
+`preview/` is a web version of the iOS map: the same cartoon look, terrain, run colours, hanging cables and
+2D/3D toggle, built with [MapLibre GL JS](https://maplibre.org) on free sources that need no account or
+token: [OpenFreeMap](https://openfreemap.org) vector tiles (OpenStreetMap data), [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/)
+for the 3D ground, and Esri World Imagery for the Satellite look. It runs the same `pipeline/` code in the browser.
 If you haven't run `npm run fetch`, it loads each resort live from OpenStreetMap, which takes 20–60 s per resort.
 
 On your Mac, from the repo root:
@@ -22,14 +24,14 @@ On your Mac, from the repo root:
 npx serve .
 ```
 
-Then open http://localhost:3000/preview/ and paste your Mapbox public token (`pk.…`) once. To skip that step, put the token in `preview/config.js` in your local copy.
+Then open http://localhost:3000/preview/. No token or account is needed.
 To test on your iPhone, join the same Wi-Fi and open `http://<your-Mac's-IP>:3000/preview/` in Safari.
 You can find your Mac's IP under System Settings → Wi-Fi → Details.
 
 **Hosted alternative:** in the GitHub repo, go to Settings → Pages and set Source to "Deploy from a branch", `main`, `/ (root)`.
 The map is then at `https://ninoczernin-lab.github.io/ski.wrede.czernin/`, which forwards to `preview/`.
 GitHub Pages on a private repo needs a paid GitHub plan.
-Visitors paste a token once, or you share a link ending in `?token=pk.…`. GitHub's secret scanning blocks committing a Mapbox token to this repo. If you share a token, restrict it to the site's URL in your Mapbox account.
+Anyone with the link can open it; nothing to paste. Esri World Imagery is free to view with attribution; check Esri's terms before a commercial release.
 
 Resorts: **271**, from `pipeline/catalog.mjs`:
 - **Tier 1:** 12 resorts with over 2 M skier visits.
@@ -37,7 +39,7 @@ Resorts: **271**, from `pipeline/catalog.mjs`:
 - **Tier 3:** 208 resorts with 0.5–1 M visits.
 - **More resorts:** 1053 further resorts from the 2026 resort list (`pipeline/resort-list-2026.txt`), 1324 in total.
 
-The 2026 list was placed with `pipeline/geocode-list.mjs` (`MAPBOX_TOKEN=pk.… node geocode-list.mjs`). It matches each entry to a Mapbox ski-area point, or falls back to its village when a ski area with real vertical drop lies within 8 km and the country agrees. Entries already on the map become extra search words. The script writes `catalog-extra.json`; `catalog-manual.json` holds hand-placed positions and corrections. Entries that couldn't be placed reliably are listed in `pipeline/resorts-not-placed.md`.
+The 2026 list was placed once with `pipeline/geocode-list.mjs` (`MAPBOX_TOKEN=pk.… node geocode-list.mjs`; the only part of the project that ever needs Mapbox, and only to re-run that lookup). It matches each entry to a Mapbox ski-area point, or falls back to its village when a ski area with real vertical drop lies within 8 km and the country agrees. Entries already on the map become extra search words. The script writes `catalog-extra.json`; `catalog-manual.json` holds hand-placed positions and corrections. Entries that couldn't be placed reliably are listed in `pipeline/resorts-not-placed.md`.
 
 Each entry has the ski area's centre, a radius covering its lifts, and search words (villages, alternative names). After editing the catalogue, run `npm run catalog` in `pipeline/` to rebuild `resorts.json`. Runs and lifts load from OpenStreetMap the first time a resort is opened.
 
@@ -64,7 +66,7 @@ This writes `data/<resort-id>/{pistes,piste_areas,lifts,stations,boundary,struct
 `pines.geojson` holds tree positions for the iPhone app, which works offline:
 - Trees are placed in OpenStreetMap forests (`landuse=forest` / `natural=wood` ways), below the tree line and away from runs and lifts.
 - Forest multipolygon relations are not fetched, so a few large forests may be missing.
-- The web map places its pines live from Mapbox landcover instead.
+- The web map places its pines live from the OpenFreeMap landcover instead.
 Resort areas are bounding boxes in `pipeline/resorts.json`. Expect a few runs or lifts from neighbouring
 areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`.
 

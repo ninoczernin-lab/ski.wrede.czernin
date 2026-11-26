@@ -1,16 +1,17 @@
 // Web version of the ski map: each resort as a toy cartoon mountain at a chosen hour.
 // Same data code as pipeline/ and the same run colours as the iOS app (PisteStyle.swift).
-// Mapbox GL JS v3 with Standard / Standard Satellite.
+// MapLibre GL JS on free, keyless sources: OpenFreeMap vector tiles (OpenStreetMap), AWS Terrain
+// Tiles for the 3D ground, and Esri World Imagery for the Satellite look. No account, no token.
 import { overpassQuery } from '../pipeline/query.mjs';
 import { convert } from '../pipeline/convert.mjs';
-import { buildCableSpans, NSTOPS } from '../pipeline/cables.mjs';
+import { buildCableSpans } from '../pipeline/cables.mjs';
 import { buildCabins, liftTracks, carsAt } from '../pipeline/lift3d.mjs';
 import { elevationAt } from './elevation-browser.js';
 import { lightAt, formatHour, deviceUses12h, HOUR_MIN, HOUR_MAX } from './daylight.js';
 import { pineShapes, scatterPines, avoidGrid } from './pines.js';
 import { createSnow } from './snow.js';
 import { skierTracks, skiersAt, snowmenNear, stationIcon, hutIcon, snowmanIcon, skierIcon, JACKETS, INK, LIFT_YELLOW, LIFT_VIOLET } from './decor.js';
-import { MAPBOX_TOKEN } from './config.js';
+import { cableRibbons, metresPerPixel } from './cable-ribbons.js';
 
 const EXAGGERATION = 1.5;
 const PITCH_3D = 62;                                    // tilted-diorama angle
@@ -90,35 +91,73 @@ let selectedLift = 'Valfagehrbahn';                     // tap another lift to c
 const nameKey = ['downcase', ['coalesce', ['get', 'name'], '']];
 
 // --- Map looks ---------------------------------------------------------------------------------
-// Cartoon: Standard repainted as a toy snow mountain with candy-bright runs; light comes from the hour.
-// Satellite: real imagery on the same terrain, under the same hour, with the same cartoon furniture.
+// Both looks share one style built here (see baseStyle): the same terrain, labels and cartoon furniture.
+// Cartoon: a drawn toy snow map (snow ground, soft forests, blue water) whose colours follow the hour.
+// Satellite: Esri World Imagery draped on the same terrain.
 const LOOKS = {
   cartoon: {
-    label: 'Cartoon', style: 'mapbox://styles/mapbox/standard',
-    // Greenspace close to the snow so forest polygons draw no hard edge; valley-tint and pines add the green.
-    config: { theme: 'faded', colorLand: '#f7fafd', colorGreenspace: '#edf2ee', colorWater: '#79aed6',
-      show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
-      showPlaceLabels: false, showPedestrianRoads: false },
+    label: 'Cartoon',
+    ground: { snow: '#f7fafd', wood: '#cfe3d4', grass: '#eaf2e8', ice: '#ffffff', rock: '#eceef3', water: '#7fb6e4',
+      town: '#efe9e3', road: '#ffffff', roadCase: '#d3d9e3', building: '#e4ddd5' },
     relief: 0.5,                                         // soft shading: bright toy snow, not a survey model
-    valleyTint: false,                                  // measured: the tint was what greyed the snow; landcover keeps valleys green
-    // Trail-map ground, not a survey sheet: no 50 m lines, faint 200 m lines, sparse height labels.
-    contour: { minor: false, major: 'rgba(64, 86, 120, 0.22)', text: '#5a6a82', halo: '#ffffff', labelZoom: 14.5 },
     labels: { text: '#16202c', halo: '#ffffff', peak: '#2c3b52' },
     runs: { novice: '#16c45e', easy: '#1e7bff', intermediate: '#ff2e4d', advanced: '#1b1d2b', expert: '#1b1d2b',
       freeride: '#ff9a1a', unknown: '#8a90a6' },
     pines: true,
   },
   satellite: {
-    label: 'Satellite', style: 'mapbox://styles/mapbox/standard-satellite',
-    config: { showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false, showPlaceLabels: false },
-    relief: 0.4,
-    valleyTint: false,                                  // imagery already has real valley colours
-    contour: { minor: 'rgba(255, 255, 255, 0.2)', major: 'rgba(255, 255, 255, 0.45)', text: '#ffffff', halo: 'rgba(14, 22, 34, 0.85)' },
+    label: 'Satellite',
+    imagery: true,
+    relief: 0.35,
     labels: { text: '#ffffff', halo: 'rgba(14, 22, 34, 0.9)', peak: '#ffffff' },
     pines: false,
   },
 };
-const FONT = { medium: ['DIN Pro Medium', 'Arial Unicode MS Regular'], bold: ['DIN Pro Bold', 'Arial Unicode MS Bold'] };
+// Map label faces served with the OpenFreeMap tiles.
+const FONT = { medium: ['Noto Sans Regular'], bold: ['Noto Sans Bold'] };
+const TILES = 'https://tiles.openfreemap.org/planet';
+const GLYPHS = 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf';
+const DEM = { type: 'raster-dem', tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],
+  encoding: 'terrarium', tileSize: 256, maxzoom: 14,
+  attribution: '<a href="https://registry.opendata.aws/terrain-tiles/">Terrain Tiles</a> (Mapzen, AWS)' };
+const IMAGERY = { type: 'raster', tileSize: 256, maxzoom: 19,
+  tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+  attribution: 'Imagery © <a href="https://www.esri.com/">Esri</a>, Maxar, Earthstar Geographics' };
+
+/** The base map for a look: our own style, so every colour is ours and nothing needs a key. */
+function baseStyle(key) {
+  const L = LOOKS[key], g = L.ground;
+  const omt = (id, layer, extra) => ({ id, source: 'omt', 'source-layer': layer, ...extra });
+  const layers = L.imagery
+    ? [{ id: 'imagery', type: 'raster', source: 'imagery', paint: { 'raster-fade-duration': 200 } }]
+    : [
+      { id: 'ground', type: 'background', paint: { 'background-color': g.snow } },
+      omt('landcover-wood', 'landcover', { type: 'fill', filter: ['==', ['get', 'class'], 'wood'], paint: { 'fill-color': g.wood, 'fill-antialias': false } }),
+      omt('landcover-grass', 'landcover', { type: 'fill', filter: ['in', ['get', 'class'], ['literal', ['grass', 'farmland', 'wetland']]],
+        paint: { 'fill-color': g.grass, 'fill-opacity': 0.8, 'fill-antialias': false } }),
+      omt('landcover-rock', 'landcover', { type: 'fill', filter: ['in', ['get', 'class'], ['literal', ['rock', 'sand']]], paint: { 'fill-color': g.rock } }),
+      omt('landcover-ice', 'landcover', { type: 'fill', filter: ['==', ['get', 'class'], 'ice'], paint: { 'fill-color': g.ice } }),
+      omt('landuse-town', 'landuse', { type: 'fill', filter: ['in', ['get', 'class'], ['literal', ['residential', 'suburb', 'neighbourhood', 'commercial', 'retail']]],
+        paint: { 'fill-color': g.town, 'fill-opacity': 0.7 } }),
+      omt('water', 'water', { type: 'fill', paint: { 'fill-color': g.water } }),
+      omt('waterway', 'waterway', { type: 'line', minzoom: 9, paint: { 'line-color': g.water, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.6, 15, 2.4] } }),
+      omt('roads-case', 'transportation', { type: 'line', minzoom: 9, filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor']]],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': g.roadCase, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 1.2, 15, 6] } }),
+      omt('roads', 'transportation', { type: 'line', minzoom: 9, filter: ['in', ['get', 'class'], ['literal', ['motorway', 'trunk', 'primary', 'secondary', 'tertiary', 'minor']]],
+        layout: { 'line-cap': 'round', 'line-join': 'round' },
+        paint: { 'line-color': g.road, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.5, 15, 4] } }),
+      omt('buildings', 'building', { type: 'fill', minzoom: 14, paint: { 'fill-color': g.building, 'fill-outline-color': '#cfc6bb' } }),
+    ];
+  return {
+    version: 8, glyphs: GLYPHS,
+    sources: {
+      omt: { type: 'vector', url: TILES, attribution: '<a href="https://openfreemap.org">OpenFreeMap</a> © <a href="https://www.openmaptiles.org/">OpenMapTiles</a> Data from <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' },
+      ...(L.imagery && { imagery: IMAGERY }),
+    },
+    layers,
+  };
+}
 
 // --- UI state -----------------------------------------------------------------------------------
 const $ = (s) => document.querySelector(s);
@@ -140,21 +179,7 @@ const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Effects quality: 2 full, 1 lighter (no snow, fewer pines, slower cabins), 0 static. Drops when frames slip.
 let quality = reduceMotion ? 1 : 2;
 
-const TOKEN_KEY = 'mapbox-token';
 const params = new URLSearchParams(location.search);
-// Order: ?token= in the link, then one the viewer pasted earlier, then the built-in token.
-let token = params.get('token') || store.get(TOKEN_KEY) || MAPBOX_TOKEN || null;
-if (params.get('token')) store.set(TOKEN_KEY, params.get('token'));
-if (!token) {
-  $('#token').classList.add('show');
-  token = await new Promise((resolve) => $('#token form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const t = new FormData(e.target).get('t').trim();
-    store.set(TOKEN_KEY, t);
-    $('#token').classList.remove('show');
-    resolve(t);
-  }));
-}
 
 const resorts = await (await fetch('../pipeline/resorts.json')).json();
 let current = resorts.find((r) => r.id === params.get('resort')) ?? resorts[0];
@@ -166,53 +191,35 @@ let hour = (() => { const h = localHour(current); return h >= 7.5 && h <= 19 ? h
 let light = lightAt(hour, { south: current.camera.lat < 0 });
 
 // --- Map ------------------------------------------------------------------------------------------
-mapboxgl.accessToken = token;
-const map = new mapboxgl.Map({
-  container: 'map', style: LOOKS[look].style,
+// Camera moves pass freezeElevation: MapLibre then re-measures the ground under the camera when the
+// move ends (or is interrupted). Without it the ground height stays frozen after an animation, and
+// panning to higher terrain can put the camera inside the mountain.
+const map = new maplibregl.Map({
+  container: 'map', style: baseStyle(look),
   // Opens high above the resort; the fly-in brings the camera down once the scene is ready.
   center: [current.camera.lon, current.camera.lat], zoom: Math.max(7, current.camera.zoom - 3.2),
-  bearing: current.camera.bearing - 60, pitch: 30, maxPitch: 85, hash: false, attributionControl: true,
-  config: { basemap: { lightPreset: light.preset, ...LOOKS[look].config } },
+  bearing: current.camera.bearing - 60, pitch: 30, maxPitch: 85, hash: false, attributionControl: { compact: true },
 });
-// Only a refused style means a bad token. One tile source answering 401 (a tileset this token can't
-// read, a blip on the network) is logged and skipped: it must never wipe a working token or show an
-// error over a map that rendered.
-map.on('error', (e) => {
-  const msg = e.error?.message ?? String(e.error);
-  console.warn(msg);
-  const fromSource = Boolean(e.sourceId || e.tile || e.source);
-  if (!fromSource && !map.isStyleLoaded() && /401|access token/i.test(msg)) askForNewToken();
-});
-/** The token was refused: forget it and open the paste form right away (no reload needed first). */
-function askForNewToken() {
-  store.del(TOKEN_KEY);
-  if (params.get('token')) history.replaceState(null, '', location.pathname + location.search.replace(/([?&])token=[^&]*&?/, '$1').replace(/[?&]$/, ''));
-  const box = $('#token');
-  if (box.classList.contains('show')) return;
-  box.querySelector('p').textContent = 'Mapbox refused this token (it may have been rotated or turned off in your Mapbox account). Paste a current public token, starting with pk.';
-  box.classList.add('show');
-  box.querySelector('input').focus();
-  box.querySelector('form').addEventListener('submit', (e) => {
-    e.preventDefault();
-    store.set(TOKEN_KEY, new FormData(e.target).get('t').trim());
-    location.reload();
-  }, { once: true });
+// A tile that fails (a server blip, a missing tile) is logged and skipped; the map keeps going.
+map.on('error', (e) => console.warn(e.error?.message ?? String(e.error)));
+// MapLibre skips (with a warning) any paint/layout property it doesn't know: these are layer options
+// only Mapbox had (render slots, glow strength, ambient occlusion), stripped before adding a layer.
+const MAPBOX_ONLY = /^(slot)$|emissive-strength|ambient-occlusion|elevation-reference|z-offset/;
+{
+  const add = map.addLayer.bind(map);
+  const strip = (o) => o && Object.fromEntries(Object.entries(o).filter(([k]) => !MAPBOX_ONLY.test(k)));
+  map.addLayer = (spec, before) => add({ ...strip(spec), ...(spec.paint && { paint: strip(spec.paint) }), ...(spec.layout && { layout: strip(spec.layout) }) }, before);
 }
 
-// Standard-style settings; a property this style version doesn't know is skipped, not fatal.
-const setBasemap = (key, value) => { try { map.setConfigProperty('basemap', key, value); } catch (e) { console.warn(e.message); } };
 const setLayout = (id, k, v) => { if (map.getLayer(id)) map.setLayoutProperty(id, k, v); };
 const empty = { type: 'FeatureCollection', features: [] };
 const downhill = ['==', ['get', 'piste:type'], 'downhill'];
 const unknown = ['==', ['get', 'piste:difficulty'], 'unknown'];
-const zOffset = ['interpolate', ['linear'], ['line-progress'],
-  ...Array.from({ length: NSTOPS }, (_, k) => [k / (NSTOPS - 1), ['*', EXAGGERATION, ['get', `z${k}`]]]).flat()];
-const elevated = { 'line-elevation-reference': 'ground', 'line-z-offset': zOffset };
 let cablesOK = false;
 let pinesOK = false;
 const PINE = { trunk: '#4a3a30', low: '#244c3d', mid: '#2f5f4b', snow: '#eef4f8' };
 
-/** Everything we add on top of Mapbox's style. Runs again after every style switch. */
+/** Everything we add on top of the base style. Runs again after every style switch. */
 function setup() {
   const L = LOOKS[look];
   RUN = computeRun(L, current.country);
@@ -221,75 +228,55 @@ function setup() {
   const lw = LINE_W, cw = CASING_W;
   const bubble = () => ({});
   const bubbleHalo = (width) => ({ 'text-halo-width': width });
-  for (const [k, v] of Object.entries(L.config)) setBasemap(k, v);
-  setBasemap('lightPreset', light.preset);
-  lastPreset = light.preset;
-
-  // Terrain + relief shading (own DEM source: sharing one halves the shading resolution).
-  map.addSource('mapbox-dem', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
-  if (is3D) map.setTerrain({ source: 'mapbox-dem', exaggeration: EXAGGERATION });
-  map.addSource('mapbox-dem-shade', { type: 'raster-dem', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512, maxzoom: 14 });
-  // Valley tint: green below ~1100 m fading through grey-green to nothing by ~2200 m, so valleys
-  // blend into the snow line instead of meeting it at a hard landcover edge.
-  if (L.valleyTint) {
-    map.addSource('dem-rgb', { type: 'raster', url: 'mapbox://mapbox.mapbox-terrain-dem-v1', tileSize: 512 });
-    map.addLayer({ id: 'valley-tint', type: 'raster', source: 'dem-rgb', slot: 'bottom', paint: {
-      'raster-color-mix': [6553.6, 25.6, 0.1, -10000],          // decode terrain-RGB to metres
-      'raster-color-range': [0, 4000],
-      'raster-color': ['interpolate', ['linear'], ['raster-value'], ...L.valleyTint],
-      'raster-resampling': 'linear', 'raster-fade-duration': 0 } });
-  }
-  map.addLayer({ id: 'relief', type: 'hillshade', source: 'mapbox-dem-shade', slot: 'bottom',
+  // Terrain + relief shading (own DEM source each: MapLibre wants terrain and hillshade apart).
+  map.addSource('dem', DEM);
+  if (is3D) map.setTerrain({ source: 'dem', exaggeration: EXAGGERATION });
+  // Switch terrain on once more when the first elevation tiles have arrived: before that MapLibre
+  // drapes and places everything added on top (runs, lifts, labels) against a flat 0 m ground and
+  // keeps drawing them there, hidden under the real mountain.
+  const settle = (e) => {
+    if (e.sourceId !== 'dem' || !e.isSourceLoaded) return;
+    map.off('sourcedata', settle);
+    if (is3D) map.setTerrain({ source: 'dem', exaggeration: EXAGGERATION });
+  };
+  map.on('sourcedata', settle);
+  map.addSource('dem-shade', DEM);
+  map.addLayer({ id: 'relief', type: 'hillshade', source: 'dem-shade', slot: 'bottom',
     paint: { 'hillshade-illumination-anchor': 'map' } });
   // Ridge light: a second, highlight-only pass from the sun's side so crests catch a crisp white edge.
-  map.addLayer({ id: 'ridge-light', type: 'hillshade', source: 'mapbox-dem-shade', slot: 'bottom',
+  map.addLayer({ id: 'ridge-light', type: 'hillshade', source: 'dem-shade', slot: 'bottom',
     paint: { 'hillshade-illumination-anchor': 'map', 'hillshade-shadow-color': 'rgba(0, 0, 0, 0)',
       'hillshade-accent-color': 'rgba(0, 0, 0, 0)', 'hillshade-highlight-color': 'rgba(255, 255, 255, 0.9)',
       'hillshade-exaggeration': 0.55 } });
   applyLight();
 
-  // Elevation contours: thin every 50 m, stronger every 200 m with height labels.
-  map.addSource('contours', { type: 'vector', url: 'mapbox://mapbox.mapbox-terrain-v2' });
-  const major = ['==', ['%', ['get', 'ele'], 200], 0];
-  if (L.contour.minor) map.addLayer({ id: 'contours-minor', type: 'line', source: 'contours', 'source-layer': 'contour', slot: 'bottom', minzoom: 12,
-    filter: ['all', ['==', ['%', ['get', 'ele'], 50], 0], ['!', major]],
-    paint: { 'line-color': L.contour.minor, 'line-width': 0.6 } });
-  map.addLayer({ id: 'contours-major', type: 'line', source: 'contours', 'source-layer': 'contour', slot: 'bottom', minzoom: 11,
-    filter: major, paint: { 'line-color': L.contour.major, 'line-width': byZoom(0.7, 1.3) } });
-  map.addLayer({ id: 'contours-label', type: 'symbol', source: 'contours', 'source-layer': 'contour', slot: 'middle', minzoom: L.contour.labelZoom ?? 13,
-    filter: major,
-    layout: { 'symbol-placement': 'line', 'text-field': ['concat', ['to-string', ['get', 'ele']], ' m'],
-      'text-size': 10.5, 'text-font': FONT.medium, 'text-pitch-alignment': 'map', 'text-rotation-alignment': 'map',
-      'symbol-spacing': L.contour.labelZoom ? 900 : 500, 'text-padding': 4 },
-    paint: { 'text-color': L.contour.text, 'text-halo-color': L.contour.halo, 'text-halo-width': 2, 'text-halo-blur': 0.2 } });
-
-  // Peaks and villages, redrawn from Mapbox Streets with strong halos (the basemap's own place
-  // labels are switched off above, since their halos can't be restyled from outside the style).
-  map.addSource('streets', { type: 'vector', url: 'mapbox://mapbox.mapbox-streets-v8' });
+  // Peaks and villages from the OpenStreetMap tiles, with strong halos.
+  if (!map.getSource('omt')) map.addSource('omt', baseStyle('cartoon').sources.omt);
   // Forest areas feed the pine scatter; drawn invisibly so their tiles stay queryable.
-  map.addLayer({ id: 'forest-mask', type: 'fill', source: 'streets', 'source-layer': 'landcover', slot: 'bottom',
+  map.addLayer({ id: 'forest-mask', type: 'fill', source: 'omt', 'source-layer': 'landcover', slot: 'bottom',
     filter: ['==', ['get', 'class'], 'wood'], paint: { 'fill-opacity': 0 } });
-  map.addLayer({ id: 'peak-labels', type: 'symbol', source: 'streets', 'source-layer': 'natural_label', slot: 'top', minzoom: 10.5,
-    filter: ['match', ['get', 'maki'], ['mountain', 'volcano'], true, false],
-    layout: { 'text-field': ['format', ['get', 'name'], {},
-        ['case', ['has', 'elevation_m'], ['concat', '\n', ['to-string', ['get', 'elevation_m']], ' m'], ''], { 'font-scale': 0.82 }],
+  map.addLayer({ id: 'peak-labels', type: 'symbol', source: 'omt', 'source-layer': 'mountain_peak', slot: 'top', minzoom: 10.5,
+    filter: ['in', ['get', 'class'], ['literal', ['peak', 'volcano']]],
+    layout: { 'text-field': ['format', ['coalesce', ['get', 'name:latin'], ['get', 'name']], {},
+        ['case', ['has', 'ele'], ['concat', '\n', ['to-string', ['get', 'ele']], ' m'], ''], { 'font-scale': 0.82 }],
       'icon-image': 'peak', 'icon-anchor': 'bottom', 'text-anchor': 'bottom', 'text-offset': [0, -0.9],
       'text-font': FONT.medium, 'text-size': byZoom(11, 13), 'text-padding': 6,
-      'symbol-sort-key': ['-', ['coalesce', ['get', 'elevation_m'], 0]], ...bubble('bubble-peak') },
+      'symbol-sort-key': ['-', ['coalesce', ['get', 'ele'], 0]], ...bubble('bubble-peak') },
     paint: { 'text-color': L.labels.peak, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.2), 'text-halo-blur': 0.2,
       'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
-  map.addLayer({ id: 'place-labels', type: 'symbol', source: 'streets', 'source-layer': 'place_label', slot: 'top', minzoom: 9,
-    filter: ['match', ['get', 'class'], ['settlement', 'settlement_subdivision'], true, false],
-    layout: { 'text-field': ['get', 'name'], 'text-font': FONT.bold, 'text-padding': 6,
-      'text-size': ['match', ['get', 'type'], ['city', 'town'], 16, 'village', 14, 12.5],
-      'text-letter-spacing': 0.02, 'symbol-sort-key': ['coalesce', ['get', 'symbolrank'], 99], ...bubble('bubble') },
+  map.addLayer({ id: 'place-labels', type: 'symbol', source: 'omt', 'source-layer': 'place', slot: 'top', minzoom: 9,
+    filter: ['in', ['get', 'class'], ['literal', ['city', 'town', 'village', 'hamlet', 'suburb']]],
+    layout: { 'text-field': ['coalesce', ['get', 'name:latin'], ['get', 'name']], 'text-font': FONT.bold, 'text-padding': 6,
+      'text-size': ['match', ['get', 'class'], ['city', 'town'], 16, 'village', 14, 12.5],
+      'text-letter-spacing': 0.02, 'symbol-sort-key': ['coalesce', ['get', 'rank'], 99], ...bubble('bubble') },
     paint: { 'text-color': L.labels.text, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.4), 'text-halo-blur': 0.2,
       'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
 
   // Data sources (refilled from the cache below).
   for (const id of DATA_LAYERS) {
-    map.addSource(id, { type: 'geojson', data: cache.get(current.id)?.[id] ?? empty, ...(id === 'lift_spans' && { lineMetrics: true }) });
+    map.addSource(id, { type: 'geojson', data: cache.get(current.id)?.[id] ?? empty });
   }
+  map.addSource('cable-ribbons', { type: 'geojson', data: empty });
   map.addSource('lift_terminals', { type: 'geojson', data: terminalsFrom(cache.get(current.id)?.lifts) });
 
   // Every resort as a dot when zoomed out: big coral = tier 1 (2 M+ skier visits), blue = tier 2, slate = tier 3,
@@ -334,8 +321,8 @@ function setup() {
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': RUN.unknown, 'line-width': lw, 'line-dasharray': [1.4, 0.9], 'line-emissive-strength': 1 } });
 
-  // Lifts: violet on the ground and in the air; the selected lift gets a sunny glow
-  // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
+  // Lifts: violet on the ground and in the air; the selected lift gets a sunny glow on the ground
+  // and its cable stays bright while the others fade.
   // Selection never borrows a run colour: a wide yellow halo under the same bright violet, a little wider.
   map.addLayer({ id: 'lift-selected-glow', type: 'line', source: 'lifts', slot: 'top', filter: NO_MATCH,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
@@ -348,25 +335,17 @@ function setup() {
   map.addLayer({ id: 'lifts-line', type: 'line', source: 'lifts', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': LIFT.cable, 'line-emissive-strength': 1 } });
-  map.addLayer({ id: 'lifts-cable-glow', type: 'line', source: 'lift_spans', slot: 'top', filter: NO_MATCH,
-    layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
-    paint: { 'line-color': LIFT.select, 'line-width': byZoom(10, 16), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
-      'line-emissive-strength': 1 } });
-  // Every cable gets a white rim so the violet reads against rock and shadowed snow.
-  map.addLayer({ id: 'lifts-cable-halo', type: 'line', source: 'lift_spans', slot: 'top',
-    layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
-    paint: { 'line-color': '#ffffff', 'line-width': byZoom(7.6, 11), 'line-opacity': 0.92, 'line-emissive-strength': 1 } });
-  map.addLayer({ id: 'lifts-cable', type: 'line', source: 'lift_spans', slot: 'top',
-    layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
-    paint: { 'line-emissive-strength': 1 } });
+  // Cables hanging in the air: thin violet ribbons that sag between towers (see cable-ribbons.js).
+  map.addLayer({ id: 'lifts-cable', type: 'fill-extrusion', source: 'cable-ribbons', slot: 'top', minzoom: 10.5,
+    paint: { 'fill-extrusion-base': ['*', EXAGGERATION, ['get', 'base']], 'fill-extrusion-height': ['*', EXAGGERATION, ['get', 'top']],
+      'fill-extrusion-color': LIFT.cable, 'fill-extrusion-vertical-gradient': false, 'fill-extrusion-opacity': 1 } });
   // Stations: sunny-yellow cable-car badges at both ends of every lift (upright, always facing you).
   map.addLayer({ id: 'lift-terminals', type: 'symbol', source: 'lift_terminals', slot: 'top', minzoom: 11.5,
     layout: { 'icon-image': 'station', 'icon-size': byZoom(0.85, 1.2), 'icon-anchor': 'center', 'icon-padding': 1,
       'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport', 'symbol-z-order': 'source' },
     paint: { 'icon-emissive-strength': 1 } });
-  // Mapbox GL skips (doesn't throw on) a layer it can't validate, so check it really exists.
   cablesOK = Boolean(map.getLayer('lifts-cable'));
-  if (!cablesOK) console.warn('Elevated lines unavailable in this Mapbox GL version; lifts stay on the ground');
+  setRibbons();
 
   // Pylons (mast + crossarm), stations (walls + roof) and cabins: 3D boxes on the terrain.
   const ex = (prop) => ['*', EXAGGERATION, ['get', prop]];
@@ -526,21 +505,40 @@ function peakImage() {
   return [{ width: c.width, height: c.height, data: new Uint8Array(d.data.buffer) }, { pixelRatio: pr }];
 }
 
-let lastPreset = null;
-/** Apply the current hour: sky gradient fog, 3D lights, relief shading, Standard's preset and the HUD tint. */
+const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+const mixHex = (a, b, t) => `#${hexRgb(a).map((v, i) => Math.round(v + (hexRgb(b)[i] - v) * t).toString(16).padStart(2, '0')).join('')}`;
+/** Apply the current hour: sky gradient and haze, the light on 3D shapes, relief shading, the ground's
+ *  colour (snow goes peach at dawn, lilac at dusk, indigo at night) and the HUD tint. */
 function applyLight() {
   light = lightAt(hour, { south: current.camera.lat < 0 });
   const L = LOOKS[look];
-  // Standard's own preset is a heavy relight with its own transition: switch it only when the slider
-  // is let go, so dragging through 17:00–20:00 stays smooth (sky, sun and shading still move live).
-  if (!scrubbing && light.preset !== lastPreset) { setBasemap('lightPreset', light.preset); lastPreset = light.preset; }
-  try { map.setFog(light.fog); } catch (e) { console.warn(e.message); }
-  try { map.setLights(light.lights); } catch (e) { console.warn(e.message); }
+  const fog = light.fog, amb = light.lights[0].properties, sun = light.lights[1].properties;
+  try {
+    map.setSky({ 'sky-color': fog['high-color'], 'horizon-color': fog.color, 'fog-color': fog.color,
+      'sky-horizon-blend': 0.6, 'horizon-fog-blend': 0.6, 'fog-ground-blend': 0.75, 'atmosphere-blend': 0 });
+  } catch (e) { console.warn(e.message); }
+  try {
+    // [radial, azimuth, polar]: the light on extrusions (towers, cabins, cables, pines) comes from the sun.
+    map.setLight({ anchor: 'map', position: [1.5, sun.direction[0], sun.direction[1]],
+      color: mixHex(sun.color, amb.color, 0.5), intensity: Math.min(0.55, 0.2 + 0.35 * (sun.intensity ?? 0)) });
+  } catch (e) { console.warn(e.message); }
   if (map.getLayer('relief')) {
     for (const [k, v] of Object.entries(light.shade)) map.setPaintProperty('relief', k, v);
     map.setPaintProperty('relief', 'hillshade-exaggeration', light.relief * L.relief);
     map.setPaintProperty('ridge-light', 'hillshade-illumination-direction', light.azimuth);
     map.setPaintProperty('ridge-light', 'hillshade-exaggeration', light.ridge * L.relief);
+  }
+  // The drawn ground takes the hour's ambient colour: barely by day, strongly at night.
+  if (L.ground && map.getLayer('ground')) {
+    const k = light.hud.dark ? 0.62 : light.altitude < 10 ? 0.28 : 0.06;
+    map.setPaintProperty('ground', 'background-color', mixHex(L.ground.snow, amb.color, k));
+    map.setPaintProperty('landcover-wood', 'fill-color', mixHex(L.ground.wood, amb.color, k));
+    map.setPaintProperty('landcover-ice', 'fill-color', mixHex(L.ground.ice, amb.color, k));
+    map.setPaintProperty('landcover-rock', 'fill-color', mixHex(L.ground.rock, amb.color, k));
+    map.setPaintProperty('landcover-grass', 'fill-color', mixHex(L.ground.grass, amb.color, k));
+  }
+  if (L.imagery && map.getLayer('imagery')) {
+    map.setPaintProperty('imagery', 'raster-brightness-max', light.hud.dark ? 0.45 : light.altitude < 10 ? 0.8 : 1);
   }
   const root = document.documentElement.style;
   root.setProperty('--sky-top', light.hud.skyTop);
@@ -579,14 +577,10 @@ function applySelection() {
   const sel = ['==', nameKey, active ? selectedLift.toLowerCase() : '\u0000'];
   const pick = (on, off) => (active ? ['case', sel, on, off] : off);
   const groundBase = ['match', ['get', 'aerialway'], GROUND_LIFTS, 1, is3D && cablesOK ? SHADOW : 1];
-  map.setFilter('lift-selected-glow', active && (!is3D || !cablesOK) ? sel : NO_MATCH);
-  map.setFilter('lifts-cable-glow', active ? sel : NO_MATCH);
+  map.setFilter('lift-selected-glow', active ? sel : NO_MATCH);
   const shadowLine = is3D && cablesOK;                    // in 3D the ground line is only the cable's shadow
-  map.setPaintProperty('lifts-cable', 'line-color', pick(LIFT.selectCore, LIFT.cable));
-  // Cables in the air are drawn in perspective and thin out with distance: give them extra width.
-  map.setPaintProperty('lifts-cable', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(5.2, 3.8), 16, pick(8, 6)]);
-  map.setPaintProperty('lifts-cable', 'line-opacity', pick(1, active ? DIM : 1));
-  map.setPaintProperty('lifts-cable-halo', 'line-opacity', pick(0.85, active ? DIM * 0.85 : 0.85));
+  // Extrusion opacity can't vary per feature: unselected cables fade by colour toward pale violet instead.
+  map.setPaintProperty('lifts-cable', 'fill-extrusion-color', pick(LIFT.selectCore, active ? '#cbbff7' : LIFT.cable));
   map.setPaintProperty('lifts-line', 'line-color', pick(LIFT.selectCore, shadowLine ? LIFT.shadow : LIFT.cable));
   map.setPaintProperty('lifts-line', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(4.6, 3.2), 16, pick(7, 5)]);
   map.setPaintProperty('lifts-line', 'line-opacity', active ? ['case', sel, shadowLine ? 0.5 : 1, ['*', DIM, groundBase]] : groundBase);
@@ -597,14 +591,14 @@ function applySelection() {
 }
 
 function apply3D(animate) {
-  map.setTerrain(is3D ? { source: 'mapbox-dem', exaggeration: EXAGGERATION } : null);
-  setBasemap('show3dObjects', is3D);
-  for (const id of ['lift-structures', 'lift-cabins', 'lift-cabin-dots', 'lifts-cable', 'lifts-cable-glow', 'lifts-cable-halo', 'pines']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
+  map.setTerrain(is3D ? { source: 'dem', exaggeration: EXAGGERATION } : null);
+  for (const id of ['lift-structures', 'lift-cabins', 'lift-cabin-dots', 'lifts-cable', 'pines']) setLayout(id, 'visibility', is3D ? 'visible' : 'none');
+  setRibbons(true);
   applySelection();
   $('#orbit').hidden = !is3D;
   $('#toggle3d').textContent = is3D ? '2D' : '3D';
   $('#toggle3d').setAttribute('aria-label', is3D ? 'Switch to flat 2D map' : 'Switch to 3D map');
-  if (animate) map.easeTo({ pitch: is3D ? PITCH_3D : 0, duration: reduceMotion ? 0 : 800 });
+  if (animate) map.easeTo({ freezeElevation: true, pitch: is3D ? PITCH_3D : 0, duration: reduceMotion ? 0 : 800 });
   updateEffects();
 }
 
@@ -650,6 +644,7 @@ async function showResort(r) {
     for (const id of DATA_LAYERS) map.getSource(id)?.setData(layers[id] ?? empty);
     map.getSource('lift_terminals')?.setData(terminalsFrom(layers.lifts));
     tracks = liftTracks(layers.lift_spans);
+    setRibbons(true);
     skiTracks = skierTracks(layers.pistes);
     placeSnowmen(layers);
     applySelection();
@@ -671,11 +666,11 @@ function flyIn(r) {
   const target = { center: [r.camera.lon, r.camera.lat], zoom: r.camera.zoom, bearing: r.camera.bearing,
     pitch: is3D ? PITCH_3D : 0 };
   if (reduceMotion) { map.jumpTo(target); return; }
-  map.flyTo({ center: target.center, zoom: target.zoom - 1.4, bearing: target.bearing - 55, pitch: is3D ? 44 : 0,
+  map.flyTo({ freezeElevation: true, center: target.center, zoom: target.zoom - 1.4, bearing: target.bearing - 55, pitch: is3D ? 44 : 0,
     curve: 1.6, speed: 1.1, essential: true });
   map.once('moveend', () => {
     if (id !== flight || current !== r) return;   // interrupted by the user or another resort
-    map.easeTo({ ...target, duration: 3200, easing: (t) => 1 - (1 - t) ** 3, essential: true });
+    map.easeTo({ freezeElevation: true, ...target, duration: 3200, easing: (t) => 1 - (1 - t) ** 3, essential: true });
   });
 }
 map.on('dragstart', () => { flight++; });
@@ -800,7 +795,7 @@ $('#world').addEventListener('click', () => {
   stopMotion();
   flight++;
   $('#card').classList.remove('show');
-  map.flyTo({ center: [10, 35], zoom: 1.4, pitch: 0, bearing: 0, duration: reduceMotion ? 0 : 2600, essential: true });
+  map.flyTo({ freezeElevation: true, center: [10, 35], zoom: 1.4, pitch: 0, bearing: 0, duration: reduceMotion ? 0 : 2600, essential: true });
 });
 
 // --- Orbit: drag the dial (or scroll sideways) to turn the mountain ------------------------------
@@ -861,7 +856,7 @@ dial.addEventListener('pointerup', endDrag);
 dial.addEventListener('pointercancel', endDrag);
 dial.addEventListener('wheel', (e) => { e.preventDefault(); stopMotion(); turn((Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) * 0.25); }, { passive: false });
 dial.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); stopMotion(); map.easeTo({ bearing: map.getBearing() + (e.key === 'ArrowRight' ? 15 : -15), duration: 300 }); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); stopMotion(); map.easeTo({ freezeElevation: true, bearing: map.getBearing() + (e.key === 'ArrowRight' ? 15 : -15), duration: 300 }); }
 });
 // Sideways scroll on a trackpad or mouse over the map itself also turns the view in 3D.
 map.getCanvasContainer().addEventListener('wheel', (e) => {
@@ -915,7 +910,7 @@ $('#look').addEventListener('click', () => {
   store.set('map-look', look);
   $('#look').setAttribute('aria-label', `Map style: ${LOOKS[look].label}. Switch style`);
   status(LOOKS[look].label, 1200);
-  map.setStyle(LOOKS[look].style, { config: { basemap: { lightPreset: light.preset, ...LOOKS[look].config } } });
+  map.setStyle(baseStyle(look), { diff: false });
 });
 let markReady;
 const ready = new Promise((r) => { markReady = r; });
@@ -968,10 +963,14 @@ $('#card button').addEventListener('click', () => {
 let tracks = [];
 let carsTimer = 0, carsLast = 0;
 const sceneT0 = performance.now();
+const BASE_SOURCES = ['dem', 'omt', 'pistes', 'lifts', 'cable-ribbons', 'huts'];
 function carsLoop(now) {
   carsTimer = requestAnimationFrame(carsLoop);
-  const fps = quality >= 2 ? 15 : 7;
+  const fps = quality >= 2 ? 12 : 6;
   if (now - carsLast < 1000 / fps) return;
+  // Every moving-figure update is re-tiled by MapLibre's worker; while the map's own layers are still
+  // loading, hold the figures still so runs, lifts and the ground always load first.
+  if (BASE_SOURCES.some((id) => map.getSource(id) && !map.isSourceLoaded(id))) return;
   carsLast = now;
   const b = map.getBounds();
   const view = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
@@ -1014,6 +1013,19 @@ function setCabins(fc) {
   }
   map.getSource('cabin-dots')?.setData({ type: 'FeatureCollection', features: kept.map((k) => k.f) });
 }
+/** Cable ribbons about 5 px wide on screen, rebuilt when the zoom moves by half a level. */
+let ribbonZoom = null;
+function setRibbons(force = false) {
+  const src = map.getSource('cable-ribbons');
+  if (!src) return;
+  const z = Math.round(map.getZoom() * 2) / 2;
+  if (!force && z === ribbonZoom) return;
+  ribbonZoom = z;
+  const spans = cache.get(current.id)?.lift_spans;
+  const w = Math.max(1.5, 5 * metresPerPixel(z, current.camera.lat));
+  src.setData(spans && is3D ? cableRibbons(spans, w, w * 0.8) : empty);
+}
+map.on('zoomend', () => setRibbons());
 /** Miniature level of detail: cabins drawn larger when zoomed out so the lifts read as lifts on arrival. */
 const cabinScale = () => { const z = map.getZoom(); return z >= 14 ? 1 : z >= 13 ? 1.6 : z >= 12 ? 2.3 : 3; };
 function carsWanted() {
@@ -1048,7 +1060,7 @@ function schedulePines() {
 function placePines() {
   if (!pinesOK || !is3D || quality < 1 || map.getZoom() < 11.5) { pines.clear(); return; }
   const layers = cache.get(current.id);
-  const forests = map.querySourceFeatures('streets', { sourceLayer: 'landcover', filter: ['==', ['get', 'class'], 'wood'] });
+  const forests = map.querySourceFeatures('omt', { sourceLayer: 'landcover', filter: ['==', ['get', 'class'], 'wood'] });
   const b = map.getBounds();
   const avoid = layers ? avoidGrid([...layers.pistes.features, ...layers.piste_areas.features, ...layers.lifts.features]) : null;
   const pts = scatterPines({
@@ -1056,7 +1068,8 @@ function placePines() {
     // Miniature level of detail: fewer, bigger trees zoomed out; a denser true-scale forest up close.
     spacingM: map.getZoom() >= 14.5 ? 26 : map.getZoom() >= 13.5 ? 36 : map.getZoom() >= 12.5 ? 60 : 95,
     treeline: TREELINE[schemeFor(current.country)] ?? 2050,
-    elevationAt: ([lon, lat]) => map.queryTerrainElevation([lon, lat], { exaggerated: false }),
+    // MapLibre returns the exaggerated height; the tree line is in real metres.
+    elevationAt: ([lon, lat]) => { const e = map.queryTerrainElevation([lon, lat]); return e == null ? null : e / EXAGGERATION; },
     max: quality >= 2 ? 1800 : 800,
   });
   // Diorama sizing: taller trees when zoomed out so they still read; near true size up close.
@@ -1069,19 +1082,23 @@ function updateEffects() { updateCars(); updateSnow(); }
 map.on('zoomend', updateEffects);
 document.addEventListener('visibilitychange', updateEffects);
 
-// Frame-budget guard: if too many frames run long, step effects down (never back up mid-session).
+// Frame-budget guard: every 2.5 s, if too many frames ran long (or there were very few frames at all,
+// as on a phone without a real GPU), step effects down. Judged by time, not frame count, so a very
+// slow device stops the animations within seconds instead of minutes. Never steps back up mid-session.
 (function watchFrames() {
-  let last = performance.now(), slow = 0, total = 0;
+  let last = performance.now(), windowStart = last, slow = 0, total = 0;
   const tick = (now) => {
     const dt = now - last; last = now;
-    if (!document.hidden && dt < 500) { total++; if (dt > 40) slow++; }
-    if (total >= 90) {
-      if (slow / total > 0.3 && quality > 0) {
+    if (document.hidden || dt > 1500) { windowStart = now; slow = 0; total = 0; }    // tab was away: start over
+    else { total++; if (dt > 40) slow++; }
+    if (now - windowStart >= 2500) {
+      const fps = (total * 1000) / (now - windowStart);
+      if ((slow / Math.max(1, total) > 0.3 || fps < 20) && quality > 0 && now > 5000) {   // not during the first seconds of start-up
         quality--;
         updateEffects(); schedulePines();
         status(quality === 1 ? 'Lighter effects for smoother movement' : 'Effects paused for smoother movement', 2500);
       }
-      slow = 0; total = 0;
+      windowStart = now; slow = 0; total = 0;
     }
     requestAnimationFrame(tick);
   };
