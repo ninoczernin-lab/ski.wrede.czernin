@@ -181,11 +181,23 @@ map.on('error', (e) => {
   const msg = e.error?.message ?? String(e.error);
   console.warn(msg);
   const fromSource = Boolean(e.sourceId || e.tile || e.source);
-  if (!fromSource && !map.isStyleLoaded() && /401|access token/i.test(msg)) {
-    store.del(TOKEN_KEY);
-    status('Mapbox rejected the token. Reload the page and paste a valid pk. token.');
-  }
+  if (!fromSource && !map.isStyleLoaded() && /401|access token/i.test(msg)) askForNewToken();
 });
+/** The token was refused: forget it and open the paste form right away (no reload needed first). */
+function askForNewToken() {
+  store.del(TOKEN_KEY);
+  if (params.get('token')) history.replaceState(null, '', location.pathname + location.search.replace(/([?&])token=[^&]*&?/, '$1').replace(/[?&]$/, ''));
+  const box = $('#token');
+  if (box.classList.contains('show')) return;
+  box.querySelector('p').textContent = 'Mapbox refused this token (it may have been rotated or turned off in your Mapbox account). Paste a current public token, starting with pk.';
+  box.classList.add('show');
+  box.querySelector('input').focus();
+  box.querySelector('form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    store.set(TOKEN_KEY, new FormData(e.target).get('t').trim());
+    location.reload();
+  }, { once: true });
+}
 
 // Standard-style settings; a property this style version doesn't know is skipped, not fatal.
 const setBasemap = (key, value) => { try { map.setConfigProperty('basemap', key, value); } catch (e) { console.warn(e.message); } };
