@@ -21,6 +21,8 @@ FIRST VIEWPORT: Full-bleed tilted mountain. Top left, the resort name large and 
 
 FORM: pinned brief: "playful, cartoon-inspired style; ski lifts, slopes and mountain huts much bolder and easier to see, thicker lines, vibrant colors, clear cartoon-style icons or markers; miniature snowmen and tiny skiers moving down the runs". Code-led (no image generation). seed: none (pinned)
 
+Known adaptations: far run-number pills take the atmosphere's fog tint (GL JS 3.9 has no per-symbol fog opt-out; near pills keep their run colour). Snowmen are geo-placed decorations and can pass under the title over the sky band when the camera puts a hut there; they are small and the title stays readable.
+
 Signature interaction: tiny skiers flow down the runs while the hour scrubber relights the mountain. Motion: fly-in, skiers, slow cabins, light snow; all reduced under prefers-reduced-motion and when the frame budget slips.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance

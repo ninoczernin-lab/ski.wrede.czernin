@@ -96,7 +96,7 @@ const LOOKS = {
   cartoon: {
     label: 'Cartoon', style: 'mapbox://styles/mapbox/standard',
     // Greenspace close to the snow so forest polygons draw no hard edge; valley-tint and pines add the green.
-    config: { theme: 'default', colorLand: '#f7fafd', colorGreenspace: '#edf2ee', colorWater: '#79aed6',
+    config: { theme: 'faded', colorLand: '#f7fafd', colorGreenspace: '#edf2ee', colorWater: '#79aed6',
       show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
       showPlaceLabels: false, showPedestrianRoads: false },
     relief: 0.5,                                         // soft shading: bright toy snow, not a survey model
@@ -393,7 +393,8 @@ function setup() {
     'icon-allow-overlap': true, 'icon-ignore-placement': true };
   map.addSource('snowmen', { type: 'geojson', data: empty });
   map.addLayer({ id: 'snowmen', type: 'symbol', source: 'snowmen', slot: 'top', minzoom: 12.5,
-    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(1.05, 1.4) },
+    // Nudged sideways on screen so a snowman always stands beside its hut or station badge, never behind it.
+    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(1.05, 1.4), 'icon-offset': [17, 0] },
     paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } }, 'lift-terminals');
   map.addSource('skiers', { type: 'geojson', data: empty });
   map.addLayer({ id: 'skiers', type: 'symbol', source: 'skiers', slot: 'top', minzoom: 12.5,

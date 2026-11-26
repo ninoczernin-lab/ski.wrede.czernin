@@ -128,7 +128,7 @@ struct ResortMapView: UIViewRepresentable {
             }
             // Cartoon snow: faded theme, snow-toned land, greenspace close to the snow, no footpath clutter.
             let config: [String: Any] = [
-                "theme": "default", "colorLand": "#f7fafd", "colorGreenspace": "#edf2ee", "colorWater": "#79aed6",
+                "theme": "faded", "colorLand": "#f7fafd", "colorGreenspace": "#edf2ee", "colorWater": "#79aed6",
                 "show3dObjects": true, "showPointOfInterestLabels": false, "showTransitLabels": false, "showRoadLabels": false,
                 "showPedestrianRoads": false,
             ]
@@ -602,6 +602,8 @@ struct ResortMapView: UIViewRepresentable {
                 try? map.addLayer(l, layerPosition: .below("lift-terminals"))
             }
             figure("snowmen", minZoom: 12.5, image: .constant(.name("snowman")), size: (1.05, 1.4))
+            // Nudged sideways on screen so a snowman stands beside its badge, never behind it.
+            try? map.setLayerProperty(for: "snowmen", property: "icon-offset", value: [17.0, 0.0])
             figure("skiers", minZoom: 12.5, image: .expression(Exp(.concat) {
                 "skier-"; Exp(.toString) { Exp(.get) { "jacket" } }; "-"; Exp(.get) { "face" }
             }))
