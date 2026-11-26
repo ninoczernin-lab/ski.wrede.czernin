@@ -272,23 +272,25 @@ function setup() {
   }
   map.addSource('lift_terminals', { type: 'geojson', data: terminalsFrom(cache.get(current.id)?.lifts) });
 
-  // Every resort as a dot when zoomed out: big coral = tier 1 (2 M+ skier visits), blue = tier 2, grey = tier 3.
+  // Every resort as a dot when zoomed out: big coral = tier 1 (2 M+ skier visits), blue = tier 2, slate = tier 3,
+  // small pale dots = the rest of the 2026 list (they appear from zoom 4.5, where they no longer carpet the Alps).
   map.addSource('all-resorts', { type: 'geojson', data: resortPoints });
   const fadeOut = (v) => ['interpolate', ['linear'], ['zoom'], 9, v, 10.5, 0];
   map.addLayer({ id: 'resort-dots', type: 'circle', source: 'all-resorts', slot: 'top', maxzoom: 10.5,
-    layout: { 'circle-sort-key': ['-', 4, ['get', 'tier']] },
-    paint: { 'circle-color': ['match', ['get', 'tier'], 1, TIER[1].color, 2, TIER[2].color, TIER[3].color],
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, ['match', ['get', 'tier'], 1, 4.5, 2, 3.5, 2.5],
-        8, ['match', ['get', 'tier'], 1, 9, 2, 7.5, 6]],
+    filter: ['any', ['<', ['get', 'tier'], 4], ['>=', ['zoom'], 4.5]],
+    layout: { 'circle-sort-key': ['-', 100000, ['get', 'order']] },
+    paint: { 'circle-color': ['match', ['get', 'tier'], 1, TIER[1].color, 2, TIER[2].color, 3, TIER[3].color, TIER[4].color],
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, ['match', ['get', 'tier'], 1, 4.5, 2, 3.5, 3, 2.5, 2],
+        8, ['match', ['get', 'tier'], 1, 9, 2, 7.5, 3, 6, 4.5]],
       'circle-stroke-color': '#ffffff', 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 1, 1, 8, 2.5],
       'circle-opacity': fadeOut(1), 'circle-stroke-opacity': fadeOut(1), 'circle-emissive-strength': 1,
       'circle-pitch-alignment': 'viewport' } });
   map.addLayer({ id: 'resort-dot-labels', type: 'symbol', source: 'all-resorts', slot: 'top', maxzoom: 10.5,
-    // Tier 1 names from zoom 3, tier 2 from 5, tier 3 from 6.5; the rest appear as space allows.
-    filter: ['>=', ['zoom'], ['match', ['get', 'tier'], 1, 3, 2, 5, 6.5]],
-    layout: { 'text-field': ['get', 'name'], 'text-font': FONT.bold, 'text-size': ['match', ['get', 'tier'], 1, 13, 2, 12, 11],
+    // Tier 1 names from zoom 3, tier 2 from 5, tier 3 from 6.5, the rest from 7.5; collisions thin them by rank.
+    filter: ['>=', ['zoom'], ['match', ['get', 'tier'], 1, 3, 2, 5, 3, 6.5, 7.5]],
+    layout: { 'text-field': ['get', 'name'], 'text-font': FONT.bold, 'text-size': ['match', ['get', 'tier'], 1, 13, 2, 12, 4, 10.5, 11],
       'text-anchor': 'left', 'text-offset': [0.9, 0], 'text-padding': 4, 'text-optional': true,
-      'symbol-sort-key': ['get', 'tier'], ...bubble('bubble') },
+      'symbol-sort-key': ['get', 'order'], ...bubble('bubble') },
     paint: { 'text-color': L.labels.text, 'text-halo-color': L.labels.halo, ...bubbleHalo(2.2),
       'text-opacity': fadeOut(1), 'icon-opacity': fadeOut(1), 'text-emissive-strength': 1, 'icon-emissive-strength': 1 } });
 
@@ -621,7 +623,7 @@ map.on('wheel', () => { flight++; });
 
 function renderTitle(r) {
   $('#resort-name').textContent = r.name;
-  $('#resort-meta').textContent = COUNTRY[r.country] ?? r.country;
+  $('#resort-meta').textContent = countryName(r.country);
   $('#resort-counts').textContent = 'Loading runs and lifts…';
   document.title = `${r.name} · Ski Map`;
 }
@@ -638,16 +640,22 @@ const TIER = {
   1: { color: '#ff3d5f', label: 'Over 2 M skier visits' },
   2: { color: '#2b8bff', label: '1–2 M skier visits' },
   3: { color: '#7a7fa8', label: '0.5–1 M skier visits' },
+  4: { color: '#a3a9bd', label: 'More resorts' },
 };
 const COUNTRY = { AT: 'Austria', CH: 'Switzerland', FR: 'France', IT: 'Italy', DE: 'Germany', AD: 'Andorra', ES: 'Spain',
   SE: 'Sweden', NO: 'Norway', FI: 'Finland', SK: 'Slovakia', CZ: 'Czechia', PL: 'Poland', BG: 'Bulgaria', SI: 'Slovenia',
   RO: 'Romania', RU: 'Russia', US: 'United States', CA: 'Canada', JP: 'Japan', KR: 'South Korea', CN: 'China',
   AU: 'Australia', NZ: 'New Zealand', AR: 'Argentina' };
+// Country names for any ISO code (the 2026 list spans ~45 countries); the table above is the fallback.
+const regionNames = (() => { try { return new Intl.DisplayNames(['en'], { type: 'region' }); } catch { return null; } })();
+const countryName = (cc) => COUNTRY[cc] ?? (cc && regionNames?.of(cc)) ?? cc;
+// Draw order: tiers first, then the 2026 list's own ranking (lower rank = bigger resort).
+const order = (r) => (r.tier ?? 4) * 10000 + (r.rank ?? 0);
 const resortPoints = { type: 'FeatureCollection', features: resorts.map((r) => ({ type: 'Feature', id: r.id,
-  geometry: { type: 'Point', coordinates: [r.camera.lon, r.camera.lat] }, properties: { id: r.id, name: r.name, tier: r.tier ?? 3 } })) };
+  geometry: { type: 'Point', coordinates: [r.camera.lon, r.camera.lat] }, properties: { id: r.id, name: r.name, tier: r.tier ?? 4, order: order(r) } })) };
 
 const fold = (t) => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-const searchIndex = resorts.map((r) => ({ r, name: fold(r.name), words: fold([...(r.villages ?? []), COUNTRY[r.country] ?? '', r.country].join(' | ')) }));
+const searchIndex = resorts.map((r) => ({ r, name: fold(r.name), words: fold([...(r.villages ?? []), countryName(r.country) ?? '', r.country].join(' | ')) }));
 function findResorts(q) {
   const f = fold(q.trim());
   if (!f) return resorts.filter((r) => r.tier === 1);
@@ -655,7 +663,7 @@ function findResorts(q) {
     const score = name.startsWith(f) ? 0 : name.split(/[^a-z0-9]+/).some((w) => w.startsWith(f)) ? 1
       : name.includes(f) ? 2 : words.split(/[^a-z0-9]+/).some((w) => w.startsWith(f)) || words.includes(f) ? 3 : 9;
     return { r, score };
-  }).filter((x) => x.score < 9).sort((a, b) => a.score - b.score || (a.r.tier ?? 3) - (b.r.tier ?? 3) || a.r.name.localeCompare(b.r.name))
+  }).filter((x) => x.score < 9).sort((a, b) => a.score - b.score || order(a.r) - order(b.r) || a.r.name.localeCompare(b.r.name))
     .slice(0, 40).map((x) => x.r);
 }
 
@@ -666,8 +674,8 @@ function renderResults() {
   active = hits.length ? 0 : -1;
   list.innerHTML = (input.value.trim() ? '' : '<li class="hint" role="presentation">Biggest resorts · type to search all</li>')
     + (hits.length ? hits.map((r, i) => `<li role="option" id="opt-${i}" data-i="${i}" aria-selected="${i === active}">
-        <i style="background:${TIER[r.tier ?? 3].color}"></i>
-        <span><b>${r.name}</b><small>${COUNTRY[r.country] ?? r.country}</small></span></li>`).join('')
+        <i style="background:${TIER[r.tier ?? 4].color}"></i>
+        <span><b>${r.name}</b><small>${countryName(r.country)}${r.status ? ` · ${r.status}` : ''}</small></span></li>`).join('')
       : '<li class="hint" role="presentation">No resort found. Try a village or country.</li>');
   list.hidden = false;
   $('#search').setAttribute('aria-expanded', 'true');

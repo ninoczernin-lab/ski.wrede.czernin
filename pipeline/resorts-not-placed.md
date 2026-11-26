@@ -1,0 +1,525 @@
+# Resorts from the 2026 list not yet on the map
+
+`resort-list-2026.txt` has 1850 entries. Of those, 285 were already on the map (their names were added to search) and 1053 have been added.
+The rest are below. They are left off because their position couldn't be confirmed: a wrong pin is worse than a missing one.
+To add one, put its coordinates in `catalog-manual.json` and run `npm run catalog`.
+
+## Found a place with that name, but no ski area nearby (388)
+
+Usually a same-named village somewhere else, or a ski area Mapbox doesn't have.
+
+- 249. Myoko Suginohara — guess: Myoko Suginohara Ski Resort (JP)
+- 260. Porté Puymorens — guess: Porté-Puymorens (FR)
+- 271. Catedral Alta Patagonia — guess: Paróquia Divino Espírito Santo - Catedral de Cruz Alta (BR)
+- 324. Evolène — guess: Evolène (CH)
+- 375. Valchiavenna – Madesimo/Campodolcino — guess: Madesimo (IT)
+- 378. Le Lys – Cauterets — guess: Cauterets (FR)
+- 380. Trojena – Neom — guess: Neom (SA)
+- 408. Buttermilk Mountain — guess: Buttermilk Mountain (US)
+- 444. Beaver Mountain — guess: Beaver Mountain (CA)
+- 452. Mitsumata/Kagura/Tashiro (Mt. Naeba) — guess: Mitsumata (JP)
+- 486. Jihua — guess: Jihua Park station (CN)
+- 504. Las Leñas — guess: Las Leñas (AR)
+- 507. La Dôle/Les Tuffes (Jura sur Léman) — guess: La Dôle (CH)
+- 508. La Braye – Château d'Oex (temporarily closed) — guess: Château-d'Oex (CH)
+- 519. Glacier 3000 – Les Diablerets — guess: Les Diablerets (CH)
+- 534. Bivio — guess: Bivio (CH)
+- 537. Big Wood — guess: Big Wood (GB)
+- 567. Vals – Dachberg — guess: Dachberg (AT)
+- 577. Wildcat Mountain — guess: Wildcat Mountain (US)
+- 594. Espace Super Saint-Bernard – Bourg-St-Pierre (temporarily closed) — guess: Bourg-St-Pierre (CH)
+- 595. Moose Mountain — guess: Moose Mountain (CA)
+- 602. Mount Timothy — guess: Mount Timothy (AU)
+- 628. Branäs — guess: Branäs (SE)
+- 630. Les Monts d'Olmes — guess: Les Monts D’Olmes (FR)
+- 648. Joetsu Kokusai — guess: Joetsu Kokusai Ski Resort (JP)
+- 651. Butternut — guess: Butternut Ski Area (US)
+- 660. Hoshino Resorts Tomamu — guess: Hoshino Resorts Risonare Tomamu (JP)
+- 661. Takasu Snow Park — guess: Takasu Snow Park (JP)
+- 669. Green Park Resort – Kartepe — guess: Kartepe (TR)
+- 671. Zettersfeld – Lienz — guess: Lienz (AT)
+- 672. Skeikampen – Gausdal — guess: Gausdal Municipality (NO)
+- 679. San Isidro-Zona Cebolledo — guess: San Isidro Zona 16 (GT)
+- 683. Giw – Visperterminen — guess: Visperterminen (CH)
+- 688. Pejo 3000 — guess: Pejo 3000 (IT)
+- 694. Gålå — guess: Gala (TR)
+- 696. Aomori Spring — guess: Aomori Spring Ski Resort (JP)
+- 700. Carì — guess: Cari (ID)
+- 702. Sapporo Teine — guess: Sapporo Teine (JP)
+- 703. Akitaken – Tazawako — guess: Tazawako (JP)
+- 705. Iwate Kogen — guess: Iwate District (JP)
+- 711. Hakuba Cortina — guess: Hakuba Cortina Snow Resort (JP)
+- 714. Hakusan Ichirino Onsen — guess: Hakusan Ichirino Onsen (JP)
+- 715. Shizukuishi — guess: Shizukuishi (JP)
+- 717. Iwappara — guess: Iwappara Ski Resort (JP)
+- 719. Nevis Range — guess: Ben Nevis range (GB)
+- 721. Karakol — guess: Karakol (KG)
+- 723. Maverick Mountain — guess: Maverick Mountain (US)
+- 724. Aizu Kogen Takatsue — guess: Aizu Kogen Takatsue (JP)
+- 733. Showdown — guess: Showdown (CA)
+- 738. Tahko — guess: Tahko Hills (FI)
+- 750. Chapa Verde — guess: Chapa Verde (CL)
+- 759. Fox Peak — guess: Fox Peak (US)
+- 760. Bjorli — guess: Bjorli (NO)
+- 767. Haystack Mountain – The Hermitage Club — guess: The Hermitage Club (US)
+- 779. Greek Peak — guess: Greek Peak (US)
+- 780. Chiomonte Frais — guess: Seggiovia Chiomonte Frais (IT)
+- 789. Mamison — guess: Mamison (RU)
+- 800. Timberline Mountain — guess: Timberline Mountain (US)
+- 802. Dizin — guess: Dizin Kola (IR)
+- 803. Marble Mountain – Steady Brook (Humber Valley) — guess: Marble Mountain (CA)
+- 806. Val Saint-Côme — guess: Val Saint-Come tourist resort (CA)
+- 808. Ogna Hotaka — guess: Snow Par Ogna Hotaka (JP)
+- 809. Boreal — guess: BOREAL (FR)
+- 812. Hoodoo — guess: Hoodoo (US)
+- 814. Panarotta 2002 – Valsugana — guess: Valsugana (IT)
+- 818. Kittelfjäll — guess: Kittelfjäll (SE)
+- 820. Roundhill – Lake Tekapo — guess: Lake Tekapo (NZ)
+- 821. Mottarone — guess: Mottarone (IT)
+- 826. Steibis – Imberg (Oberstaufen) — guess: Imbergbahn & Skiarena Steibis (DE)
+- 834. Holdomi — guess: Holdomi (RU)
+- 840. Alpe di Mera – Scopello — guess: Scopello (IT)
+- 841. Masikryong — guess: Masikryong Ski Resort (KP)
+- 848. Labrador Mountain — guess: Labrador Court (US)
+- 850. Sleeping Giant — guess: Sleeping Giant (TR)
+- 857. Jiangjun Shan — guess: Jiangjun Shan (TW)
+- 860. Petzen – Feistritz ob Bleiburg — guess: Feistritz ob Bleiburg (AT)
+- 862. Snowy Range — guess: Snowy Range (US)
+- 864. Plattekill — guess: Plattekill (US)
+- 865. Muttereralm – Mutters/Götzens — guess: Muttereralm Bergbahnen (AT)
+- 866. Vallter 2000 — guess: Vallter 2000 (ES)
+- 867. Diamond Peak — guess: Diamond Peak (US)
+- 871. Lotte Arai Resort — guess: Lotte Arai Resort (JP)
+- 874. Zaarour — guess: Zaarour (LB)
+- 875. Alpine Ski Club – Collingwood — guess: Collingwood (CA)
+- 878. Pine Creek — guess: Pine Creek (AU)
+- 881. Tabor Mountain — guess: Tabor Mountain (US)
+- 882. Crabbe Mountain — guess: Crabbe Mountain (CA)
+- 890. Amirsoy Mountain Resort — guess: Amirsoy Mountain Resort (UZ)
+- 893. Meiho — guess: Meihō (JP)
+- 897. Mizuho Highland — guess: Mizuho Highland (JP)
+- 898. Vigla Pisoderi/Verno – Florina — guess: Florina (GR)
+- 899. Cascade Mountain — guess: Cascade Mountain (US)
+- 901. Phoenix Park — guess: Phoenix Park (IE)
+- 903. Laceno – Bagnoli Irpino — guess: Bagnoli Irpino (IT)
+- 904. Yubari Resort – Mount Racey — guess: Yubari District (JP)
+- 909. Ao Shan — guess: Ao Shan (CN)
+- 912. Mont Orignal – Lac Etchemin — guess: Lac-Etchemin (CA)
+- 916. Yunomaru — guess: Mount Yunomaru (JP)
+- 919. Itoigawa Seaside Valley — guess: Itoigawa Seaside Valley (JP)
+- 920. Cranmore — guess: Cranmore (GB)
+- 925. Pomerelle — guess: Pomerelle (US)
+- 937. Prato Selva (temporarily closed) — guess: Prato Selva (IT)
+- 938. Shemshak — guess: Shemshak (IR)
+- 940. Vichères (Liddes) — guess: Vichères (FR)
+- 944. Las Araucarias/Llaima – Vilcún — guess: Vilcún (CL)
+- 945. Baikalsk – Sobolinaya — guess: Sobolinaya (RU)
+- 947. Tusten – Molde — guess: Molde (NO)
+- 949. Storlien — guess: Storlien (SE)
+- 956. Hlíðarfjall – Akureyri — guess: Akureyri (IS)
+- 961. Mt. Abram — guess: Mt Abram (US)
+- 962. Oze Iwakura — guess: White World Oze Iwakura (JP)
+- 964. Yomase/Takaifuji (Mt. Kosha) — guess: Yomase (JP)
+- 970. Haukelifjell Skisenter — guess: Haukelifjell Skisenter (NO)
+- 971. Ontake — guess: Ontake Shrine (JP)
+- 972. Geto Kogen — guess: GETO (BA)
+- 973. Mount Cain — guess: Mount Cain (CA)
+- 974. Söllereck – Oberstdorf — guess: Oberstdorf (DE)
+- 977. Palcall Tsumagoi — guess: Palcall Tsumagoi Ski Resort (JP)
+- 978. Yakebitaiyama — guess: Yakebitaiyama Ski Resort (JP)
+- 979. Ikenotaira Onsen — guess: Ikenotaira Onsen (JP)
+- 988. Balea Lac — guess: Balea Lac (RO)
+- 989. Mont Comi — guess: Mont Comi (CA)
+- 991. Hallingskarvet — guess: Hallingskarvet (NO)
+- 992. Königsberg – Hollenstein an der Ybbs (temporarily closed) — guess: Hollenstein an der Ybbs (AT)
+- 994. Shirakaba Kogen — guess: Shirakaba Highland International Ski Resort (JP)
+- 995. Norikura — guess: Norikura (JP)
+- 996. Turner Mountain — guess: Turner Mountain (US)
+- 1002. Suomu — guess: Suomu (FI)
+- 1004. Mönichkirchen/Mariensee — guess: Mönichkirchen (AT)
+- 1007. Arnoldstein – Dreiländereck — guess: Dreiländereck (DE)
+- 1008. Cerro Perito Moreno – El Bolsón (Laderas) — guess: Cerro Perito Moreno (AR)
+- 1009. Pyhä — guess: Pyhä (FI)
+- 1010. Giants Ridge — guess: Giants Ridge (US)
+- 1011. Schia – Monte Caio — guess: Monte Caio (IT)
+- 1014. Cupid Valley — guess: Cupid Valley (JP)
+- 1016. Ukkohalla — guess: Ukkohalla (FI)
+- 1025. Mt. Ashland — guess: Mt Ashland (US)
+- 1032. Val d'Irène — guess: Val-d'Irène (CA)
+- 1036. Lagunillas — guess: Lagunillas (VE)
+- 1039. Kreuzberg – Bischofsheim an der Rhön — guess: Bischofsheim in der Rhön (DE)
+- 1044. Sky Valley — guess: Sky Valley (US)
+- 1045. Borno – Monte Altissimo — guess: Monte Altissimo (IT)
+- 1049. Hodaigi Resort – Minakami — guess: Minakami Machi (JP)
+- 1050. Inawashiro — guess: Inawashiro (JP)
+- 1052. The Balsams (temporarily closed) — guess: Plott Balsams (US)
+- 1053. La Serra (Jura sur Léman) — guess: La Serra (SM)
+- 1055. Jack Frost — guess: Jack Frost (US)
+- 1057. Chelmos – Kalavrita — guess: Kalavrita Ski Resort (GR)
+- 1058. Himos — guess: Himos-onan (PH)
+- 1071. Minowa — guess: Minowa Machi (JP)
+- 1073. Krippenstein – Obertraun — guess: Obertraun (AT)
+- 1075. Pooladkaf — guess: Pooladkaf (IR)
+- 1076. Cerro Bayo — guess: Cerro Bayo (AR)
+- 1081. Monte Catria — guess: Monte Catria (IT)
+- 1082. Muikamachi Hakkaisan — guess: Muikamachi Hakkaisan Ski Resort (JP)
+- 1085. Shanty Creek Resorts – Schuss Mountain — guess: Schuss Mountain (US)
+- 1091. Oak Mountain — guess: Oak Mountain (CA)
+- 1098. Donezan – Mijanès — guess: Mijanès (FR)
+- 1104. Pallas — guess: Pallas (Deventer) (NL)
+- 1108. Arber — guess: Großer Arber (DE)
+- 1110. Tainai — guess: Tainai (JP)
+- 1114. Hakodate Nanae — guess: Hakodate Nanae Snowpark (JP)
+- 1116. Pippu — guess: Pippu (JP)
+- 1117. Iso-Syöte – Pudasjärvi — guess: Pudasjärvi (FI)
+- 1119. Kandatsu — guess: Kandatsu (JP)
+- 1120. White Pine – Pinedale — guess: Pinedale (US)
+- 1121. Funiushan – Luanchuan — guess: Luanchuan County (CN)
+- 1128. Konakli (Ejder 3200 World Ski Center) — guess: Konaklı (TR)
+- 1131. Ørsta Skisenter — guess: Ørsta Skisenter (NO)
+- 1133. L'Abbaye — guess: L'Abbaye (CH)
+- 1136. Cherry Peak — guess: Cherry Peak (US)
+- 1143. Sapporo Kokusai – Jozankei Kogen — guess: Jozankei (JP)
+- 1144. Togari Onsen — guess: Togari Onsen (JP)
+- 1149. Darbandsar — guess: Darbandsar Ski Resort (IR)
+- 1150. Panorama Area – Hachimantai — guess: Hachimantai (JP)
+- 1151. Spirit Mountain — guess: Spirit Mountain (US)
+- 1153. The Cedars — guess: Cedars (US)
+- 1158. Cerro Mirador – Punta Arenas — guess: Punta Arenas (CL)
+- 1159. Deer Mountain — guess: Deer Mountain (US)
+- 1160. Buffalo — guess: Buffalo (US)
+- 1161. Kungsberget — guess: Kungsberget (SE)
+- 1162. Hovfjället – Torsby — guess: Torsby (SE)
+- 1165. Hohentauern — guess: Hohentauern (AT)
+- 1166. Edsåsdalen — guess: Edsåsdalen (SE)
+- 1169. Grandeco Snow Resort — guess: Grandeco Snow Resort (JP)
+- 1170. Vuokatti — guess: Vuokatti (FI)
+- 1172. Peek'n Peak — guess: Peek'n Peak (US)
+- 1177. Owani Onsen — guess: Owani Onsen (JP)
+- 1178. Blanche Takayama — guess: Blanche-Takayama Ski Resort (JP)
+- 1179. Pin Rouge — guess: Pin Rouge Way (CA)
+- 1180. Saskadena Six — guess: Stonewall Lodge in Barnard, VT. Killington Mt, Saskadena Six, Pico Mt. Ski (US)
+- 1186. Brunnalm/Hohe Veitsch – Veitsch (St. Barbara im Mürztal) — guess: Brunnalm - Hohe Veitsch (AT)
+- 1187. Zil — guess: Zil Castle (TR)
+- 1201. Devil's Glen — guess: Devil's Glen Park (US)
+- 1205. Okunakayama Kogen — guess: Okunakayama-Kogen Station (JP)
+- 1207. Voras – Kaimaktsalan — guess: Kaïmaktsalán (GR)
+- 1212. Jungholz (temporarily closed) — guess: Jungholz (AT)
+- 1213. Ala-Too Resort — guess: ALA TOO (US)
+- 1215. Jeongseon Alpine Centre (temporarily closed) — guess: Jeongseon Alpine Centre (KR)
+- 1217. Mount Tanigawa – Tanigawadake Tenjindaira — guess: Tanigawadake Tenjindaira Ski Resort (JP)
+- 1218. Iizuna Resort — guess: Iizuna Resort (JP)
+- 1228. Yabuhara Kogen — guess: Yabuhara Kogen Ski Area (JP)
+- 1236. Hakkoda — guess: Hakkōda Mountains (JP)
+- 1241. Devil's Head — guess: Devil's Head (CZ)
+- 1243. Cloudcroft — guess: Cloudcroft (US)
+- 1245. Meadowlark Ski Lodge — guess: Meadowlark Lodge (US)
+- 1248. Nayoro Piyashiri — guess: PIYASHIRI NAYORO SNOW PARK (JP)
+- 1260. Wentworth — guess: Wentworth (GB)
+- 1263. Black River Basin (Snowriver Mountain Resort) — guess: Black River (US)
+- 1264. Hesperus Ski Area (temporarily closed) — guess: Hesperus Ski Area (US)
+- 1265. Oukaïmeden (temporarily closed) — guess: Oukaïmeden (MA)
+- 1271. White Hills — guess: White Hills (US)
+- 1273. Fairmont Hot Springs — guess: Fairmont Hot Springs (CA)
+- 1275. Silver Summit (temporarily closed) — guess: Silver Summit (US)
+- 1278. Porters — guess: Porters Lake (CA)
+- 1279. Ochapowace (temporarily closed) — guess: Ochapowace 71-119 (CA)
+- 1280. Gassan – Nishikawa — guess: Nishikawa Machi (JP)
+- 1288. Craigieburn — guess: Craigieburn (AU)
+- 1302. Rainbow Valley — guess: Rainbow Valley (US)
+- 1303. Broken River Ski Field — guess: Broken River (AU)
+- 1304. Sucha Dolina – Kosarzyska (Piwniczna-Zdrój) — guess: Kosarzyska (PL)
+- 1307. Saint-Pacôme (temporarily closed) — guess: Saint-Pacôme (CA)
+- 1315. Tateyama Sanroku – Gokurakuzaka/Raicho Valley — guess: Gokurakuzaka Yama (JP)
+- 1317. Marunuma Kogen — guess: Marunuma Kogen Ski Resort (JP)
+- 1318. Osorakan — guess: Mount Osorakan (JP)
+- 1319. Denizli – Tavas — guess: Tavas (TR)
+- 1320. Kusatsu Onsen — guess: Kusatsu Onsen (JP)
+- 1321. Le Chantecler — guess: Le Chantecler (FR)
+- 1323. Porcupine Mountain — guess: Porcupine Mountain (US)
+- 1325. Ardahan – Yalnızçam — guess: Yalnızçam (TR)
+- 1328. Shirakaba 2in1 — guess: Shirakaba 2in1 Ski Resort (JP)
+- 1331. Woodbury (temporarily closed) — guess: Woodbury (US)
+- 1344. Arnsberg — guess: Arnsberg (DE)
+- 1347. Okushiga Kogen — guess: Okushiga Kogen Ski Resort (JP)
+- 1348. Hakuba Norikura — guess: Hakuba Norikura Onsen Ski Resort (JP)
+- 1357. Edelweiss — guess: Edelweiss (CA)
+- 1361. Luosto — guess: Luosto (FI)
+- 1366. Duolemeidi Mountain Resort – Chongli — guess: Chongli District (CN)
+- 1367. Mont Avila — guess: Avila Express Ski Lift (CA)
+- 1378. Toguz-Bulak — guess: Toguz-Bulak (KG)
+- 1383. Asessippi — guess: Asessippi Provincial Park (CA)
+- 1385. 3-5 Pigadia – Naousa — guess: Naousa Paros Beach Front House (GR)
+- 1387. McCauley Mountain — guess: McCauley Mountain (US)
+- 1390. Les Paccots/Châtel-St-Denis – Corbetta — guess: Corbetta (IT)
+- 1396. Klimpfjäll — guess: Klimpfjäll (SE)
+- 1398. Svanstein (temporarily closed) — guess: Svanstein (SE)
+- 1404. Jeunesse Kurikoma — guess: Jeunesse Kurikoma Ski Resort (JP)
+- 1405. Numajiri — guess: Numajiri (JP)
+- 1406. Mount Jamieson – Timmins — guess: Timmins (CA)
+- 1407. Perfect North Slopes — guess: Perfect North Slopes (US)
+- 1408. Charmant Hiuchi — guess: Charmant Hiuchi Snow Resort (JP)
+- 1409. Ryuoo Ski Park — guess: Ryuoo Ski Park (JP)
+- 1415. Paljakka (temporarily closed) — guess: Paljakka (FI)
+- 1417. Kurohime Kogen — guess: Kurohime Kōgen Snow Park (JP)
+- 1424. Brunni – Engelberg — guess: Zauberteppich Brunni (CH)
+- 1429. Mt. Lemmon Ski Valley — guess: Mt Lemmon Ski Valley (US)
+- 1430. Forca Canapine (temporarily closed) — guess: Forca Canapine (IT)
+- 1437. Minakami Kogen — guess: Minakami Machi (JP)
+- 1438. Muica — guess: Muica Snow Resort (JP)
+- 1440. Valfjället — guess: Valfjallet (SE)
+- 1443. Furkel – Trafoi (Stilfs) — guess: Trafoi (IT)
+- 1446. Almåsa — guess: Almasa (RU)
+- 1447. Toggenburg Ski Center (temporarily closed) — guess: Toggenburg Trail Road (CA)
+- 1451. Bankei — guess: Bankei (JP)
+- 1452. Solnechnaya Dolina (Sunny Valley) — guess: Solnechnaya Dolina (UA)
+- 1455. Tännäskröket — guess: Tännäskröket (SE)
+- 1465. Marbach – Marbachegg — guess: Marbachegg (CH)
+- 1466. Sun Meadows — guess: Sun Meadows (US)
+- 1467. Parâng — guess: Parang (PH)
+- 1469. Recoaro Mille (temporarily closed) — guess: Recoaro Mille (IT)
+- 1475. Alpine Mountain Ski & Snow Tubing Center (temporarily closed) — guess: Steeplechase Ski Hill - Snow Tubing (US)
+- 1478. Mont Gleason — guess: Mont Gleason (CA)
+- 1479. Scanno – Monte Rotondo — guess: Monte Rotondo (IT)
+- 1480. Calabogie Peaks — guess: Calabogie Peaks (CA)
+- 1482. Bousquet — guess: Bousquet (FR)
+- 1487. Denton Hill State Park (temporarily closed) — guess: Denton Hill State Park (US)
+- 1489. Laurel Mountain — guess: Laurel Mountain (US)
+- 1492. Mont Vidéo — guess: Mont Video (CA)
+- 1494. Gaaler Lifte – Gaal — guess: Gaal (AT)
+- 1496. Zum Zeri – Passo dei due Santi — guess: Passo dei Due Santi (IT)
+- 1497. Mont Saint-Bruno – Saint-Bruno-de-Montarville — guess: Saint-Bruno-de-Montarville (CA)
+- 1502. Gače — guess: Gacé (FR)
+- 1507. Hickory (temporarily closed) — guess: Hickory (US)
+- 1508. Ålen Skisenter — guess: Ålen skisenter (NO)
+- 1509. Volda Skisenter — guess: Volda Skisenter (NO)
+- 1512. Rossfeld – Berchtesgaden-Oberau — guess: FeWo Mühlau - Oberau/Berchtesgaden (DE)
+- 1513. Clearwater — guess: Clearwater (US)
+- 1517. Nomugi Pass – Nomugitoge — guess: Nomugitōge Ski Resort (JP)
+- 1519. Amihari — guess: Amihari Onsen (JP)
+- 1520. Daisen White Resort – Kokusai/Uenohara/Nakanohara/Gouenzan — guess: Kokusai (NL)
+- 1523. Okutadami Maruyama — guess: Okutadami Maruyama Ski Resort (JP)
+- 1528. Mont Kanasuta — guess: Mont Kanasuta (CA)
+- 1532. Blåsjön – Mesklumpen — guess: Mesklumpen (SE)
+- 1534. Ani – Mt. Moriyoshi — guess: Ani (TR)
+- 1535. Hunter Mountain Shiobara — guess: Hunter Mountain Shiobara (JP)
+- 1536. Vall de Núria — guess: Estació de Muntanya Vall de Núria (ES)
+- 1537. Wapiti Ski Hill – Elkford — guess: Elkford (CA)
+- 1544. Hyounosen Kokusai — guess: Hyounosen Kokusai Ski Resort (JP)
+- 1550. Galtis – Arjeplog — guess: Arjeplog (SE)
+- 1553. Oze Tokura — guess: Oze Tokura Onsen (JP)
+- 1558. Bear Creek Mountain Resort — guess: Bear Creek Ski and Recreation Area (US)
+- 1561. Hurdal — guess: Hurdal (NO)
+- 1564. Katashina Kogen Resort — guess: Katashina Kogen Ski Resort (JP)
+- 1566. Kijimadaira (Mt. Kosha) — guess: Kijimadaira (JP)
+- 1570. Sayram Lake — guess: Sayram Lake (CN)
+- 1574. Magnitogorsk — guess: Magnitogorsk (RU)
+- 1576. Moiwa — guess: Moiwa Bridge (JP)
+- 1577. Daihai — guess: Daihai Sites (CN)
+- 1579. Lorica — guess: Lorica (IT)
+- 1581. Fujiten Resort — guess: Fujiten Snow Resort (JP)
+- 1582. Okuibuki — guess: Okuibuki Ski Resort (JP)
+- 1583. Echo Valley (temporarily closed) — guess: Echo Valley (US)
+- 1584. Mt. Holly — guess: Mt Holly (US)
+- 1585. Shimokura Area – Hachimantai — guess: Hachimantai (JP)
+- 1586. Manba — guess: Manba (JP)
+- 1587. Otsego – Gaylord — guess: Gaylord (US)
+- 1588. Hida Kawai — guess: Hida-Kawai parking area (JP)
+- 1589. Loch Lomond — guess: Loch Lomond (GB)
+- 1593. Pillán – Villarrica — guess: Villarrica (CL)
+- 1596. Plai — guess: Plai (UA)
+- 1597. Mt. La Crosse — guess: Mount La Crosse (US)
+- 1600. Itsukamachi — guess: Itsukamachi (JP)
+- 1603. Snow Valley – Barrie — guess: Barrie (CA)
+- 1612. Raulandsfjell Alpinsenter (temporarily closed) — guess: Raulandsfjell (NO)
+- 1622. Los Puquios — guess: Los Puquios (AR)
+- 1623. Sulitjelma Fjellandsby — guess: Sulitjelma Fjellandsby (NO)
+- 1631. Mazongshan — guess: Mazongshan Town (CN)
+- 1635. Jiugong — guess: Jiugong (CN)
+- 1637. Asarigawa Onsen — guess: Asarigawa Onsen (JP)
+- 1639. Mont Ripley — guess: Mont Ripley (US)
+- 1640. Gaberl/Plankogel – Salla (Maria Lankowitz) — guess: Gaberl Stubalpe (AT)
+- 1643. Kurumayama Kogen — guess: Kurumayama-Kogen SKYPARK Ski Resort (JP)
+- 1647. Hidden Valley (AB) — guess: Hidden Valley Lake (US)
+- 1657. Radusa — guess: Raduša (MK)
+- 1658. SOK – Krasnaya Glinka — guess: Krasnaya Glinka (RU)
+- 1659. Hohenbogen – Neukirchen bei Hl. Blut — guess: Neukirchen beim Heiligen Blut (DE)
+- 1660. Shirakabako Royal Hill — guess: Shirakabako Royal Hill (JP)
+- 1661. Caledon Ski Club — guess: Caledon Ski Club (CA)
+- 1667. Häkärinteet — guess: Häkärinteet (FI)
+- 1670. San Isidro-Zona Salencias — guess: San Isidro Zona 16 (GT)
+- 1678. Skálafell — guess: Skalafell (IS)
+- 1681. Roata – Cavnic — guess: Cavnic (RO)
+- 1682. Mad River Mountain — guess: Mad River Mountain (US)
+- 1690. Mt. Kumbel – Beldersoy — guess: Beldersoy Resort and Spa (UZ)
+- 1691. Piana di Vigezzo – Craveggia/Santa Maria Maggiore (temporarily closed) — guess: Craveggia (IT)
+- 1692. Kisofukushima — guess: Kisofukushima (JP)
+- 1694. Puerto de Navacerrada — guess: Puerto de Navacerrada (ES)
+- 1695. Brezovica — guess: Brezovica (SI)
+- 1699. Ukko-Koli — guess: Ukko-Koli (FI)
+- 1701. Auronzo di Cadore – Monte Agudo — guess: Auronzo di Cadore (IT)
+- 1705. Suhara — guess: Suhara (JP)
+- 1706. Marsia – Tagliacozzo (temporarily closed) — guess: Tagliacozzo (IT)
+- 1708. Tukino — guess: Tukino (ID)
+- 1710. Ounasvaara – Rovaniemi — guess: Rovaniemi (FI)
+- 1716. Ojiro — guess: Ojiro (JP)
+- 1717. Canmore Ski Village – Higashikawa — guess: Higashikawa-cho (JP)
+- 1719. Naspa Ski Garden — guess: NASPA Ski Garden (JP)
+- 1722. Kazan — guess: Kazan (RU)
+- 1723. Changchengling — guess: Changchengling Shuiku (CN)
+- 1724. Bittersweet — guess: Bittersweet (US)
+- 1727. Mont Habitant — guess: Mont Habitant (CA)
+- 1728. Camden Snow Bowl — guess: Camden Snow Bowl (US)
+- 1732. Osa — guess: Osa (RU)
+- 1735. Kötschach-Mauthen – Vorhegg — guess: Kötschach-Mauthen (AT)
+- 1738. Granite Gorge Mountain Park — guess: Granite Gorge Mountain Park (US)
+- 1740. Oropa – Biella — guess: Biella (IT)
+- 1750. Aichelberglifts – Karlstift (Bad Großpertholz) (temporarily closed) — guess: Karlstift (AT)
+- 1757. Seeberg – Seewiesen (Turnau) — guess: Seewiesen (AT)
+- 1763. Salmo — guess: Salmo (CA)
+- 1771. Dagali Fjellpark — guess: Rafting Dagali Fjellpark (NO)
+- 1794. The Heights – Horseshoe Valley — guess: Horseshoe Valley (CA)
+- 1796. Sundown — guess: Sundown (US)
+- 1797. Vorlage — guess: Die Vorlage (DE)
+- 1799. Nashoba Valley — guess: Nashoba Valley Ski Area (US)
+- 1808. Mount Pakenham — guess: Mount Pakenham (CA)
+- 1813. Górnik – Rzeczka/Sokolec — guess: Rzeczka (PL)
+- 1814. Haglebu — guess: Haglebu (NO)
+- 1818. Higashitateyama — guess: Higashitateyama Alpine Botanical Garden (JP)
+- 1821. Yuzawa Nakazato — guess: Yuzawa Nakazato Snow Resort (JP)
+- 1822. Kazawa — guess: Kazawa (JP)
+- 1823. Devil's Elbow (temporarily closed) — guess: Devil's Elbow (IM)
+- 1825. Christie Mountain — guess: Christie Mountain (US)
+- 1829. Hanamiyama (temporarily closed) — guess: Hanamiyama Park (JP)
+- 1837. Politeh — guess: Politeh (RS)
+- 1841. Mystery Mountain — guess: Mystery Mountain (US)
+- 1843. Zolotaya Gora — guess: Zolotaya Gora (RU)
+- 1846. Alpine Valley – White Lake — guess: White Lake (US)
+- 1848. Sky Tavern — guess: Sky Tavern Ski Area (US)
+
+## Not found at all (124)
+
+- 134. Shigakogen Mountain Resort
+- 258. St. Jean Montclar
+- 335. Großglockner Resort Kals-Matrei
+- 490. Dolina Vasta (planned)
+- 645. Zavjalikha
+- 698. Jam Fukui Katsuyama
+- 699. Myoko Akakura
+- 713. Granite Peak at Rib Mountain State Park
+- 722. Mt. Cheget
+- 747. Sommet Olympia
+- 758. Ping Tian Resort
+- 773. Qinggeli Wolf Mountain
+- 783. Nub's Nob Ski Area
+- 798. Myler Mountain Resort
+- 887. Stagecoach Mountain (temporarily closed)
+- 889. Sun Alpina Kashimayari
+- 918. Mountain High West
+- 955. Hakusan Sena Kogen (temporarily closed)
+- 965. Spitzingsee-Tegernsee
+- 967. Safed Dara
+- 976. Semmering Hirschenkogel
+- 1020. Oku Kannabe
+- 1030. BigRock Mountain
+- 1040. Goro Mountain Resort (planned)
+- 1066. Zao Eboshi
+- 1077. Iox Arosa
+- 1086. Utopia Saioto
+- 1087. Mt. Kato
+- 1109. Nahoru Resort Rokytnice
+- 1118. Yokoteyama-Shibutoge
+- 1140. Winghills Shirotori Resort
+- 1146. Aizu Kogen Daikurayama
+- 1147. Mountain High East
+- 1154. Antoine Mountain
+- 1173. Sairme Mountain Resort (planned)
+- 1183. Minenohara Kogen
+- 1198. Pratospilla (temporarily closed)
+- 1206. Eremo di Monte Carpegna
+- 1221. Nukabira Gensenkyo
+- 1226. White Resort Hakuba Sanosaka
+- 1227. Adatara Kogen Resort
+- 1231. Tengendai
+- 1234. Hyper Bowl Tohachi
+- 1238. Chunkurchak
+- 1247. Chateau Shiozawa
+- 1252. Hiraniwa Kogen
+- 1253. Aizu Kogen Nango
+- 1268. Snow Ridge
+- 1282. Selwyn Snowfields
+- 1286. Näsfjället i Sälen (temporarily closed)
+- 1291. Münstertal-Wieden
+- 1305. Pikku-Syöte/Syötekeskus
+- 1308. Hotaka Olympia
+- 1309. Isshiki Kokusai
+- 1310. Kitashiga Highlands
+- 1311. Tanbara Ski Park
+- 1313. Grand Sunpia Inawashiro (temporarily closed)
+- 1322. West Mountain
+- 1335. Spout Springs (temporarily closed)
+- 1340. Ål Skisenter
+- 1346. Ergan Dağı
+- 1349. Hakusan Seymour
+- 1359. Cuiyunshan
+- 1372. Kita Nikko Takahata
+- 1375. Pine Beak (Sugadaira Kogen)
+- 1394. Isafjördur
+- 1411. St. Gréé
+- 1412. Imajyo 365 (temporarily closed)
+- 1431. Krasnoe Ozero
+- 1445. Vallefura Pescocostanzo (temporarily closed)
+- 1449. Postalm am Wolfgangsee
+- 1468. Ichinose Family Resort
+- 1470. Star Spur Ryokufu Resort Hida Nagareha
+- 1476. Yamaboku – Yamada Bokujo
+- 1484. Sapporo Moiwayama
+- 1506. Hochkeil am Hochkönig
+- 1515. Maarianrinteet (temporarily closed)
+- 1516. Harqin Meilingu
+- 1542. Zao Sumikawa
+- 1554. Biezczadski Wańkowa
+- 1557. Hidaka Kokusai
+- 1572. Kaida Kogen Mia
+- 1590. Big Bear at Masthope Mountain
+- 1591. Abashiri Lake View Resort
+- 1594. Onikoube
+- 1598. Sonntag-Stein
+- 1599. Jiigatake
+- 1605. Suusamir (Too Ashu Pass)
+- 1619. Qanat Bakish
+- 1632. Scotch Valley Resort (temporarily closed)
+- 1634. Northeast Asia Ski Center
+- 1642. Yulongwan
+- 1646. Black Rapid
+- 1651. Maoershan
+- 1652. Asahidake
+- 1653. Tawatinaw Valley
+- 1675. Kunimidaira
+- 1685. Tianding Mountain
+- 1686. Bygdsiljumsbacken
+- 1693. MiaoXiangShan
+- 1704. Kurobushi Kogen Snow Park Jangle Jungle
+- 1720. Spring Valley Sendai Izumi
+- 1721. Greenpia Tsunan
+- 1726. Minakami Okutone
+- 1730. Listel Ski Fantasia
+- 1731. Mikata Snow Park (temporarily closed)
+- 1746. Pingshan Shenlu
+- 1754. Ørskogfjell Skisenter
+- 1775. Shimao Lotus Mountain
+- 1776. Tian Qiaogou
+- 1777. Tianjin Jizhou
+- 1778. Jinxiangshan
+- 1779. Mount Jeans Nasu
+- 1780. Taiheizan Opus
+- 1781. Fujino Healthland Kokusai
+- 1786. Mashike Choei Shokanbetsudake
+- 1790. Nishitateyama
+- 1793. Megahira Onsen Megahira
+- 1798. Mt. Southington
+- 1804. Holtanlia
+- 1809. Yuzawa Park
+- 1811. Saint Hilaire du Touvet
+- 1817. Chokai Kogen Yashima
+- 1842. SarvesAlta

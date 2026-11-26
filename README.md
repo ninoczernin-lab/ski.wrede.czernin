@@ -35,11 +35,14 @@ Resorts: **271**, from `pipeline/catalog.mjs`:
 - **Tier 1:** 12 resorts with over 2 M skier visits.
 - **Tier 2:** 51 resorts with 1–2 M visits.
 - **Tier 3:** 208 resorts with 0.5–1 M visits.
+- **More resorts:** 1053 further resorts from the 2026 resort list (`pipeline/resort-list-2026.txt`), 1324 in total.
+
+The 2026 list was placed with `pipeline/geocode-list.mjs` (`MAPBOX_TOKEN=pk.… node geocode-list.mjs`). It matches each entry to a Mapbox ski-area point, or falls back to its village when a ski area with real vertical drop lies within 8 km and the country agrees. Entries already on the map become extra search words. The script writes `catalog-extra.json`; `catalog-manual.json` holds hand-placed positions and corrections. Entries that couldn't be placed reliably are listed in `pipeline/resorts-not-placed.md`.
 
 Each entry has the ski area's centre, a radius covering its lifts, and search words (villages, alternative names). After editing the catalogue, run `npm run catalog` in `pipeline/` to rebuild `resorts.json`. Runs and lifts load from OpenStreetMap the first time a resort is opened.
 
 Controls:
-- Search at the top by resort, village or country. With the field empty, it lists the tier 1 resorts. The globe button zooms out to every resort as a dot coloured by tier: coral = tier 1, blue = tier 2, grey = tier 3. Tap a dot to open that resort.
+- Search at the top by resort, village or country. With the field empty, it lists the tier 1 resorts. The globe button zooms out to every resort as a dot coloured by tier: coral = tier 1, blue = tier 2, grey = tier 3, small pale dots = more resorts (from zoom 4.5). Tap a dot to open that resort.
 - Run colours follow each region's convention:
   - **Europe:** blue / red / black.
   - **North America, Australia and New Zealand:** green / blue / black / double black.
