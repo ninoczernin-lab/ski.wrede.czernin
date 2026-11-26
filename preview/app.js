@@ -318,14 +318,14 @@ function setup() {
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': RUN.unknown, 'line-width': lw, 'line-dasharray': [1.4, 0.9], 'line-emissive-strength': 1 } });
 
-  // Lifts: thin charcoal on the ground and in the air; the selected lift gets a bright glow
+  // Lifts: violet on the ground and in the air; the selected lift gets a sunny glow
   // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
-  // Selection carries no hue (the run palette owns colour): a wide white halo under a heavier charcoal core.
+  // Selection never borrows a run colour: a wide yellow halo under the same bright violet, a little wider.
   map.addLayer({ id: 'lift-selected-glow', type: 'line', source: 'lifts', slot: 'top', filter: NO_MATCH,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': LIFT.select, 'line-width': byZoom(10, 16), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
       'line-emissive-strength': 1 } });
-  // Lifts on the ground: a solid charcoal thread with a white hairline, like the runs (2D, and ground lifts in 3D).
+  // Lifts on the ground: a solid violet line on a white rim (2D, and ground lifts in 3D).
   map.addLayer({ id: 'lifts-line-casing', type: 'line', source: 'lifts', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': '#ffffff', 'line-width': byZoom(6, 9), 'line-opacity': 0.95, 'line-emissive-strength': 1 } });
@@ -336,7 +336,7 @@ function setup() {
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
     paint: { 'line-color': LIFT.select, 'line-width': byZoom(10, 16), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
       'line-emissive-strength': 1 } });
-  // Every cable gets a white rim so the charcoal thread reads against rock and shadowed snow.
+  // Every cable gets a white rim so the violet reads against rock and shadowed snow.
   map.addLayer({ id: 'lifts-cable-halo', type: 'line', source: 'lift_spans', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
     paint: { 'line-color': '#ffffff', 'line-width': byZoom(7.6, 11), 'line-opacity': 0.92, 'line-emissive-strength': 1 } });
@@ -394,7 +394,7 @@ function setup() {
   map.addSource('snowmen', { type: 'geojson', data: empty });
   map.addLayer({ id: 'snowmen', type: 'symbol', source: 'snowmen', slot: 'top', minzoom: 12.5,
     // Nudged sideways on screen so a snowman always stands beside its hut or station badge, never behind it.
-    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(1.05, 1.4), 'icon-offset': [17, 0] },
+    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(1.05, 1.4), 'icon-offset': [30, 6] },
     paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } }, 'lift-terminals');
   map.addSource('skiers', { type: 'geojson', data: empty });
   map.addLayer({ id: 'skiers', type: 'symbol', source: 'skiers', slot: 'top', minzoom: 12.5,
@@ -936,7 +936,7 @@ map.on('click', (e) => {
     : [p.kind === 'station' || station ? 'Station' : null, liftType, seats].filter(Boolean).join(' · ');
   $('#card b').textContent = title;
   $('#card small').textContent = detail;
-  // Runs get their colour dot; lifts get a charcoal thread mark, never a run colour.
+  // Runs get their colour dot; lifts get the violet-and-yellow lift mark, never a run colour.
   $('#card .dot').classList.toggle('lift', !d);
   $('#card .dot').style.background = d ? RUN[p['piste:difficulty']] : '';
   $('#card').classList.add('show');

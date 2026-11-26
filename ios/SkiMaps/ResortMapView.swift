@@ -603,7 +603,7 @@ struct ResortMapView: UIViewRepresentable {
             }
             figure("snowmen", minZoom: 12.5, image: .constant(.name("snowman")), size: (1.05, 1.4))
             // Nudged sideways on screen so a snowman stands beside its badge, never behind it.
-            try? map.setLayerProperty(for: "snowmen", property: "icon-offset", value: [17.0, 0.0])
+            try? map.setLayerProperty(for: "snowmen", property: "icon-offset", value: [30.0, 6.0])
             figure("skiers", minZoom: 12.5, image: .expression(Exp(.concat) {
                 "skier-"; Exp(.toString) { Exp(.get) { "jacket" } }; "-"; Exp(.get) { "face" }
             }))
