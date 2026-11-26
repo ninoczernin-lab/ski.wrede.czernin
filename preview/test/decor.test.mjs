@@ -27,6 +27,8 @@ const anchors = Array.from({ length: 60 }, (_, i) => ({ coordinates: [10 + i * 0
 const men = snowmenNear(anchors);
 assert.ok(men.features.length > 5 && men.features.length < 40, `a light sprinkle, got ${men.features.length}`);
 assert.deepEqual(snowmenNear(anchors), men, 'deterministic: the same snowmen every time');
-const nowhere = snowmenNear(anchors, { has: () => true });
-assert.equal(nowhere.features.length, 0, 'never on a run or lift line');
+for (const f of men.features) {
+  assert.ok(anchors.some((a) => a.coordinates[0] === f.geometry.coordinates[0]), 'each snowman stands at its hut or station (the layer nudges it beside the badge)');
+}
+assert.equal(snowmenNear(anchors, 3).features.length, 3, 'max caps the count');
 console.log('decor.test: all assertions passed');

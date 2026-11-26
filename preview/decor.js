@@ -79,24 +79,18 @@ export function skiersAt(tracks, seconds, view = null, limit = 60, scale = 1) {
 }
 
 /**
- * Snowmen, a light sprinkle: beside most huts and about every third lift station, standing
- * 22–70 m off to one side and never on a run or lift line (`avoid.has(lon, lat)` from avoidGrid).
+ * Snowmen, a light sprinkle: beside most huts and about every third lift station. Each stands at its
+ * hut or station; the map layer nudges it a fixed distance sideways on screen, so it is always next to
+ * the badge at any zoom or tilt (a spot measured in metres drifts behind the badge as you zoom in).
  */
-export function snowmenNear(anchors, avoid = null, max = 40) {
+export function snowmenNear(anchors, max = 40) {
   const out = [];
   anchors.forEach((a, i) => {
     if (out.length >= max) return;
     const [lon, lat] = a.coordinates;
     const seed = Math.round(lon * 1e4) * 0.37 + Math.round(lat * 1e4) * 0.71 + i * 0.01;
     if (hash(seed) > (a.kind === 'hut' ? 0.8 : 0.3)) return;
-    for (let attempt = 0; attempt < 10; attempt++) {
-      // Step further out on each try: huts often sit right on a run, so the first ring can be all piste.
-      const ang = hash(seed + attempt) * 2 * Math.PI, dist = 22 + 4 * attempt + 10 * hash(seed + attempt + 0.5);
-      const p = [lon + (Math.cos(ang) * dist) / mPerLon(lat), lat + (Math.sin(ang) * dist) / M_LAT];
-      if (avoid?.has(p[0], p[1])) continue;
-      out.push({ type: 'Feature', geometry: { type: 'Point', coordinates: p }, properties: { snowman: 1 } });
-      break;
-    }
+    out.push({ type: 'Feature', geometry: { type: 'Point', coordinates: [lon, lat] }, properties: { snowman: 1 } });
   });
   return { type: 'FeatureCollection', features: out };
 }

@@ -981,8 +981,7 @@ const skierScale = () => { const z = map.getZoom(); return z >= 15 ? 1 : z >= 14
 function placeSnowmen(layers) {
   const terminals = terminalsFrom(layers.lifts).features.map((f) => ({ coordinates: f.geometry.coordinates, kind: 'station' }));
   const huts = (layers.huts?.features ?? []).map((f) => ({ coordinates: f.geometry.coordinates, kind: 'hut' }));
-  const avoid = avoidGrid([...layers.pistes.features, ...layers.lifts.features], 16);
-  map.getSource('snowmen')?.setData(snowmenNear([...huts, ...terminals], avoid));
+  map.getSource('snowmen')?.setData(snowmenNear([...huts, ...terminals]));
 }
 /** Same cabins twice: 3D boxes, and their centres as dots for the far view. */
 function setCabins(fc) {

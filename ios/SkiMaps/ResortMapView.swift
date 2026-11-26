@@ -277,8 +277,7 @@ struct ResortMapView: UIViewRepresentable {
                     if case let .point(pt)? = f.geometry { return pt.coordinates }; return nil } ?? []
                 let stationPoints = terminals.compactMap { f -> CLLocationCoordinate2D? in
                     if case let .point(pt)? = f.geometry { return pt.coordinates }; return nil }
-                let avoid = (pistes.map(Decor.lines) ?? []) + (lifts.map(Decor.lines) ?? [])
-                let snowmen = Decor.snowmen(huts: hutPoints, stations: stationPoints, avoid: avoid)
+                let snowmen = Decor.snowmen(huts: hutPoints, stations: stationPoints)
                 await MainActor.run { [weak self] in
                     guard let self, self.currentId == id, let map = self.mapView?.mapboxMap else { return }
                     self.tracks = t; self.trees = p; self.skiTracks = skiers
