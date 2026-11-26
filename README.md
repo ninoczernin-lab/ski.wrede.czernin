@@ -47,9 +47,9 @@ Controls:
   - **Europe:** blue / red / black.
   - **North America, Australia and New Zealand:** green / blue / black / double black.
   - **Japan, Korea and China:** green / red / black.
-- The round buttons on the right switch **2D/3D**, the **map style** (Playful, Winter map or Satellite) and the **lighting**.
+- The round buttons on the right switch **2D/3D** and the **map style** (Cartoon or Satellite). The hour slider at the bottom sets the light.
 - In 3D, drag the **compass dial** at the bottom left or right to turn the view around the mountain. Sideways scrolling on a trackpad does the same, and ▶ flies around automatically.
-- Tap a run, lift, cabin or station for details. Tapping a lift highlights it and dims the others; × on its card clears the highlight.
+- Tap a run, lift, station badge, cabin or hut for details. Tapping a lift highlights it and dims the others; × on its card clears the highlight.
 
 On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with two fingers.
 
@@ -59,7 +59,7 @@ On a computer, right-drag or Ctrl-drag to tilt and rotate. On a phone, drag with
 cd pipeline && npm install && npm test && npm run fetch
 ```
 
-This writes `data/<resort-id>/{pistes,piste_areas,lifts,stations,boundary,structures,lift_spans,cabins,pines}.geojson` and `data/manifest.json`.
+This writes `data/<resort-id>/{pistes,piste_areas,lifts,stations,boundary,structures,lift_spans,cabins,huts,pines}.geojson` and `data/manifest.json`.
 
 `pines.geojson` holds tree positions for the iPhone app, which works offline:
 - Trees are placed in OpenStreetMap forests (`landuse=forest` / `natural=wood` ways), below the tree line and away from runs and lifts.
@@ -91,9 +91,10 @@ areas near the edges. To fix that, tighten the box or clip to `boundary.geojson`
 
 | Look | What it's like |
 |---|---|
-| **Playful** (default) | Bright and cartoon-like: vivid blue sky, soft periwinkle shading, bright valley greens. Chunky runs with thick white outlines. Run numbers in coloured pill badges; peaks, villages and lifts in white bubbles. |
-| **Winter map** | Crisp alpine look: snowy land, slate-blue shadows on north faces, white sunlit ridges, horizon haze, contour lines. |
-| **Satellite** | Real imagery on the same 3D terrain. |
+| **Cartoon** (default) | A toy trail map on bright snow. Runs are fat, candy-bright ribbons with a white rim and an ink outline, like stickers. Lifts are violet cables with yellow cabins and yellow cable-car station badges. Huts and mountain restaurants get a chalet badge. A few snowmen stand by the huts and stations, and tiny skiers in bright jackets slide down the runs. |
+| **Satellite** | Real imagery on the same 3D terrain, with the same runs, lifts, huts and figures. |
+
+Huts are every OSM `tourism=alpine_hut`/`wilderness_hut`, plus restaurants, cafés and bars that sit on a run (within 60 m) and away from a lift's valley station, so village restaurants stay off the map. Skiers and cabins stop moving with Reduce Motion, in Low Power Mode, in a background tab, or when the frame rate drops.
 
 In every look:
 - A valley tint blends the green valleys into the snow line, except on Satellite.

@@ -3,7 +3,7 @@ import SwiftUI
 import MapboxMaps
 
 /// Single source of truth for how runs look, used by the map layers and the legend, so colours
-/// never drift apart. Matches preview/app.js: the same diorama palette and the same regional
+/// never drift apart. Matches preview/app.js: the same cartoon palette and the same regional
 /// conventions. Values match the normalised set from pipeline/clean.mjs.
 enum PisteDifficulty: String, CaseIterable, Identifiable {
     case novice, easy, intermediate, advanced, expert, freeride, unknown
@@ -86,17 +86,17 @@ enum RunRegion {
     }
 }
 
-/// The diorama run palette: crisp, high-contrast ribbons on snow (same values as the web map).
+/// The cartoon run palette: candy-bright ribbons on snow (same values as the web map).
 enum RunColor {
     case green, blue, red, black, orange, grey
     var uiColor: UIColor {
         switch self {
-        case .green: UIColor(hex: 0x14A85A)
-        case .blue: UIColor(hex: 0x1F6FE5)
-        case .red: UIColor(hex: 0xE2203A)
-        case .black: UIColor(hex: 0x141820)
-        case .orange: UIColor(hex: 0xF08A12)
-        case .grey: UIColor(hex: 0x6B7386)
+        case .green: UIColor(hex: 0x16C45E)
+        case .blue: UIColor(hex: 0x1E7BFF)
+        case .red: UIColor(hex: 0xFF2E4D)
+        case .black: UIColor(hex: 0x1B1D2B)
+        case .orange: UIColor(hex: 0xFF9A1A)
+        case .grey: UIColor(hex: 0x8A90A6)
         }
     }
 }
@@ -108,12 +108,13 @@ extension UIColor {
     }
 }
 
-/// Line widths in screen points by zoom: slim, crisp ribbons with a white edge that separates
-/// parallel runs (same stops as the web map).
+/// Line widths in screen points by zoom: fat cartoon ribbons with a white rim and an ink outline,
+/// like a sticker trail map (same stops as the web map).
 enum PisteWidth {
-    static let line: [(zoom: Double, width: Double)] = [(10, 1.8), (12, 3), (14, 5), (16, 7.5)]
-    static let casing: [(zoom: Double, width: Double)] = [(10, 3.6), (12, 5.4), (14, 7.8), (16, 10.8)]
-    static let sheen: [(zoom: Double, width: Double)] = [(12, 0.4), (14, 1.2), (16, 2)]
+    static let line: [(zoom: Double, width: Double)] = [(10, 3), (12, 5), (14, 8), (16, 12)]
+    static let casing: [(zoom: Double, width: Double)] = [(10, 5), (12, 7.6), (14, 11.4), (16, 16)]
+    static let ink: [(zoom: Double, width: Double)] = [(10, 6.6), (12, 9.8), (14, 14.2), (16, 19.6)]
+    static let sheen: [(zoom: Double, width: Double)] = [(12, 0.8), (14, 1.8), (16, 2.8)]
 
     static func expression(_ stops: [(zoom: Double, width: Double)]) -> Exp {
         Exp(.interpolate) {

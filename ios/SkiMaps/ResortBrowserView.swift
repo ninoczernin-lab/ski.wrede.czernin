@@ -106,13 +106,32 @@ struct ResortBrowserView: View {
         return FlowRow(spacing: 12) {
             ForEach(PisteDifficulty.legend(for: r.country)) { e in
                 HStack(spacing: 6) {
-                    Capsule().fill(Color(e.difficulty.color(in: region))).frame(width: 18, height: 6)
+                    // A little sticker like the runs: colour, white rim, ink outline.
+                    Capsule().fill(Color(e.difficulty.color(in: region))).frame(width: 18, height: 7)
                         .overlay(Capsule().stroke(.white, lineWidth: 1.5))
+                        .overlay(Capsule().inset(by: -1.5).stroke(Color(Cartoon.ink), lineWidth: 1.2))
                     Text(e.label)
                 }
             }
+            HStack(spacing: 6) {
+                liftMark.frame(width: 20, height: 10)
+                Text("Lift")
+            }
+            HStack(spacing: 6) {
+                Image(systemName: "house.fill").font(.system(size: 9, weight: .bold)).foregroundStyle(Color(UIColor(hex: 0xE8413A)))
+                    .frame(width: 16, height: 16).background(Circle().fill(.white)).overlay(Circle().stroke(Color(Cartoon.ink), lineWidth: 1.4))
+                Text("Hut")
+            }
         }
         .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+    }
+
+    /// Lift family mark: violet cable with a yellow cabin, never a run colour.
+    private var liftMark: some View {
+        ZStack {
+            Capsule().fill(Color(Cartoon.liftViolet)).frame(height: 4).overlay(Capsule().stroke(.white, lineWidth: 1))
+            Circle().fill(Color(Cartoon.liftYellow)).frame(width: 9, height: 9).overlay(Circle().stroke(Color(Cartoon.liftViolet), lineWidth: 1.4))
+        }
     }
 
     // MARK: Controls
@@ -135,7 +154,7 @@ struct ResortBrowserView: View {
         .accessibilityLabel("Search ski resorts")
     }
 
-    /// Map view rail, like Apple Maps' floating controls: 2D/3D and Diorama/Satellite on one glass capsule.
+    /// Map view rail, like Apple Maps' floating controls: 2D/3D and Cartoon/Satellite on one glass capsule.
     private var viewControls: some View {
         VStack(spacing: 0) {
             Button { withAnimation(.snappy) { is3D.toggle() } } label: {
@@ -154,7 +173,7 @@ struct ResortBrowserView: View {
                     .frame(width: 48, height: 48).contentShape(Rectangle())
             }
             .buttonStyle(GlassPressStyle())
-            .accessibilityLabel(satellite ? "Switch to the diorama map" : "Switch to satellite imagery")
+            .accessibilityLabel(satellite ? "Switch to the cartoon map" : "Switch to satellite imagery")
         }
         .glass(in: Capsule())
         .padding(.trailing, 16)
@@ -238,17 +257,28 @@ struct ResortBrowserView: View {
     // MARK: Details
 
     private func featureCard(_ p: [String: Any]) -> some View {
-        let name = (p["name"] as? String) ?? (p["ref"] as? String) ?? "Unnamed"
+        let marker = p["marker"] as? String
+        let hutKinds = ["hut": "Mountain hut", "restaurant": "Mountain restaurant", "cafe": "Café", "bar": "Bar", "pub": "Bar",
+                        "biergarten": "Beer garden", "fast_food": "Snack bar"]
+        let hutKind = hutKinds[(p["kind"] as? String) ?? "hut"] ?? "Mountain hut"
+        let named = (p["name"] as? String).flatMap { $0.isEmpty ? nil : $0 }
+        let name = named ?? (p["ref"] as? String) ?? (marker == "hut" ? hutKind : marker == "station" ? "Lift station" : "Unnamed")
         let difficulty = (p["piste:difficulty"] as? String).flatMap(PisteDifficulty.init(rawValue:))
         let country = resort?.country ?? ""
-        let detail = difficulty.map { $0.label(for: country) } ?? (p["aerialway"] as? String)?.replacingOccurrences(of: "_", with: " ").capitalized ?? ""
+        let liftType = (p["aerialway"] as? String)?.replacingOccurrences(of: "_", with: " ").capitalized
+        let detail = marker == "hut" ? (named == nil ? "On the mountain" : hutKind)
+            : difficulty.map { $0.label(for: country) } ?? [marker == "station" ? "Station" : nil, liftType].compactMap { $0 }.joined(separator: " · ")
         return HStack(spacing: 14) {
-            // Runs get their colour dot; lifts get a cable-car symbol, never a run colour.
+            // Runs get their colour sticker; huts a chalet; lifts the violet-and-yellow lift mark, never a run colour.
             if let difficulty {
                 Circle().fill(Color(difficulty.color(in: RunRegion.of(country)))).frame(width: 14, height: 14)
                     .overlay(Circle().stroke(.white, lineWidth: 2.5))
+                    .overlay(Circle().inset(by: -2).stroke(Color(Cartoon.ink), lineWidth: 1.4))
+            } else if marker == "hut" {
+                Image(systemName: "house.fill").font(.system(size: 12, weight: .bold)).foregroundStyle(Color(UIColor(hex: 0xE8413A)))
+                    .frame(width: 26, height: 26).background(Circle().fill(.white)).overlay(Circle().stroke(Color(Cartoon.ink), lineWidth: 1.6))
             } else {
-                Image(systemName: "cablecar.fill").font(.body).foregroundStyle(.primary).frame(width: 20)
+                liftMark.frame(width: 24, height: 12)
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(name).font(.headline).lineLimit(1).glassLabel()

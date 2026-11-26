@@ -1,4 +1,4 @@
-// Web version of the ski map: each resort as a living miniature mountain at a chosen hour.
+// Web version of the ski map: each resort as a toy cartoon mountain at a chosen hour.
 // Same data code as pipeline/ and the same run colours as the iOS app (PisteStyle.swift).
 // Mapbox GL JS v3 with Standard / Standard Satellite.
 import { overpassQuery } from '../pipeline/query.mjs';
@@ -9,6 +9,7 @@ import { elevationAt } from './elevation-browser.js';
 import { lightAt, formatHour, deviceUses12h, HOUR_MIN, HOUR_MAX } from './daylight.js';
 import { pineShapes, scatterPines, avoidGrid } from './pines.js';
 import { createSnow } from './snow.js';
+import { skierTracks, skiersAt, snowmenNear, stationIcon, hutIcon, snowmanIcon, skierIcon, JACKETS, INK, LIFT_YELLOW, LIFT_VIOLET } from './decor.js';
 import { MAPBOX_TOKEN } from './config.js';
 
 const EXAGGERATION = 1.5;
@@ -16,7 +17,7 @@ const PITCH_3D = 62;                                    // tilted-diorama angle
 const SHADOW = 0.22;
 const GROUND_LIFTS = ['rope_tow', 'magic_carpet', 'zip_line'];
 const OVERPASS = 'https://overpass-api.de/api/interpreter';
-const DATA_LAYERS = ['pistes', 'piste_areas', 'lifts', 'structures', 'lift_spans', 'cabins'];
+const DATA_LAYERS = ['pistes', 'piste_areas', 'lifts', 'structures', 'lift_spans', 'cabins', 'huts'];
 
 // --- Run colours (mirror PisteStyle.swift) ---------------------------------------------------
 const DIFF = {
@@ -58,11 +59,12 @@ function computeRun(L, country) {
 const runColor = () => ['match', ['get', 'piste:difficulty'],
   ...Object.entries(RUN).filter(([k]) => k !== 'unknown').flat(), RUN.unknown];
 const widthExpr = (stops) => ['interpolate', ['exponential', 1.4], ['zoom'], ...stops.flat()];
-const LINE_W = widthExpr([[10, 1.8], [12, 3], [14, 5], [16, 7.5]]);
-// Casing = line + ~2.6 px: a crisp white gap between parallel runs so colours never bleed together.
-const CASING_W = widthExpr([[10, 3.6], [12, 5.4], [14, 7.8], [16, 10.8]]);
-// Snow sheen: a thin light line down the middle of every run, like groomed corduroy catching the sun.
-const SHEEN_W = widthExpr([[12, 0.4], [14, 1.2], [16, 2]]);
+// Cartoon runs: a fat ribbon, a white rim, and an ink outline around both, like a sticker trail map.
+const LINE_W = widthExpr([[10, 3], [12, 5], [14, 8], [16, 12]]);
+const CASING_W = widthExpr([[10, 5], [12, 7.6], [14, 11.4], [16, 16]]);
+const INK_W = widthExpr([[10, 6.6], [12, 9.8], [14, 14.2], [16, 19.6]]);
+// Highlight: a thin light stripe down each ribbon, the glossy edge of a sticker.
+const SHEEN_W = widthExpr([[12, 0.8], [14, 1.8], [16, 2.8]]);
 const byZoom = (a, b) => ['interpolate', ['linear'], ['zoom'], 11, a, 16, b];
 
 // --- Lifts -----------------------------------------------------------------------------------
@@ -71,12 +73,14 @@ const LIFT_NAMES = {
   drag_lift: 'Drag lift', t_bar: 'T-bar', j_bar: 'J-bar', platter: 'Button lift', rope_tow: 'Rope tow',
   magic_carpet: 'Magic carpet', zip_line: 'Zip line',
 };
+// Lifts are one family: violet cables (a hue no region uses for runs, so a lift never reads as a black
+// run) with sunny-yellow cabins, roofs and station badges.
 const LIFT_BASE = {
-  cable: '#232a33', shadow: '#4a5361',                 // thin charcoal threads for every unselected lift
-  select: '#ffffff', selectCore: '#141a22',             // selection: white halo + heavier charcoal core, no hue
+  cable: LIFT_VIOLET, shadow: '#8d7fd6',
+  select: '#ffffff', selectCore: '#3a17a6',             // selection: white halo + deeper violet core
   terminal: '#ffffff',
-  mast: '#6f7a88', arm: '#353d49', wall: '#f1ece2', roof: '#b0362e',
-  cabin: '#d8352f', chair: '#2a313b',
+  mast: '#5b6688', arm: INK, wall: '#ffffff', roof: LIFT_YELLOW,
+  cabin: LIFT_YELLOW, chair: INK,
 };
 let LIFT = LIFT_BASE;
 const liftLabelExpr = ['match', ['get', 'aerialway'], ...Object.entries(LIFT_NAMES).flat(), 'Lift'];
@@ -86,22 +90,22 @@ let selectedLift = 'Valfagehrbahn';                     // tap another lift to c
 const nameKey = ['downcase', ['coalesce', ['get', 'name'], '']];
 
 // --- Map looks ---------------------------------------------------------------------------------
-// Diorama: Standard repainted as a crisp snow model; light, sky and shading come from the hour.
-// Satellite: real imagery on the same terrain, under the same hour.
+// Cartoon: Standard repainted as a toy snow mountain with candy-bright runs; light comes from the hour.
+// Satellite: real imagery on the same terrain, under the same hour, with the same cartoon furniture.
 const LOOKS = {
-  diorama: {
-    label: 'Diorama', style: 'mapbox://styles/mapbox/standard',
+  cartoon: {
+    label: 'Cartoon', style: 'mapbox://styles/mapbox/standard',
     // Greenspace close to the snow so forest polygons draw no hard edge; valley-tint and pines add the green.
     config: { theme: 'faded', colorLand: '#f4f7fb', colorGreenspace: '#e3ebe6', colorWater: '#79aed6',
       show3dObjects: true, showPointOfInterestLabels: false, showTransitLabels: false, showRoadLabels: false,
-      showPlaceLabels: false },
-    relief: 1,
+      showPlaceLabels: false, showPedestrianRoads: false },
+    relief: 0.8,                                         // softer shading: bright toy snow, not a survey model
     valleyTint: [500, 'rgba(40, 84, 64, 0.42)', 1000, 'rgba(52, 96, 74, 0.34)', 1400, 'rgba(86, 122, 102, 0.2)',
       1800, 'rgba(196, 214, 208, 0.07)', 2100, 'rgba(255, 255, 255, 0)'],
     contour: { minor: 'rgba(64, 86, 120, 0.22)', major: 'rgba(64, 86, 120, 0.48)', text: '#33445c', halo: '#ffffff' },
     labels: { text: '#16202c', halo: '#ffffff', peak: '#2c3b52' },
-    runs: { novice: '#14a85a', easy: '#1f6fe5', intermediate: '#e2203a', advanced: '#141820', expert: '#141820',
-      freeride: '#f08a12', unknown: '#6b7386' },
+    runs: { novice: '#16c45e', easy: '#1e7bff', intermediate: '#ff2e4d', advanced: '#1b1d2b', expert: '#1b1d2b',
+      freeride: '#ff9a1a', unknown: '#8a90a6' },
     pines: true,
   },
   satellite: {
@@ -130,8 +134,8 @@ const store = {
   del: (k) => { try { localStorage.removeItem(k); } catch { /* ignore */ } },
 };
 let is3D = true;
-const LOOK_ORDER = ['diorama', 'satellite'];
-let look = LOOKS[store.get('map-look')] ? store.get('map-look') : 'diorama';
+const LOOK_ORDER = ['cartoon', 'satellite'];
+let look = LOOKS[store.get('map-look')] ? store.get('map-look') : 'cartoon';   // an old 'diorama' choice lands on cartoon
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // Effects quality: 2 full, 1 lighter (no snow, fewer pines, slower cabins), 0 static. Drops when frames slip.
 let quality = reduceMotion ? 1 : 2;
@@ -297,6 +301,9 @@ function setup() {
   // Runs.
   map.addLayer({ id: 'piste-areas-fill', type: 'fill', source: 'piste_areas', slot: 'middle',
     paint: { 'fill-color': runColor(), 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0.06, 15, 0.14] } });
+  map.addLayer({ id: 'pistes-ink', type: 'line', source: 'pistes', slot: 'top', filter: downhill,
+    layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
+    paint: { 'line-color': INK, 'line-opacity': 0.92, 'line-width': INK_W, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-casing', type: 'line', source: 'pistes', slot: 'top', filter: downhill,
     layout: { 'line-cap': 'round', 'line-join': 'round', 'line-sort-key': ['get', 'rank'] },
     paint: { 'line-color': '#ffffff', 'line-opacity': 1, 'line-width': cw, 'line-blur': 0, 'line-emissive-strength': 1 } });
@@ -305,40 +312,42 @@ function setup() {
     paint: { 'line-color': runColor(), 'line-width': lw, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-sheen', type: 'line', source: 'pistes', slot: 'top', minzoom: 12, filter: downhill,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': '#ffffff', 'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 13.5, 0.38],
-      'line-width': SHEEN_W, 'line-emissive-strength': 1 } });
+    paint: { 'line-color': '#ffffff', 'line-opacity': ['interpolate', ['linear'], ['zoom'], 12, 0, 13.5, 0.42],
+      'line-width': SHEEN_W, 'line-offset': widthExpr([[12, -0.8], [14, -1.6], [16, -2.6]]), 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'pistes-unknown', type: 'line', source: 'pistes', slot: 'top', filter: ['all', downhill, unknown],
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': RUN.unknown, 'line-width': lw, 'line-dasharray': [1.5, 1], 'line-emissive-strength': 1 } });
+    paint: { 'line-color': RUN.unknown, 'line-width': lw, 'line-dasharray': [1.4, 0.9], 'line-emissive-strength': 1 } });
 
   // Lifts: thin charcoal on the ground and in the air; the selected lift gets a bright glow
   // (lift-selected-glow on the ground for 2D, lifts-cable-glow in the air for 3D).
   // Selection carries no hue (the run palette owns colour): a wide white halo under a heavier charcoal core.
   map.addLayer({ id: 'lift-selected-glow', type: 'line', source: 'lifts', slot: 'top', filter: NO_MATCH,
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': LIFT.select, 'line-width': byZoom(7, 12), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
+    paint: { 'line-color': LIFT.select, 'line-width': byZoom(10, 16), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
       'line-emissive-strength': 1 } });
   // Lifts on the ground: a solid charcoal thread with a white hairline, like the runs (2D, and ground lifts in 3D).
   map.addLayer({ id: 'lifts-line-casing', type: 'line', source: 'lifts', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    paint: { 'line-color': '#ffffff', 'line-width': byZoom(3.4, 5.4), 'line-opacity': 0.9, 'line-emissive-strength': 1 } });
+    paint: { 'line-color': '#ffffff', 'line-width': byZoom(6, 9), 'line-opacity': 0.95, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-line', type: 'line', source: 'lifts', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round' },
     paint: { 'line-color': LIFT.cable, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-cable-glow', type: 'line', source: 'lift_spans', slot: 'top', filter: NO_MATCH,
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
-    paint: { 'line-color': LIFT.select, 'line-width': byZoom(7, 12), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
+    paint: { 'line-color': LIFT.select, 'line-width': byZoom(10, 16), 'line-blur': byZoom(0.6, 1.4), 'line-opacity': 0.95,
       'line-emissive-strength': 1 } });
-  // Every cable gets a white hairline so the charcoal thread reads against rock and shadowed snow.
+  // Every cable gets a white rim so the charcoal thread reads against rock and shadowed snow.
   map.addLayer({ id: 'lifts-cable-halo', type: 'line', source: 'lift_spans', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
-    paint: { 'line-color': '#ffffff', 'line-width': byZoom(3.4, 5.2), 'line-opacity': 0.85, 'line-emissive-strength': 1 } });
+    paint: { 'line-color': '#ffffff', 'line-width': byZoom(7.6, 11), 'line-opacity': 0.92, 'line-emissive-strength': 1 } });
   map.addLayer({ id: 'lifts-cable', type: 'line', source: 'lift_spans', slot: 'top',
     layout: { 'line-cap': 'round', 'line-join': 'round', ...elevated },
     paint: { 'line-emissive-strength': 1 } });
-  map.addLayer({ id: 'lift-terminals', type: 'circle', source: 'lift_terminals', slot: 'top', minzoom: 11.5,
-    paint: { 'circle-radius': byZoom(2, 4.5), 'circle-color': LIFT.terminal, 'circle-stroke-color': LIFT.cable,
-      'circle-stroke-width': byZoom(1.2, 1.8), 'circle-pitch-alignment': 'viewport', 'circle-emissive-strength': 1 } });
+  // Stations: sunny-yellow cable-car badges at both ends of every lift (upright, always facing you).
+  map.addLayer({ id: 'lift-terminals', type: 'symbol', source: 'lift_terminals', slot: 'top', minzoom: 11.5,
+    layout: { 'icon-image': 'station', 'icon-size': byZoom(0.62, 1), 'icon-anchor': 'center', 'icon-padding': 1,
+      'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport', 'symbol-z-order': 'source' },
+    paint: { 'icon-emissive-strength': 1 } });
   // Mapbox GL skips (doesn't throw on) a layer it can't validate, so check it really exists.
   cablesOK = Boolean(map.getLayer('lifts-cable'));
   if (!cablesOK) console.warn('Elevated lines unavailable in this Mapbox GL version; lifts stay on the ground');
@@ -353,9 +362,9 @@ function setup() {
   // From afar a cabin is smaller than a pixel: draw it as a travelling dot that hands over to the 3D cabin up close.
   map.addSource('cabin-dots', { type: 'geojson', data: empty });
   map.addLayer({ id: 'lift-cabin-dots', type: 'circle', source: 'cabin-dots', slot: 'top', minzoom: 10.5, maxzoom: 14,
-    // Dark beads sitting inside the cable (no ring): the solid charcoal thread stays the dominant mark.
-    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, 1.9, 13, 2.6],
-      'circle-color': '#0b0f14', 'circle-stroke-width': 0,
+    // Yellow beads with an ink ring riding the cable: the lift family's colour, never a run colour.
+    paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 10.5, 2.6, 13, 3.6],
+      'circle-color': LIFT.cabin, 'circle-stroke-width': 1.4, 'circle-stroke-color': LIFT.cable,
       'circle-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 1, 13.6, 0],
       'circle-stroke-opacity': ['interpolate', ['linear'], ['zoom'], 12.8, 1, 13.6, 0],
       'circle-pitch-alignment': 'viewport', 'circle-emissive-strength': 1 } });
@@ -377,6 +386,28 @@ function setup() {
         'fill-extrusion-opacity': ['interpolate', ['linear'], ['zoom'], 11.5, 0, 12, 1] } });
     pinesOK = Boolean(map.getLayer('pines'));
   }
+
+  // Cartoon furniture: huts, a few snowmen beside huts and stations, and tiny skiers on the runs.
+  // Billboards (always upright) so they read as little figures standing on the mountain.
+  const figure = { 'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport', 'icon-anchor': 'bottom',
+    'icon-allow-overlap': true, 'icon-ignore-placement': true };
+  map.addSource('snowmen', { type: 'geojson', data: empty });
+  map.addLayer({ id: 'snowmen', type: 'symbol', source: 'snowmen', slot: 'top', minzoom: 13,
+    layout: { ...figure, 'icon-image': 'snowman', 'icon-size': byZoom(0.9, 1.25) },
+    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 13, 0, 13.4, 1], 'icon-emissive-strength': 1 } });
+  map.addSource('skiers', { type: 'geojson', data: empty });
+  map.addLayer({ id: 'skiers', type: 'symbol', source: 'skiers', slot: 'top', minzoom: 12.5,
+    layout: { ...figure, 'icon-image': ['concat', 'skier-', ['to-string', ['get', 'jacket']], '-', ['get', 'face']],
+      'icon-size': byZoom(0.9, 1.25) },
+    paint: { 'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0, 12.9, 1], 'icon-emissive-strength': 1 } });
+  map.addLayer({ id: 'huts', type: 'symbol', source: 'huts', slot: 'top', minzoom: 12,
+    layout: { 'icon-image': 'hut', 'icon-size': byZoom(0.7, 1.05), 'icon-anchor': 'center', 'icon-padding': 2,
+      'icon-pitch-alignment': 'viewport', 'icon-rotation-alignment': 'viewport',
+      'text-field': ['step', ['zoom'], '', 14, ['coalesce', ['get', 'name'], '']], 'text-font': FONT.bold, 'text-size': 12,
+      'text-anchor': 'top', 'text-offset': [0, 1.3], 'text-optional': true, 'text-padding': 4,
+      'symbol-sort-key': ['case', ['==', ['get', 'kind'], 'hut'], 0, 1] },
+    paint: { 'text-color': INK, 'text-halo-color': '#ffffff', 'text-halo-width': 2.2, 'text-emissive-strength': 1,
+      'icon-emissive-strength': 1 } });
 
   // Labels: run number badges, then lift name with its type underneath.
   map.addLayer({ id: 'pistes-label', type: 'symbol', source: 'pistes', slot: 'top', minzoom: 12.5,
@@ -416,7 +447,7 @@ function setup() {
  * Rounded pill drawn on a canvas, registered as a stretchable Mapbox image so icon-text-fit can
  * wrap it around any label: run badges (run colour, white rim) and white label bubbles.
  */
-function pillImage(fill, rim, rimWidth, shadow) {
+function pillImage(fill, rim, rimWidth, shadow, ink) {
   const pr = 2, r = 12, pad = 4, w = 2 * r + 2 * pad + 4, h = 2 * r + 2 * pad;
   const c = document.createElement('canvas');
   c.width = w * pr; c.height = h * pr;
@@ -428,6 +459,10 @@ function pillImage(fill, rim, rimWidth, shadow) {
   g.fillStyle = fill; g.fill();
   g.shadowColor = 'transparent';
   if (rimWidth) { g.lineWidth = rimWidth; g.strokeStyle = rim; g.stroke(); }
+  if (ink) {                                         // cartoon ink line just outside the white rim
+    g.beginPath(); g.roundRect(pad - rimWidth / 2 - 0.6, pad - rimWidth / 2 - 0.6, w - 2 * pad + rimWidth + 1.2, h - 2 * pad + rimWidth + 1.2, r + rimWidth / 2);
+    g.lineWidth = 1.4; g.strokeStyle = ink; g.stroke();
+  }
   const data = g.getImageData(0, 0, c.width, c.height);
   return [{ width: c.width, height: c.height, data: new Uint8Array(data.data.buffer) }, {
     pixelRatio: pr,
@@ -449,8 +484,12 @@ function applyRunColors() {
 
 function addLabelImages() {
   const put = (id, args) => { if (map.hasImage(id)) map.removeImage(id); map.addImage(id, ...args); };
-  for (const [k, color] of Object.entries(RUN)) put(`badge-${k}`, pillImage(color, '#ffffff', 2.5, true));
+  for (const [k, color] of Object.entries(RUN)) put(`badge-${k}`, pillImage(color, '#ffffff', 2.5, true, INK));
   put('peak', peakImage());
+  put('station', stationIcon());
+  put('hut', hutIcon());
+  put('snowman', snowmanIcon());
+  JACKETS.forEach((c, i) => { put(`skier-${i}-r`, skierIcon(c)); put(`skier-${i}-l`, skierIcon(c, true)); });
 }
 
 /** Small drawn summit mark for peak labels: a filled triangle with a snow cap. */
@@ -526,18 +565,16 @@ function applySelection() {
   map.setFilter('lifts-cable-glow', active ? sel : NO_MATCH);
   const shadowLine = is3D && cablesOK;                    // in 3D the ground line is only the cable's shadow
   map.setPaintProperty('lifts-cable', 'line-color', pick(LIFT.selectCore, LIFT.cable));
-  map.setPaintProperty('lifts-cable', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.6, 1.5), 16, pick(4.2, 2.6)]);
+  // Cables in the air are drawn in perspective and thin out with distance: give them extra width.
+  map.setPaintProperty('lifts-cable', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(5.2, 3.8), 16, pick(8, 6)]);
   map.setPaintProperty('lifts-cable', 'line-opacity', pick(1, active ? DIM : 1));
   map.setPaintProperty('lifts-cable-halo', 'line-opacity', pick(0.85, active ? DIM * 0.85 : 0.85));
   map.setPaintProperty('lifts-line', 'line-color', pick(LIFT.selectCore, shadowLine ? LIFT.shadow : LIFT.cable));
-  map.setPaintProperty('lifts-line', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.6, 1.6), 16, pick(4.2, 2.6)]);
+  map.setPaintProperty('lifts-line', 'line-width', ['interpolate', ['linear'], ['zoom'], 11, pick(4.6, 3.2), 16, pick(7, 5)]);
   map.setPaintProperty('lifts-line', 'line-opacity', active ? ['case', sel, shadowLine ? 0.5 : 1, ['*', DIM, groundBase]] : groundBase);
   map.setPaintProperty('lifts-line-casing', 'line-opacity', ['*', active ? ['case', sel, 1, DIM] : 1,
     ['match', ['get', 'aerialway'], GROUND_LIFTS, 0.9, shadowLine ? 0 : 0.9]]);
-  map.setPaintProperty('lift-terminals', 'circle-opacity', pick(1, active ? DIM : 1));
-  map.setPaintProperty('lift-terminals', 'circle-stroke-opacity', pick(1, active ? DIM : 1));
-  map.setPaintProperty('lift-terminals', 'circle-stroke-color', LIFT.cable);
-  map.setPaintProperty('lift-terminals', 'circle-stroke-width', ['interpolate', ['linear'], ['zoom'], 11, pick(2.2, 1.2), 16, pick(2.8, 1.8)]);
+  map.setPaintProperty('lift-terminals', 'icon-opacity', pick(1, active ? 0.6 : 1));
   map.setPaintProperty('lifts-label', 'text-opacity', pick(1, active ? 0.55 : 1));
 }
 
@@ -584,6 +621,9 @@ async function showResort(r) {
   applyLight();                                   // hemisphere can change the sun's path
   $('#card').classList.remove('show');
   tracks = [];
+  skiTracks = [];
+  map.getSource('snowmen')?.setData(empty);
+  map.getSource('skiers')?.setData(empty);
   pines.clear();
   flyIn(r);
   try {
@@ -592,6 +632,8 @@ async function showResort(r) {
     for (const id of DATA_LAYERS) map.getSource(id)?.setData(layers[id] ?? empty);
     map.getSource('lift_terminals')?.setData(terminalsFrom(layers.lifts));
     tracks = liftTracks(layers.lift_spans);
+    skiTracks = skierTracks(layers.pistes);
+    placeSnowmen(layers);
     applySelection();
     const runs = layers.pistes.features.filter((f) => f.properties['piste:type'] === 'downhill').length;
     $('#resort-counts').textContent = `${runs} runs · ${layers.lifts.features.length} lifts`;
@@ -632,7 +674,8 @@ function renderLegend(r) {
   const hasUnknown = cache.get(r.id)?.pistes.features.some((f) => f.properties['piste:difficulty'] === 'unknown');
   $('#legend').innerHTML = legendFor(r.country).map(([k, label]) => `<li><i style="background:${RUN[k]}"></i>${label}</li>`).join('')
     + (hasUnknown ? `<li class="unknown"><i style="border-top-color:${RUN.unknown}"></i>Not classified</li>` : '')
-    + `<li class="lift"><i></i>Lift</li>`;
+    + `<li class="lift"><i></i>Lift</li>`
+    + (cache.get(r.id)?.huts?.features.length ? `<li class="hut"><i></i>Hut</li>` : '');
 }
 
 // --- All resorts: tiers, overview dots, search -------------------------------------------------
@@ -865,18 +908,30 @@ map.on('click', (e) => {
   const dot = map.getLayer('resort-dots') && map.getZoom() < 10.5
     && map.queryRenderedFeatures([[e.point.x - 8, e.point.y - 8], [e.point.x + 8, e.point.y + 8]], { layers: ['resort-dots', 'resort-dot-labels'] })[0];
   if (dot) { pickResort(resorts.find((r) => r.id === dot.properties.id)); return; }
-  const layers = ['pistes-line', 'pistes-unknown', 'lifts-cable', 'lifts-line', 'lift-cabins', 'lift-structures'].filter((l) => map.getLayer(l));
+  const layers = ['huts', 'lift-terminals', 'pistes-line', 'pistes-unknown', 'lifts-cable', 'lifts-line', 'lift-cabins', 'lift-structures'].filter((l) => map.getLayer(l));
   stopMotion();
   const pad = 10;
   const f = map.queryRenderedFeatures([[e.point.x - pad, e.point.y - pad], [e.point.x + pad, e.point.y + pad]], { layers })[0];
   if (!f) { $('#card').classList.remove('show'); return; }
   const p = f.properties;
+  if (f.layer.id === 'huts') {
+    const what = { hut: 'Mountain hut', restaurant: 'Mountain restaurant', cafe: 'Café', bar: 'Bar', pub: 'Bar',
+      biergarten: 'Beer garden', fast_food: 'Snack bar' }[p.kind] ?? 'Mountain hut';
+    $('#card b').textContent = p.name || what;
+    $('#card small').textContent = p.name ? what : 'On the mountain';
+    $('#card .dot').className = 'dot hut';
+    $('#card .dot').style.background = '';
+    $('#card').classList.add('show');
+    return;
+  }
+  $('#card .dot').className = 'dot';
   const d = DIFF[p['piste:difficulty']];
   const liftType = LIFT_NAMES[p.aerialway ?? p.lift];
   const seats = p['aerialway:occupancy'] ? `${p['aerialway:occupancy']} seats` : '';
-  const title = p.name ?? p.ref ?? { pylon: 'Lift tower', cabin: liftType ?? 'Cabin', station: 'Lift station' }[p.kind] ?? 'Unnamed';
+  const station = f.layer.id === 'lift-terminals';
+  const title = p.name ?? p.ref ?? { pylon: 'Lift tower', cabin: liftType ?? 'Cabin', station: 'Lift station' }[station ? 'station' : p.kind] ?? 'Unnamed';
   const detail = d ? `${runLabel(current.country, p['piste:difficulty'])}${p.ref ? ` · No. ${p.ref}` : ''}`
-    : [p.kind === 'station' ? 'Station' : null, liftType, seats].filter(Boolean).join(' · ');
+    : [p.kind === 'station' || station ? 'Station' : null, liftType, seats].filter(Boolean).join(' · ');
   $('#card b').textContent = title;
   $('#card small').textContent = detail;
   // Runs get their colour dot; lifts get a charcoal thread mark, never a run colour.
@@ -903,6 +958,29 @@ function carsLoop(now) {
   const b = map.getBounds();
   const view = [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
   setCabins(carsAt(tracks, (now - sceneT0) / 1000, view, quality >= 2 ? 600 : 300, cabinScale()));
+  setSkiers((now - sceneT0) / 1000, view);
+}
+/** Tiny skiers: placed along the runs, facing left or right on screen the way they're heading. */
+let skiTracks = [];
+function setSkiers(seconds, view) {
+  const src = map.getSource('skiers');
+  if (!src) return;
+  if (map.getZoom() < 12.5 || !skiTracks.length) { src.setData(empty); return; }
+  const fc = skiersAt(skiTracks, seconds, view, quality >= 2 ? 60 : 30, skierScale());
+  const bearing = (map.getBearing() * Math.PI) / 180;
+  for (const f of fc.features) {
+    // Screen-right component of the heading (east/north unit vector rotated by the map bearing).
+    const right = f.properties.ux * Math.cos(bearing) - f.properties.uy * Math.sin(bearing);
+    f.properties.face = right >= 0 ? 'r' : 'l';
+  }
+  src.setData(fc);
+}
+const skierScale = () => { const z = map.getZoom(); return z >= 15 ? 1 : z >= 14 ? 1.4 : 2; };
+function placeSnowmen(layers) {
+  const terminals = terminalsFrom(layers.lifts).features.map((f) => ({ coordinates: f.geometry.coordinates, kind: 'station' }));
+  const huts = (layers.huts?.features ?? []).map((f) => ({ coordinates: f.geometry.coordinates, kind: 'hut' }));
+  const avoid = avoidGrid([...layers.pistes.features, ...layers.lifts.features], 16);
+  map.getSource('snowmen')?.setData(snowmenNear([...huts, ...terminals], avoid));
 }
 /** Same cabins twice: 3D boxes, and their centres as dots for the far view. */
 function setCabins(fc) {
@@ -922,13 +1000,14 @@ function setCabins(fc) {
 /** Miniature level of detail: cabins drawn larger when zoomed out so the lifts read as lifts on arrival. */
 const cabinScale = () => { const z = map.getZoom(); return z >= 14 ? 1 : z >= 13 ? 1.6 : z >= 12 ? 2.3 : 3; };
 function carsWanted() {
-  return is3D && quality >= 1 && !reduceMotion && tracks.length && map.getZoom() >= 10.5 && !document.hidden;
+  return quality >= 1 && !reduceMotion && (is3D && tracks.length || skiTracks.length) && map.getZoom() >= 10.5 && !document.hidden;
 }
 function updateCars() {
   if (carsWanted()) { if (!carsTimer) carsTimer = requestAnimationFrame(carsLoop); return; }
   if (carsTimer) { cancelAnimationFrame(carsTimer); carsTimer = 0; }
   // Parked (reduced motion, low quality, hidden tab): same miniature scale, standing still.
   setCabins(tracks.length ? carsAt(tracks, 0, null, 1500, cabinScale()) : empty);
+  setSkiers(0, null);                              // parked skiers, standing still where they'd be
 }
 
 const snow = createSnow($('#snow'), {

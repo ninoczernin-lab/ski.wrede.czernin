@@ -22,10 +22,11 @@
       unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
     }
 
-    /* The HUD is thin frosted glass over a living diorama, tinted by the hour (--sky-* set by app.js). */
+    /* The HUD is thin frosted glass over a toy cartoon mountain, tinted by the hour (--sky-* set by app.js). */
     :root {
       --sky-top: #5aa6e8; --sky-bottom: #f2f7fc;
       --ink: #121b27; --ink-soft: #3f4d60; --ink-faint: #6a778a;
+      --ink-line: #1b2440; --lift-yellow: #ffc81e; --lift-violet: #6a3df0;   /* map furniture: ink outline, lift cable violet, lift yellow */
       --glass: rgba(250, 252, 255, 0.58); --glass-strong: rgba(250, 252, 255, 0.82);
       --edge: rgba(255, 255, 255, 0.55); --hair: rgba(18, 27, 39, 0.1);
       --sun: #ffb23e; --focus: #1f6fe5;
@@ -75,8 +76,12 @@
     #legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 12px 0 0; padding: 0; list-style: none;
       font-size: 12px; font-weight: 500; color: var(--ink-soft); }
     #legend li { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
-    #legend i { width: 20px; height: 6px; border-radius: 3px; box-shadow: 0 0 0 1.5px #fff; }
-    #legend li.lift i { height: 3px; background: #232a33; box-shadow: 0 0 0 1.5px #fff; }
+    /* Swatches are little stickers like the runs: colour, white rim, ink outline. */
+    #legend i { width: 20px; height: 8px; border-radius: 4px; box-shadow: 0 0 0 1.5px #fff, 0 0 0 2.7px var(--ink-line); }
+    #legend li.lift i { position: relative; height: 4px; background: var(--lift-violet); box-shadow: 0 0 0 1.5px #fff; }
+    #legend li.lift i::after { content: ''; position: absolute; left: 6px; top: -2.5px; width: 9px; height: 9px; border-radius: 50%;
+      background: var(--lift-yellow); box-shadow: 0 0 0 1.4px var(--lift-violet); }
+    #legend li.hut i { width: 16px; height: 16px; border-radius: 0; box-shadow: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23fff' stroke='%231b2440' stroke-width='2'/%3E%3Cpath d='M7 12h10v6H7z' fill='%23b8743f' stroke='%231b2440' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M5 12.5 12 6l7 6.5z' fill='%23e8413a' stroke='%231b2440' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M10.5 13.5h3v3h-3z' fill='%23ffd86b' stroke='%231b2440' stroke-width='1'/%3E%3C/svg%3E") center / contain no-repeat; }
     #legend li.unknown i { height: 0; background: none; border-top: 4px dashed; box-shadow: none; }
     #status { margin: 10px 0 0; font-size: 12px; font-weight: 500; color: var(--ink-soft); }
     #status:empty { display: none; }
@@ -180,8 +185,12 @@
       transition: opacity 200ms var(--ease), transform 360ms var(--ease); }
     #card.show { opacity: 1; transform: none; pointer-events: auto; }
     #card .dot { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px #fff, 0 2px 8px rgba(18, 30, 52, 0.25); }
-    /* A lift is marked as a charcoal thread, never a run colour. */
-    #card .dot.lift { width: 22px; height: 4px; border-radius: 2px; background: #232a33; box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(18, 30, 52, 0.2); }
+    #card .dot { box-shadow: 0 0 0 3px #fff, 0 0 0 4.5px var(--ink-line), 0 2px 8px rgba(18, 30, 52, 0.25); }
+    /* A lift is marked as a violet cable with a yellow cabin, never a run colour. */
+    #card .dot.lift { position: relative; width: 24px; height: 5px; border-radius: 3px; background: var(--lift-violet); box-shadow: 0 0 0 2px #fff, 0 2px 6px rgba(18, 30, 52, 0.2); }
+    #card .dot.lift::after { content: ''; position: absolute; left: 7px; top: -3.5px; width: 11px; height: 11px; border-radius: 50%;
+      background: var(--lift-yellow); box-shadow: 0 0 0 1.6px var(--lift-violet); }
+    #card .dot.hut { width: 26px; height: 26px; box-shadow: 0 2px 6px rgba(18, 30, 52, 0.2); background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='10.5' fill='%23fff' stroke='%231b2440' stroke-width='2'/%3E%3Cpath d='M7 12h10v6H7z' fill='%23b8743f' stroke='%231b2440' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M5 12.5 12 6l7 6.5z' fill='%23e8413a' stroke='%231b2440' stroke-width='1.2' stroke-linejoin='round'/%3E%3Cpath d='M10.5 13.5h3v3h-3z' fill='%23ffd86b' stroke='%231b2440' stroke-width='1'/%3E%3C/svg%3E") center / contain no-repeat; }
     #card div { min-width: 0; }
     #card b { display: block; font-weight: 500; font-size: 17px; letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     #card small { color: var(--ink-soft); font-size: 13px; }

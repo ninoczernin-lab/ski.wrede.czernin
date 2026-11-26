@@ -2,13 +2,13 @@ import SwiftUI
 // Elevated lines (line-z-offset) are an experimental Mapbox v11 API.
 @_spi(Experimental) import MapboxMaps
 
-/// Each resort as a living miniature mountain at a chosen hour: Mapbox Standard repainted as a crisp
-/// snow diorama, real terrain, relief and ridge light from the sun's side, OSM runs as high-contrast
-/// ribbons and hanging lift cables. One MapView for every resort; switching resort flies the camera in.
+/// Each resort as a toy cartoon mountain at a chosen hour: Mapbox Standard repainted as bright
+/// toy snow, real terrain, relief and ridge light from the sun's side, OSM runs as fat ink-outlined
+/// ribbons, violet lift cables, huts, snowmen and tiny skiers. One MapView for every resort; switching resort flies the camera in.
 struct ResortMapView: UIViewRepresentable {
     let resort: Resort?
     var is3D: Bool = true
-    var satellite = false                     // Diorama (Standard) or Standard Satellite imagery
+    var satellite = false                     // Cartoon (Standard) or Standard Satellite imagery
     var hour: Double = 15.5                   // time of day; drives sun, sky and shading (Daylight.swift)
     var isScrubbing = false                   // while the hour slider is held, skip Standard's heavy preset switch
     @Binding var selectedFeature: [String: Any]?
@@ -50,6 +50,7 @@ struct ResortMapView: UIViewRepresentable {
         private var currentId: String?
         private var tokens = Set<AnyCancelable>()
         private var tracks: [LiftTrack] = []          // moving cabins (LiftMotion.swift)
+        private var skiTracks: [SkierTrack] = []      // tiny skiers on the runs (Decor.swift)
         private var trees: [Pines.Tree] = []           // offline pines (Pines.swift)
         private var ticker: Ticker?
         private let sceneStart = Date()
@@ -61,10 +62,12 @@ struct ResortMapView: UIViewRepresentable {
         static func liftOpacityJSON(is3D: Bool) -> [Any] {
             ["match", ["get", "aerialway"], groundLifts, 1.0, is3D ? liftShadowOpacity : 1.0]
         }
-        private let sources = ["pistes", "piste_areas", "lifts", "lift_spans", "stations", "structures", "cabins"]
-        private let liveSources = ["pines", "cabin-dots"]      // filled in code, not from bundle URLs
-        private let layers = ["piste-areas-fill", "pistes-casing", "pistes-line", "pistes-sheen", "pistes-unknown", "lifts-line", "lifts-cable",
-                              "pines-3d", "structures-3d", "cabins-3d", "cabin-dots", "pistes-label", "lifts-label"]
+        private let sources = ["pistes", "piste_areas", "lifts", "lift_spans", "stations", "structures", "cabins", "huts"]
+        private let liveSources = ["pines", "cabin-dots", "lift-terminals", "snowmen", "skiers"]   // filled in code, not from bundle URLs
+        private let layers = ["piste-areas-fill", "pistes-ink", "pistes-casing", "pistes-line", "pistes-sheen", "pistes-unknown",
+                              "lifts-line-casing", "lifts-line", "lifts-cable-halo", "lifts-cable",
+                              "pines-3d", "structures-3d", "cabins-3d", "cabin-dots", "lift-terminals", "snowmen", "skiers", "huts",
+                              "pistes-label", "lifts-label"]
 
         init(_ parent: ResortMapView) { self.parent = parent }
 
@@ -74,6 +77,7 @@ struct ResortMapView: UIViewRepresentable {
                 guard let self else { return }
                 self.styleLoaded = true
                 self.configureStandard()
+                if let map = self.mapView?.mapboxMap { Cartoon.register(on: map) }
                 self.addTerrain()
                 self.currentId = nil
                 self.show(self.parent.resort)
@@ -91,9 +95,12 @@ struct ResortMapView: UIViewRepresentable {
                 observers.append(nc.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in self?.updateMotion() })
             }
 
-            for layer in ["pistes-line", "pistes-unknown", "lifts-line", "lifts-cable", "structures-3d", "cabins-3d"] {
+            for layer in ["huts", "lift-terminals", "pistes-line", "pistes-unknown", "lifts-line", "lifts-cable", "structures-3d", "cabins-3d"] {
                 mapView.gestures.onLayerTap(layer) { [weak self] feature, _ in
-                    self?.parent.selectedFeature = feature.feature.properties?.mapValues { $0?.rawValue ?? "" }
+                    var props = feature.feature.properties?.mapValues { $0?.rawValue ?? "" } ?? [:]
+                    if layer == "huts" { props["marker"] = "hut" }
+                    if layer == "lift-terminals" { props["marker"] = "station" }
+                    self?.parent.selectedFeature = props
                     return true
                 }.store(in: &tokens)
             }
@@ -101,8 +108,8 @@ struct ResortMapView: UIViewRepresentable {
 
         // MARK: Standard style config (3D buildings, trees, lighting)
 
-        /// Satellite imagery or the snow diorama. The style reload re-adds terrain, runs and lifts via onStyleLoaded.
-        /// Offline tile regions hold the diorama style only, so satellite needs a connection.
+        /// Satellite imagery or the cartoon snow map. The style reload re-adds terrain, runs and lifts via onStyleLoaded.
+        /// Offline tile regions hold the cartoon style only, so satellite needs a connection.
         func switchStyle(satellite: Bool) {
             guard let mapView else { return }
             styleLoaded = false
@@ -119,10 +126,11 @@ struct ResortMapView: UIViewRepresentable {
                 applyLight()
                 return
             }
-            // Snow diorama: faded theme, snow-toned land, greenspace close to the snow so forests draw no hard edge.
+            // Cartoon snow: faded theme, snow-toned land, greenspace close to the snow, no footpath clutter.
             let config: [String: Any] = [
                 "theme": "faded", "colorLand": "#f4f7fb", "colorGreenspace": "#e3ebe6", "colorWater": "#79aed6",
                 "show3dObjects": true, "showPointOfInterestLabels": false, "showTransitLabels": false, "showRoadLabels": false,
+                "showPedestrianRoads": false,
             ]
             for (key, value) in config { try? map.setStyleImportConfigProperty(for: "basemap", config: key, value: value) }
             applyLight()
@@ -149,7 +157,7 @@ struct ResortMapView: UIViewRepresentable {
             try? map.setLayerProperties(for: "relief", properties: [
                 "hillshade-shadow-color": d.shadow.hexString, "hillshade-highlight-color": d.highlight.hexString,
                 "hillshade-accent-color": d.accent.hexString, "hillshade-illumination-direction": d.azimuth,
-                "hillshade-exaggeration": d.relief,
+                "hillshade-exaggeration": d.relief * 0.8,       // softer: bright toy snow
             ])
             try? map.setLayerProperties(for: "ridge-light", properties: [
                 // Fades with the sun's height (−1° → 6°) instead of snapping at sunset.
@@ -204,7 +212,7 @@ struct ResortMapView: UIViewRepresentable {
             } else {
                 map.removeTerrain()
             }
-            for id in ["structures-3d", "cabins-3d", "pines-3d", "cabin-dots"] where map.layerExists(withId: id) {
+            for id in ["structures-3d", "cabins-3d", "pines-3d", "cabin-dots", "lifts-cable-halo"] where map.layerExists(withId: id) {
                 try? map.setLayerProperty(for: id, property: "visibility", value: on ? "visible" : "none")
             }
             // 3D: cables hang in the air and the line on the ground becomes their faint shadow.
@@ -213,6 +221,8 @@ struct ResortMapView: UIViewRepresentable {
                 try? map.setLayerProperty(for: "lifts-cable", property: "visibility", value: on ? "visible" : "none")
                 try? map.setLayerProperty(for: "lifts-line", property: "line-opacity",
                                           value: Coordinator.liftOpacityJSON(is3D: on))
+                try? map.setLayerProperty(for: "lifts-line-casing", property: "line-opacity",
+                                          value: ["match", ["get", "aerialway"], Coordinator.groundLifts, 0.95, on ? 0.0 : 0.95])
             }
             try? map.setStyleImportConfigProperty(for: "basemap", config: "show3dObjects", value: on)
             let cam = CameraOptions(pitch: on ? ResortMapView.pitch3D : 0)
@@ -228,7 +238,7 @@ struct ResortMapView: UIViewRepresentable {
             for id in layers.reversed() where map.layerExists(withId: id) { try? map.removeLayer(withId: id) }
             for id in sources + liveSources where map.sourceExists(withId: id) { try? map.removeSource(withId: id) }
             ticker?.stop(); ticker = nil
-            tracks = []; trees = []
+            tracks = []; trees = []; skiTracks = []
             for layer in sources {
                 guard let url = r.layerURL(layer) else { continue }
                 var src = GeoJSONSource(id: layer)
@@ -252,6 +262,7 @@ struct ResortMapView: UIViewRepresentable {
         /// Parse the bundled cable spans and pine points off the main thread, then start the scene.
         private func loadLiving(_ r: Resort) {
             let spansURL = r.layerURL("lift_spans"), pinesURL = r.layerURL("pines"), id = r.id
+            let pistesURL = r.layerURL("pistes"), liftsURL = r.layerURL("lifts"), hutsURL = r.layerURL("huts")
             Task.detached(priority: .utility) {
                 let decode = { (url: URL?) -> FeatureCollection? in
                     guard let url, let data = try? Data(contentsOf: url) else { return nil }
@@ -259,9 +270,20 @@ struct ResortMapView: UIViewRepresentable {
                 }
                 let t = decode(spansURL).map(LiftMotion.tracks(from:)) ?? []
                 let p = decode(pinesURL).map(Pines.load) ?? []
+                let pistes = decode(pistesURL), lifts = decode(liftsURL), huts = decode(hutsURL)
+                let skiers = pistes.map(Decor.tracks(from:)) ?? []
+                let terminals = lifts.map(Decor.terminals(from:)) ?? []
+                let hutPoints = huts?.features.compactMap { f -> CLLocationCoordinate2D? in
+                    if case let .point(pt)? = f.geometry { return pt.coordinates }; return nil } ?? []
+                let stationPoints = terminals.compactMap { f -> CLLocationCoordinate2D? in
+                    if case let .point(pt)? = f.geometry { return pt.coordinates }; return nil }
+                let avoid = (pistes.map(Decor.lines) ?? []) + (lifts.map(Decor.lines) ?? [])
+                let snowmen = Decor.snowmen(huts: hutPoints, stations: stationPoints, avoid: avoid)
                 await MainActor.run { [weak self] in
-                    guard let self, self.currentId == id else { return }
-                    self.tracks = t; self.trees = p
+                    guard let self, self.currentId == id, let map = self.mapView?.mapboxMap else { return }
+                    self.tracks = t; self.trees = p; self.skiTracks = skiers
+                    map.updateGeoJSONSource(withId: "lift-terminals", geoJSON: .featureCollection(FeatureCollection(features: terminals)))
+                    map.updateGeoJSONSource(withId: "snowmen", geoJSON: .featureCollection(FeatureCollection(features: snowmen)))
                     self.refreshPines()
                     self.updateMotion()
                 }
@@ -282,25 +304,35 @@ struct ResortMapView: UIViewRepresentable {
             map.updateGeoJSONSource(withId: "pines", geoJSON: .featureCollection(FeatureCollection(features: features)))
         }
 
-        /// Cabins move only when it's worth the battery: 3D, close enough, app in front, and no Reduce
-        /// Motion or Low Power Mode. Otherwise they're parked at the same miniature scale.
+        /// Cabins and skiers move only when it's worth the battery: close enough, app in front, and no
+        /// Reduce Motion or Low Power Mode (cabins also need 3D). Otherwise they're parked where they stand.
         func updateMotion() {
-            let moving = parent.is3D && !UIAccessibility.isReduceMotionEnabled && !lowPower && zoom >= 10.5
-                && !tracks.isEmpty && UIApplication.shared.applicationState != .background
+            let moving = !UIAccessibility.isReduceMotionEnabled && !lowPower && zoom >= 10.5
+                && ((parent.is3D && !tracks.isEmpty) || !skiTracks.isEmpty) && UIApplication.shared.applicationState != .background
             if moving {
                 if ticker == nil { ticker = Ticker(fps: 10) { [weak self] in self?.tick() } }
             } else {
                 ticker?.stop(); ticker = nil
                 setCabins(LiftMotion.cars(tracks, seconds: 0, view: nil, limit: 1500, scale: LiftMotion.scale(forZoom: zoom)))
+                setSkiers(seconds: 0, view: nil)
             }
         }
 
         private func tick() {
             let t = Date().timeIntervalSince(sceneStart)
             setCabins(LiftMotion.cars(tracks, seconds: t, view: visibleBounds, limit: 400, scale: LiftMotion.scale(forZoom: zoom)))
+            setSkiers(seconds: t, view: visibleBounds)
         }
 
-        /// 3D cabin boxes, plus dark beads for the far view kept 14 pt apart on screen so a lift never
+        /// Tiny skiers from zoom 12.5: a light sprinkle, at most 40 on screen.
+        private func setSkiers(seconds: Double, view: CoordinateBounds?) {
+            guard let map = mapView?.mapboxMap, map.sourceExists(withId: "skiers") else { return }
+            let features = zoom >= 12.5 ? Decor.skiers(skiTracks, seconds: seconds, view: view, limit: 40,
+                                                       scale: Decor.scale(forZoom: zoom), bearing: map.cameraState.bearing) : []
+            map.updateGeoJSONSource(withId: "skiers", geoJSON: .featureCollection(FeatureCollection(features: features)))
+        }
+
+        /// 3D cabin boxes, plus yellow beads for the far view kept 14 pt apart on screen so a lift never
         /// reads as a dotted line (that's the "Not classified" run style).
         private func setCabins(_ cars: [Feature]) {
             guard let map = mapView?.mapboxMap, map.sourceExists(withId: "cabins") else { return }
@@ -352,11 +384,24 @@ struct ResortMapView: UIViewRepresentable {
 
             // Runs go in the top slot: drawn above 3D trees and buildings, so forest sections
             // no longer disappear. Harder runs sort on top where runs overlap.
+            // Cartoon sticker: an ink outline around a white rim around the coloured ribbon.
+            var ink = LineLayer(id: "pistes-ink", source: "pistes")
+            ink.slot = .top
+            ink.filter = isDownhill
+            ink.lineColor = .constant(StyleColor(Cartoon.ink))
+            ink.lineOpacity = .constant(0.92)
+            ink.lineWidth = .expression(PisteWidth.expression(PisteWidth.ink))
+            ink.lineCap = .constant(.round)
+            ink.lineJoin = .constant(.round)
+            ink.lineSortKey = .expression(Exp(.get) { "rank" })
+            ink.lineEmissiveStrength = .constant(1)
+            try? map.addLayer(ink)
+
             var casing = LineLayer(id: "pistes-casing", source: "pistes")
             casing.slot = .top
             casing.filter = isDownhill
             casing.lineColor = .constant(StyleColor(.white))
-            casing.lineOpacity = .constant(0.95)
+            casing.lineOpacity = .constant(1)
             casing.lineWidth = .expression(PisteWidth.expression(PisteWidth.casing))
             casing.lineCap = .constant(.round)
             casing.lineJoin = .constant(.round)
@@ -382,8 +427,9 @@ struct ResortMapView: UIViewRepresentable {
             sheen.minZoom = 12
             sheen.filter = isDownhill
             sheen.lineColor = .constant(StyleColor(.white))
-            sheen.lineOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 0; 13.5; 0.38 })
+            sheen.lineOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12; 0; 13.5; 0.42 })
             sheen.lineWidth = .expression(PisteWidth.expression(PisteWidth.sheen))
+            sheen.lineOffset = .expression(Exp(.interpolate) { Exp(.exponential) { 1.4 }; Exp(.zoom); 12; -0.8; 14; -1.6; 16; -2.6 })   // glossy edge
             sheen.lineCap = .constant(.round)
             sheen.lineEmissiveStrength = .constant(1)
             try? map.addLayer(sheen)
@@ -393,17 +439,27 @@ struct ResortMapView: UIViewRepresentable {
             unknown.filter = Exp(.all) { isDownhill; isUnknown }
             unknown.lineColor = .constant(StyleColor(PisteDifficulty.unknown.color(in: .eu)))
             unknown.lineWidth = .expression(PisteWidth.expression(PisteWidth.line))
-            unknown.lineDasharray = .constant([1.5, 1])
+            unknown.lineDasharray = .constant([1.4, 0.9])
             unknown.lineEmissiveStrength = .constant(1)
             try? map.addLayer(unknown)
 
             // Lift on the ground: full line in 2D, faint shadow under the cable in 3D.
             // Ground lifts (rope tows, magic carpets) have no cable, so they always stay fully visible.
+            // Lifts are one family: violet cables on a white rim, yellow cabins and station badges.
+            var liftCasing = LineLayer(id: "lifts-line-casing", source: "lifts")
+            liftCasing.slot = .top
+            liftCasing.lineColor = .constant(StyleColor(.white))
+            liftCasing.lineWidth = widthByZoom(6, 9)
+            liftCasing.lineCap = .constant(.round)
+            liftCasing.lineEmissiveStrength = .constant(1)
+            try? map.addLayer(liftCasing)
+            try? map.setLayerProperty(for: "lifts-line-casing", property: "line-opacity",
+                                      value: ["match", ["get", "aerialway"], Coordinator.groundLifts, 0.95, parent.is3D ? 0.0 : 0.95])
             var lifts = LineLayer(id: "lifts-line", source: "lifts")
             lifts.slot = .top
-            lifts.lineColor = .constant(StyleColor(UIColor(white: 0.12, alpha: 1)))
-            lifts.lineWidth = widthByZoom(1.5, 3.5)
-            lifts.lineDasharray = .constant([2, 1])
+            lifts.lineColor = .constant(StyleColor(Cartoon.liftViolet))
+            lifts.lineWidth = widthByZoom(3.2, 5)
+            lifts.lineCap = .constant(.round)
             lifts.lineEmissiveStrength = .constant(1)
             try? map.addLayer(lifts)
             try? map.setLayerProperty(for: "lifts-line", property: "line-opacity",
@@ -413,14 +469,20 @@ struct ResortMapView: UIViewRepresentable {
             // points (z0…z8, real metres, from the pipeline). They are scaled by the terrain
             // exaggeration so cables keep the same proportion as the exaggerated mountains.
             let exaggeration = ResortMapView.terrainExaggeration
+            // Cables in the air are drawn in perspective and thin out with distance, so they get extra width.
+            var cableHalo = LineLayer(id: "lifts-cable-halo", source: "lift_spans")
+            cableHalo.slot = .top
+            cableHalo.lineColor = .constant(StyleColor(.white))
+            cableHalo.lineOpacity = .constant(0.92)
+            cableHalo.lineWidth = widthByZoom(7.6, 11)
+            cableHalo.lineCap = .constant(.round)
+            cableHalo.lineEmissiveStrength = .constant(1)
+            cableHalo.visibility = .constant(parent.is3D ? .visible : .none)
+            try? map.addLayer(cableHalo)
             var cable = LineLayer(id: "lifts-cable", source: "lift_spans")
             cable.slot = .top
-            cable.lineColor = .expression(Exp(.match) {
-                Exp(.get) { "aerialway" }
-                ["cable_car", "gondola", "mixed_lift"]; UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1)
-                UIColor(red: 0.22, green: 0.22, blue: 0.25, alpha: 1)
-            })
-            cable.lineWidth = widthByZoom(1.2, 3)
+            cable.lineColor = .constant(StyleColor(Cartoon.liftViolet))
+            cable.lineWidth = widthByZoom(3.8, 6)
             cable.lineCap = .constant(.round)
             cable.lineEmissiveStrength = .constant(1)
             cable.visibility = .constant(parent.is3D ? .visible : .none)
@@ -429,15 +491,19 @@ struct ResortMapView: UIViewRepresentable {
             var zOffset: [Any] = ["interpolate", ["linear"], ["line-progress"]]
             for k in 0..<9 { zOffset += [Double(k) / 8, ["*", exaggeration, ["get", "z\(k)"]]] }
             do {
-                try map.setLayerProperties(for: "lifts-cable", properties: [
-                    "line-elevation-reference": "ground",
-                    "line-z-offset": zOffset,
-                ])
+                for id in ["lifts-cable-halo", "lifts-cable"] {
+                    try map.setLayerProperties(for: id, properties: [
+                        "line-elevation-reference": "ground",
+                        "line-z-offset": zOffset,
+                    ])
+                }
             } catch {
                 // Older SDK without elevated lines: fall back to lifts drawn on the ground.
                 print("Elevated lift cables unavailable: \(error)")
                 try? map.removeLayer(withId: "lifts-cable")
+                try? map.removeLayer(withId: "lifts-cable-halo")
                 try? map.setLayerProperty(for: "lifts-line", property: "line-opacity", value: 1.0)
+                try? map.setLayerProperty(for: "lifts-line-casing", property: "line-opacity", value: 0.95)
             }
 
             // Lift towers (mast + crossarm), stations (walls + roof) and hanging cabins as 3D boxes.
@@ -454,10 +520,10 @@ struct ResortMapView: UIViewRepresentable {
             structures.fillExtrusionHeight = scaled("height")
             structures.fillExtrusionColor = .expression(Exp(.match) {
                 Exp(.get) { "part" }
-                "mast"; hex(0x727d8c)
-                "arm"; hex(0x3c4552)
-                "roof"; hex(0x8e2f29)
-                hex(0xefe9dd)                                  // station walls
+                "mast"; hex(0x5b6688)
+                "arm"; hex(0x1b2440)
+                "roof"; hex(0xffc81e)                          // lift-family yellow
+                hex(0xffffff)                                  // station walls
             })
             structures.fillExtrusionVerticalGradient = .constant(true)
             structures.fillExtrusionAmbientOcclusionIntensity = .constant(0.35)
@@ -481,13 +547,15 @@ struct ResortMapView: UIViewRepresentable {
             pines.fillExtrusionOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 11.5; 0; 12; 1 })
             try? map.addLayer(pines)
 
-            // Far view: a cabin is smaller than a pixel, so it shows as a dark bead on the cable.
+            // Far view: a cabin is smaller than a pixel, so it shows as a yellow bead with a violet ring.
             var dots = CircleLayer(id: "cabin-dots", source: "cabin-dots")
             dots.slot = .top
             dots.minZoom = 10.5
             dots.maxZoom = 14
-            dots.circleColor = .constant(StyleColor(hex(0x0b0f14)))
-            dots.circleRadius = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 10.5; 1.9; 13; 2.6 })
+            dots.circleColor = .constant(StyleColor(Cartoon.liftYellow))
+            dots.circleStrokeColor = .constant(StyleColor(Cartoon.liftViolet))
+            dots.circleStrokeWidth = .constant(1.4)
+            dots.circleRadius = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 10.5; 2.6; 13; 3.6 })
             dots.circleOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); 12.8; 1; 13.6; 0 })
             dots.circlePitchAlignment = .constant(.viewport)
             try? map.addLayer(dots)
@@ -499,10 +567,64 @@ struct ResortMapView: UIViewRepresentable {
             cabins.fillExtrusionHeight = scaled("height")
             cabins.fillExtrusionColor = .expression(Exp(.match) {
                 Exp(.get) { "lift" }
-                "chair_lift"; hex(0x2b323c)
-                hex(0xd42a2f)                                  // gondola / cable-car cabins
+                "chair_lift"; hex(0x1b2440)
+                hex(0xffc81e)                                  // gondola / cable-car cabins: lift-family yellow
             })
             try? map.addLayer(cabins)
+
+            // Stations: yellow cable-car badges at both ends of every lift, always upright.
+            var stations = SymbolLayer(id: "lift-terminals", source: "lift-terminals")
+            stations.slot = .top
+            stations.minZoom = 11.5
+            stations.iconImage = .constant(.name("station"))
+            stations.iconSize = widthByZoom(0.62, 1)
+            stations.iconPitchAlignment = .constant(.viewport)
+            stations.iconRotationAlignment = .constant(.viewport)
+            stations.iconPadding = .constant(1)
+            stations.iconEmissiveStrength = .constant(1)
+            try? map.addLayer(stations)
+
+            // Little figures standing on the mountain: billboards that always face you.
+            func figure(_ id: String, minZoom: Double, image: Value<ResolvedImage>) {
+                var l = SymbolLayer(id: id, source: id)
+                l.slot = .top
+                l.minZoom = minZoom
+                l.iconImage = image
+                l.iconSize = widthByZoom(0.9, 1.25)
+                l.iconAnchor = .constant(.bottom)
+                l.iconPitchAlignment = .constant(.viewport)
+                l.iconRotationAlignment = .constant(.viewport)
+                l.iconAllowOverlap = .constant(true)
+                l.iconIgnorePlacement = .constant(true)
+                l.iconOpacity = .expression(Exp(.interpolate) { Exp(.linear); Exp(.zoom); minZoom; 0; minZoom + 0.4; 1 })
+                l.iconEmissiveStrength = .constant(1)
+                try? map.addLayer(l)
+            }
+            figure("snowmen", minZoom: 13, image: .constant(.name("snowman")))
+            figure("skiers", minZoom: 12.5, image: .expression(Exp(.concat) {
+                "skier-"; Exp(.toString) { Exp(.get) { "jacket" } }; "-"; Exp(.get) { "face" }
+            }))
+
+            // Huts and mountain restaurants: white chalet badges, named from zoom 14.
+            var huts = SymbolLayer(id: "huts", source: "huts")
+            huts.slot = .top
+            huts.minZoom = 12
+            huts.iconImage = .constant(.name("hut"))
+            huts.iconSize = widthByZoom(0.7, 1.05)
+            huts.iconPitchAlignment = .constant(.viewport)
+            huts.iconRotationAlignment = .constant(.viewport)
+            huts.iconPadding = .constant(2)
+            huts.textField = .expression(Exp(.step) { Exp(.zoom); ""; 14; Exp(.coalesce) { Exp(.get) { "name" }; "" } })
+            huts.textSize = .constant(12)
+            huts.textAnchor = .constant(.top)
+            huts.textOffset = .constant([0, 1.3])
+            huts.textOptional = .constant(true)
+            huts.textColor = .constant(StyleColor(Cartoon.ink))
+            huts.textHaloColor = .constant(StyleColor(.white))
+            huts.textHaloWidth = .constant(2.2)
+            huts.iconEmissiveStrength = .constant(1)
+            huts.textEmissiveStrength = .constant(1)
+            try? map.addLayer(huts)
 
             // Run number as a coloured badge (white text, halo in the run's colour), name when zoomed in.
             var runLabel = SymbolLayer(id: "pistes-label", source: "pistes")
@@ -531,7 +653,7 @@ struct ResortMapView: UIViewRepresentable {
             liftLabel.textField = .expression(Exp(.coalesce) { Exp(.get) { "name" }; Exp(.get) { "ref" }; "" })
             liftLabel.symbolPlacement = .constant(.line)
             liftLabel.textSize = .constant(12)
-            liftLabel.textColor = .constant(StyleColor(UIColor(white: 0.1, alpha: 1)))
+            liftLabel.textColor = .constant(StyleColor(Cartoon.liftViolet))
             liftLabel.textHaloColor = .constant(StyleColor(.white))
             liftLabel.textHaloWidth = .constant(1.5)
             liftLabel.textPitchAlignment = .constant(.viewport)
